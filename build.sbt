@@ -9,7 +9,6 @@ import uk.gov.hmrc.versioning.SbtGitVersioning
 import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
 
 val ScalatestVersion = "3.0.4"
-val hmrcRepoHost = java.lang.System.getProperty("hmrc.repo.host", "https://nexus-preview.tax.service.gov.uk")
 val test = "test"
 
 val appName = "help-to-save-stride-frontend"
