@@ -40,12 +40,12 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects { this: Frontend
 
   val env: Environment = frontendAppConfig.environment
 
-  private val requiredRoles: List[String] = frontendAppConfig.runModeConfiguration.underlying.get[List[String]]("stride.roles").value
+  private val requiredRoles: List[String] = config.underlying.get[List[String]]("stride.roles").value
 
   def authorisedFromStride(action: Request[AnyContent] ⇒ Future[Result])(call: Call): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
-        case enrolments ⇒
+        enrolments ⇒
           val necessaryRoles: Option[List[Enrolment]] =
             requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
 
