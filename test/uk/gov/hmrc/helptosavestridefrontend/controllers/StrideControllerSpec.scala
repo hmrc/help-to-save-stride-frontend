@@ -22,7 +22,6 @@ import play.api.i18n.MessagesApi
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
-import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
@@ -35,8 +34,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport with TestData {
 
   val helpToSaveConnector = mock[HelpToSaveConnector]
-
-  private implicit val ninoValidation: NINOValidation = new NINOValidation
 
   def mockEligibility(nino: NINO)(result: Either[String, EligibilityCheckResult]) =
     (helpToSaveConnector.getEligibility(_: String)(_: HeaderCarrier, _: ExecutionContext))

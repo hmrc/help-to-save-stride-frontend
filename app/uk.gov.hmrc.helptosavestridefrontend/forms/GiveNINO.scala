@@ -18,10 +18,11 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
+import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.ninoFormatter
 
 object GiveNINOForm {
-  def giveNinoForm(implicit ninoValidation: NINOValidation): Form[GiveNINO] = Form(
-    mapping("nino" -> of(ninoValidation.ninoFormatter)
+  def giveNinoForm: Form[GiveNINO] = Form(
+    mapping("nino" -> of(ninoFormatter)
     )(GiveNINO.apply)(GiveNINO.unapply)
   )
 }

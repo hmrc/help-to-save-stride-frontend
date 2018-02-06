@@ -22,7 +22,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
 import play.api.Logger
 import play.api.data.FormError
-import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.ErrorMessages
+import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.{ErrorMessages, ninoFormatter}
 
 // scalastyle:off magic.number
 class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
@@ -31,25 +31,23 @@ class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenProp
 
       def genString(length: Int) = Gen.listOfN(length, Gen.alphaChar).map(_.mkString(""))
 
-      def test(ninoValidation: NINOValidation)(value: String)(expectedResult: Either[Set[String], Unit], log: Boolean = false): Unit = {
-        val result: Either[Seq[FormError], String] = ninoValidation.ninoFormatter.bind("key", Map("key" → value))
+      def test(value: String)(expectedResult: Either[Set[String], Unit], log: Boolean = false): Unit = {
+        val result: Either[Seq[FormError], String] = ninoFormatter.bind("key", Map("key" → value))
         if (log) Logger.error(value + ": " + result.toString)
         result.leftMap(_.toSet) shouldBe expectedResult.bimap(_.map(s ⇒ FormError("key", s)), _ ⇒ value)
       }
 
-    val ninoValidation = new NINOValidation()
-
     "validate against valid ninos" in {
-      test(ninoValidation)("AE123456C")(Right())
+      test("AE123456C")(Right(()))
     }
 
     "validate against blank strings" in {
-      test(ninoValidation)("")(Left(Set(ErrorMessages.invalidNinoPattern)))
+      test("")(Left(Set(ErrorMessages.invalidNinoPattern)))
     }
 
     "validate against in-valid patterns" in {
       forAll(genString(5), genString(5)) { (l, d) ⇒
-        test(ninoValidation)(s"$l@$d")(Left(Set(ErrorMessages.invalidNinoPattern)))
+        test(s"$l@$d")(Left(Set(ErrorMessages.invalidNinoPattern)))
       }
     }
   }

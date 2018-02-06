@@ -26,7 +26,7 @@ class LoggingPagerDutyAlertingSpec extends TestSupport {
 
     "alert messages as expected in " in {
 
-      alerting.alert("unexpected error ") shouldBe ()
+      alerting.alert("unexpected error ") shouldBe (())
 
     }
   }

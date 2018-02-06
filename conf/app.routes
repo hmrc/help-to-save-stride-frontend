@@ -11,5 +11,3 @@ GET       /you-are-not-eligible                       @uk.gov.hmrc.helptosavestr
 GET       /you-are-eligible                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreEligible()
 
 GET       /account-already-exists                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
-
-GET       /no-paye-details-found                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.noPayeDetailsFound()

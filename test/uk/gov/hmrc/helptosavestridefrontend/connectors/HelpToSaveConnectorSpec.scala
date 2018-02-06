@@ -117,7 +117,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
     "getting paye-personal-details" must {
 
       "return a successful paye-details response for a valid NINO" in {
-        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse(payeDetails(nino)))))) // scalastyle:ignore magic.number
+        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse(payeDetailsJson))))) // scalastyle:ignore magic.number
         Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds) shouldBe Right(ppDetails)
       }
 

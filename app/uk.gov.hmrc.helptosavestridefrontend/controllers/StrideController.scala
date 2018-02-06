@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
-import uk.gov.hmrc.helptosavestridefrontend.forms.{GiveNINOForm, NINOValidation}
+import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
@@ -38,8 +38,7 @@ import scala.concurrent.Future
 class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
                                   val frontendAppConfig:   FrontendAppConfig,
-                                  messageApi:              MessagesApi)(implicit val ninoValidation: NINOValidation,
-                                                                        transformer: NINOLogMessageTransformer)
+                                  messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
@@ -59,16 +58,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
         r.fold(
           error ⇒ {
-            logger.warn(s"error during get eligibility result and pay-personal-info, error: $error")
+            logger.warn(s"error during get eligibility result and paye-personal-info, error: $error")
             internalServerError()
           },
           {
             case (Eligible(_), Some(details)) ⇒
               Ok(views.html.you_are_eligible(details))
-            case (Eligible(_), None) ⇒
-              //TODO:  this case never happens as this will be thrown as ISE in the above fold block
-              logger.warn("user is eligible but could not retrieve pay-personal-info")
-              SeeOther(routes.StrideController.noPayeDetailsFound().url)
             case (Ineligible(_), _) ⇒
               SeeOther(routes.StrideController.youAreNotEligible().url)
             case (AlreadyHasAccount(_), _) ⇒
@@ -93,10 +88,6 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     Ok(views.html.account_already_exists())
   }(routes.StrideController.accountAlreadyExists())
-
-  def noPayeDetailsFound: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok(views.html.no_paye_details_found())
-  }(routes.StrideController.noPayeDetailsFound())
 
   private def getPersonalDetails(r: EligibilityCheckResult, nino: String)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, String, Option[PayePersonalDetails]] =
     r match {

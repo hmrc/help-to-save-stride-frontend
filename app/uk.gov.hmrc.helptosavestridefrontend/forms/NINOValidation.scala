@@ -19,16 +19,13 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.syntax.either._
-import com.google.inject.Singleton
 import play.api.data.FormError
 import play.api.data.Forms.text
 import play.api.data.format.Formatter
-import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.ErrorMessages
 
 import scala.util.matching.Regex
 
-@Singleton
-class NINOValidation {
+object NINOValidation {
 
   val ninoFormatter: Formatter[String] = new Formatter[String] {
 
@@ -53,10 +50,6 @@ class NINOValidation {
     override def unbind(key: String, value: String): Map[String, String] =
       text.withPrefix(key).unbind(value)
   }
-
-}
-
-object NINOValidation {
 
   private[forms] object ErrorMessages {
 
