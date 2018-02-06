@@ -20,7 +20,7 @@ import cats.instances.int._
 import cats.syntax.eq._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.libs.json.Json
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.{ECResponseHolder, PayeDetailsHolder}
+import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECResponseHolder
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
@@ -118,7 +118,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       "return a successful paye-details response for a valid NINO" in {
         mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse(payeDetails(nino)))))) // scalastyle:ignore magic.number
-        Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds) shouldBe Right(PayeDetailsHolder(Some(ppDetails)))
+        Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds) shouldBe Right(ppDetails)
       }
 
       "handle responses when they contain invalid json" in {
@@ -129,7 +129,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       "handle responses when they contain empty json" in {
         mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) // scalastyle:ignore magic.number
-        Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds) shouldBe Right(PayeDetailsHolder(None))
+        mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
+        Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds).isLeft shouldBe true
       }
 
       "return with an error" when {

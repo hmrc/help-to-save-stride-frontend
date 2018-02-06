@@ -18,19 +18,17 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import java.time.LocalDate
 
-import uk.gov.hmrc.helptosavestridefrontend.models.{Address, Name, PayePersonalDetails, TelePhoneNumber}
+import uk.gov.hmrc.helptosavestridefrontend.models.{Address, Name, PayePersonalDetails}
 
 trait TestData {
 
   val ppDetails = PayePersonalDetails(
-    Name(None, "A", None, "Smith"),
+    Name("A", "Smith"),
     LocalDate.parse("1980-01-01"),
-    Address("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("UK"), "AB12 3CD", None),
-    Some(TelePhoneNumber("01999123456", 1)))
+    Address("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("UK"), "AB12 3CD"))
 
   def payeDetails(nino: String): String =
     """{
-          "payeDetails": {
             "name": {
               "firstForenameOrInitial": "A",
               "surname": "Smith"
@@ -43,12 +41,7 @@ trait TestData {
               "line4": "Anyshire",
               "line5": "UK",
               "postcode": "AB12 3CD"
-            },
-            "phoneNumber": {
-              "telephoneNumber": "01999123456",
-              "telephoneType": 1
             }
-          }
      }""".stripMargin
 
 }

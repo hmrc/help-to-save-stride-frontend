@@ -22,8 +22,8 @@ import play.api.i18n.MessagesApi
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.PayeDetailsHolder
 import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation
+import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
@@ -43,7 +43,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockPayeDetails(nino: NINO)(result: Either[String, PayeDetailsHolder]) =
+  def mockPayeDetails(nino: NINO)(result: Either[String, PayePersonalDetails]) =
     (helpToSaveConnector.getPayePersonalDetails(_: String)(_: HeaderCarrier, _: ExecutionContext))
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
@@ -138,24 +138,13 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "handle the case where user is eligible and paye-details exist" in {
         mockSuccessfulAuthorisation()
         mockEligibility(ninoEndoded)(Right(Eligible(eligibleECResponse)))
-        mockPayeDetails(ninoEndoded)(Right(PayeDetailsHolder(Some(ppDetails))))
+        mockPayeDetails(ninoEndoded)(Right(ppDetails))
 
         val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
         val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
         status(result) shouldBe OK
         contentAsString(result) should include("Help to Save - You are eligible")
         contentAsString(result) should include("you are eligible")
-      }
-
-      "handle the case where user is eligible and paye-details doesnt exist" in {
-        mockSuccessfulAuthorisation()
-        mockEligibility(ninoEndoded)(Right(Eligible(eligibleECResponse)))
-        mockPayeDetails(ninoEndoded)(Right(PayeDetailsHolder(None)))
-
-        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
-        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save/no-paye-details-found")
       }
 
       "handle the errors during eligibility check" in {

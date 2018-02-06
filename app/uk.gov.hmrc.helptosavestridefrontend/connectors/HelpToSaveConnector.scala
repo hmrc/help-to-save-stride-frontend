@@ -23,7 +23,7 @@ import play.api.http.Status.OK
 import play.api.libs.json._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.{ECResponseHolder, PayeDetailsHolder}
+import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECResponseHolder
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
@@ -40,7 +40,7 @@ trait HelpToSaveConnector {
 
   def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult]
 
-  def getPayePersonalDetails(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[PayeDetailsHolder]
+  def getPayePersonalDetails(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[PayePersonalDetails]
 
 }
 
@@ -114,8 +114,8 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
 
-  override def getPayePersonalDetails(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[PayeDetailsHolder] =
-    EitherT[Future, String, PayeDetailsHolder](
+  override def getPayePersonalDetails(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[PayePersonalDetails] =
+    EitherT[Future, String, PayePersonalDetails](
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
@@ -124,7 +124,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
             val time = timerContext.stop()
             response.status match {
               case OK ⇒
-                val result = response.parseJson[PayeDetailsHolder]
+                val result = response.parseJson[PayePersonalDetails]
                 result.fold({
                   e ⇒
                     metrics.payePersonalDetailsErrorCounter.inc()
@@ -175,31 +175,6 @@ object HelpToSaveConnector {
           }
         } {
           _.validate[EligibilityCheckResponse].map(r ⇒ ECResponseHolder(Some(r)))
-        }
-      }
-    }
-  }
-
-  case class PayeDetailsHolder(payeDetails: Option[PayePersonalDetails])
-
-  object PayeDetailsHolder {
-    implicit val format: Format[PayeDetailsHolder] = new Format[PayeDetailsHolder] {
-
-      private val writesInstance = Json.writes[PayeDetailsHolder]
-
-      override def writes(o: PayeDetailsHolder): JsValue = writesInstance.writes(o)
-
-      // fail if there is anything other than `payeDetails` in the JSON
-      override def reads(json: JsValue): JsResult[PayeDetailsHolder] = {
-        val map = json.as[JsObject].value
-        map.get("payeDetails").fold[JsResult[PayeDetailsHolder]] {
-          if (map.keySet.nonEmpty) {
-            JsError(s"Unexpected keys: ${map.keySet.mkString(",")}")
-          } else {
-            JsSuccess(PayeDetailsHolder(None))
-          }
-        } {
-          _.validate[PayePersonalDetails].map(r ⇒ PayeDetailsHolder(Some(r)))
         }
       }
     }

@@ -66,6 +66,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
             case (Eligible(_), Some(details)) ⇒
               Ok(views.html.you_are_eligible(details))
             case (Eligible(_), None) ⇒
+              //TODO:  this case never happens as this will be thrown as ISE in the above fold block
               logger.warn("user is eligible but could not retrieve pay-personal-info")
               SeeOther(routes.StrideController.noPayeDetailsFound().url)
             case (Ineligible(_), _) ⇒
@@ -101,7 +102,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     r match {
 
       case Eligible(_) ⇒
-        helpToSaveConnector.getPayePersonalDetails(nino).map(_.payeDetails)
+        helpToSaveConnector.getPayePersonalDetails(nino).map(Some(_))
 
       case Ineligible(_) ⇒
         EitherT.pure[Future, String, Option[PayePersonalDetails]](None)

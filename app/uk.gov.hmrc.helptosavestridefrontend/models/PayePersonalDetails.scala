@@ -25,33 +25,25 @@ import play.api.libs.json._
 
 case class PayePersonalDetails(name:        Name,
                                dateOfBirth: LocalDate,
-                               address:     Address,
-                               phoneNumber: Option[TelePhoneNumber])
+                               address:     Address)
 
-case class Name(title:                   Option[String],
-                firstForenameOrInitial:  String,
-                secondForenameOrInitial: Option[String],
-                surname:                 String
+case class Name(firstForenameOrInitial: String,
+                surname:                String
 )
 
-case class Address(line1:       String,
-                   line2:       String,
-                   line3:       Option[String],
-                   line4:       Option[String],
-                   line5:       Option[String],
-                   postcode:    String,
-                   countryCode: Option[String]
+case class Address(line1:    String,
+                   line2:    String,
+                   line3:    Option[String],
+                   line4:    Option[String],
+                   line5:    Option[String],
+                   postcode: String
 )
-
-case class TelePhoneNumber(telephoneNumber: String, telephoneType: Int)
 
 object PayePersonalDetails {
 
   implicit val nameFormat: Format[Name] = Json.format[Name]
 
   implicit val addressFormat: Format[Address] = Json.format[Address]
-
-  implicit val phoneNumberFormat: Format[TelePhoneNumber] = Json.format[TelePhoneNumber]
 
   implicit val dateFormat: Format[LocalDate] = {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
