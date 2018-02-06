@@ -79,10 +79,10 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       "handle responses when they contain invalid json" in {
         inSequence {
-          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson("""{"invalid": "foo"}""")))))
-          mockPagerDutyAlert("Failed to make call to check eligibility")
+          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}""")))))
+          mockPagerDutyAlert("Could not parse JSON in eligibility check response")
         }
-        Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
+        Await.result(connector.getEligibility(nino).value, 555.seconds).isLeft shouldBe true
       }
 
       "return with an error" when {
@@ -122,8 +122,14 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       }
 
       "handle responses when they contain invalid json" in {
-        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.toJson("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
-        Await.result(connector.getPayePersonalDetails(nino).value, 555.seconds) shouldBe Right(PayeDetailsHolder(None))
+        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
+        mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
+        Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds).isLeft shouldBe true
+      }
+
+      "handle responses when they contain empty json" in {
+        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) // scalastyle:ignore magic.number
+        Await.result(connector.getPayePersonalDetails(nino).value, 5.seconds) shouldBe Right(PayeDetailsHolder(None))
       }
 
       "return with an error" when {

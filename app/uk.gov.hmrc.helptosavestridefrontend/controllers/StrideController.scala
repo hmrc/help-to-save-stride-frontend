@@ -46,41 +46,40 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
   }(routes.StrideController.getEligibilityPage())
 
-  def checkEligibilityAndGetPersonalInfo: Action[AnyContent] =
-    authorisedFromStride { implicit request ⇒
-      GiveNINOForm.giveNinoForm.bindFromRequest().fold(
-        withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
-        form ⇒ {
-          val ninoEncoded = new String(base64Encode(form.nino))
+  def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    GiveNINOForm.giveNinoForm.bindFromRequest().fold(
+      withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
+      form ⇒ {
+        val ninoEncoded = new String(base64Encode(form.nino))
 
-          val r = for {
-            eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
-            personalDetails ← getPersonalDetails(eligibility, ninoEncoded)
-          } yield eligibility -> personalDetails
+        val r = for {
+          eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
+          personalDetails ← getPersonalDetails(eligibility, ninoEncoded)
+        } yield eligibility -> personalDetails
 
-          r.fold(
-            error ⇒ {
-              logger.warn(s"error during get eligibility result and pay-personal-info, error: $error")
+        r.fold(
+          error ⇒ {
+            logger.warn(s"error during get eligibility result and pay-personal-info, error: $error")
+            internalServerError()
+          },
+          {
+            case (Eligible(_), Some(details)) ⇒
+              Ok(views.html.you_are_eligible(details))
+            case (Eligible(_), None) ⇒
+              logger.warn("user is eligible but could not retrieve pay-personal-info")
+              SeeOther(routes.StrideController.noPayeDetailsFound().url)
+            case (Ineligible(_), _) ⇒
+              SeeOther(routes.StrideController.youAreNotEligible().url)
+            case (AlreadyHasAccount(_), _) ⇒
+              SeeOther(routes.StrideController.accountAlreadyExists().url)
+            case _ ⇒
+              logger.warn("unknown error during checking eligibility and pay-personal-details")
               internalServerError()
-            },
-            {
-              case (Eligible(_), Some(details)) ⇒
-                Ok(views.html.you_are_eligible(details))
-              case (Eligible(_), None) ⇒
-                logger.warn("user is eligible but could not retrieve pay-personal-info")
-                SeeOther(routes.StrideController.noPayeDetailsFound().url)
-              case (Ineligible(_), _) ⇒
-                SeeOther(routes.StrideController.youAreNotEligible().url)
-              case (AlreadyHasAccount(_), _) ⇒
-                SeeOther(routes.StrideController.accountAlreadyExists().url)
-              case _ ⇒
-                logger.warn("unknown error during checking eligibility and pay-personal-details")
-                internalServerError()
-            }
-          )
+          }
+        )
 
-        })
-    }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
+      })
+  }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     Ok(views.html.you_are_not_eligible())

@@ -23,8 +23,11 @@
     title = messages("hts.you.are.eligible.title"),
     bodyClasses = None) {
 
-    <h1>you are eligible @{details.name.surname}</h1>
+    <h1>you are eligible !!</h1>
 
-    <img src="https://cataas.com/cat/gif">
+<p>Name                 : @{details.name.title} @{details.name.surname} @{details.name.firstForenameOrInitial}</p>
+<p>Date Of Birth        : @{details.dateOfBirth}</p>
+<p>Address              : @{details.address}</p>
+<p>Phone Number         :  @{details.phoneNumber}</p>
 
 }

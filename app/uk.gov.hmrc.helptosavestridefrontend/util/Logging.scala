@@ -29,24 +29,11 @@ object Logging {
 
   implicit class LoggerOps(val logger: Logger) {
 
-    //    def debug(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
-    //      logger.debug(transformer.transform(message, nino))
-
     def info(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
       logger.info(transformer.transform(message, nino))
 
     def warn(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
       logger.warn(transformer.transform(message, nino))
-
-    //    def warn(message: String, e: ⇒ Throwable, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
-    //      logger.warn(transformer.transform(message, nino), e)
-    //
-    //    def error(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
-    //      logger.error(transformer.transform(message, nino))
-    //
-    //    def error(message: String, e: ⇒ Throwable, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
-    //      logger.error(transformer.transform(message, nino), e)
-
   }
 }
 

@@ -29,7 +29,7 @@ trait TestData {
     Some(TelePhoneNumber("01999123456", 1)))
 
   def payeDetails(nino: String): String =
-    s"""{
+    """{
           "payeDetails": {
             "name": {
               "firstForenameOrInitial": "A",
@@ -49,6 +49,6 @@ trait TestData {
               "telephoneType": 1
             }
           }
-           }""".stripMargin
+     }""".stripMargin
 
 }

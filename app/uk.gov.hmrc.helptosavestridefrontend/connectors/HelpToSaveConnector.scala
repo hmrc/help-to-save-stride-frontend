@@ -30,7 +30,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, maskNino}
+import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -68,7 +68,6 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
         http.get(eligibilityUrl(nino)).map { response ⇒
           val time = timerContext.stop()
 
-          logger.info(s"eligibility response body from DES is: ${maskNino(response.body)}", nino)
           response.status match {
             case OK ⇒
               val result = response.parseJson[ECResponseHolder].flatMap(ecHolder ⇒ toEligibilityCheckResult(ecHolder.response))
@@ -136,7 +135,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
                 )
                 result
 
-              case other ⇒
+              case other: Int ⇒
                 logger.warn(s"Call to paye-personal-details unsuccessful. Received unexpected status $other ${timeString(time)}", nino)
                 metrics.payePersonalDetailsErrorCounter.inc()
                 pagerDutyAlerting.alert("Received unexpected http status in response to paye-personal-details")
@@ -184,7 +183,26 @@ object HelpToSaveConnector {
   case class PayeDetailsHolder(payeDetails: Option[PayePersonalDetails])
 
   object PayeDetailsHolder {
-    implicit val format: Format[PayeDetailsHolder] = Json.format[PayeDetailsHolder]
+    implicit val format: Format[PayeDetailsHolder] = new Format[PayeDetailsHolder] {
+
+      private val writesInstance = Json.writes[PayeDetailsHolder]
+
+      override def writes(o: PayeDetailsHolder): JsValue = writesInstance.writes(o)
+
+      // fail if there is anything other than `payeDetails` in the JSON
+      override def reads(json: JsValue): JsResult[PayeDetailsHolder] = {
+        val map = json.as[JsObject].value
+        map.get("payeDetails").fold[JsResult[PayeDetailsHolder]] {
+          if (map.keySet.nonEmpty) {
+            JsError(s"Unexpected keys: ${map.keySet.mkString(",")}")
+          } else {
+            JsSuccess(PayeDetailsHolder(None))
+          }
+        } {
+          _.validate[PayePersonalDetails].map(r ⇒ PayeDetailsHolder(Some(r)))
+        }
+      }
+    }
   }
 
 }

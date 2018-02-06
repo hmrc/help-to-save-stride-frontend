@@ -144,7 +144,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
         status(result) shouldBe OK
         contentAsString(result) should include("Help to Save - You are eligible")
-        contentAsString(result) should include("you are eligible Smith")
+        contentAsString(result) should include("you are eligible")
       }
 
       "handle the case where user is eligible and paye-details doesnt exist" in {
