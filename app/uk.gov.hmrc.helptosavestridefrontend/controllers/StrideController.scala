@@ -20,11 +20,11 @@ import cats.data.EitherT
 import cats.instances.future._
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Request}
+import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
+import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
@@ -37,44 +37,47 @@ import scala.concurrent.Future
 
 class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
+                                  val keyStoreConnector:   KeyStoreConnector,
                                   val frontendAppConfig:   FrontendAppConfig,
                                   messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
-  extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging {
+  extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
+    Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm)).withSession(newSession)
   }(routes.StrideController.getEligibilityPage())
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    GiveNINOForm.giveNinoForm.bindFromRequest().fold(
-      withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
-      form ⇒ {
-        val ninoEncoded = new String(base64Encode(form.nino))
 
-        val r = for {
-          eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
-          personalDetails ← getPersonalDetails(eligibility, ninoEncoded)
-        } yield eligibility -> personalDetails
+    check(
+      GiveNINOForm.giveNinoForm.bindFromRequest().fold(
+        withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
+        form ⇒ {
+          val ninoEncoded = new String(base64Encode(form.nino))
+          val r = for {
+            eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
+            personalDetails ← getPersonalDetails(eligibility, ninoEncoded)
+            playSession ← storeDetails(eligibility, personalDetails)
+          } yield (eligibility, personalDetails, playSession)
 
-        r.fold(
-          error ⇒ {
-            logger.warn(s"error during get eligibility result and paye-personal-info, error: $error")
-            internalServerError()
-          },
-          {
-            case (Eligible(_), Some(details)) ⇒
-              Ok(views.html.you_are_eligible(details))
-            case (Ineligible(_), _) ⇒
-              SeeOther(routes.StrideController.youAreNotEligible().url)
-            case (AlreadyHasAccount(_), _) ⇒
-              SeeOther(routes.StrideController.accountAlreadyExists().url)
-            case _ ⇒
-              logger.warn("unknown error during checking eligibility and pay-personal-details")
+          r.fold(
+            error ⇒ {
+              logger.warn(s"error during get eligibility result and paye-personal-info, error: $error")
               internalServerError()
-          }
-        )
-
-      })
+            },
+            {
+              case (Eligible(_), Some(details), Some(session)) ⇒
+                Ok(views.html.you_are_eligible(details)).withSession(session)
+              case (Ineligible(_), _, _) ⇒
+                SeeOther(routes.StrideController.youAreNotEligible().url)
+              case (AlreadyHasAccount(_), _, _) ⇒
+                SeeOther(routes.StrideController.accountAlreadyExists().url)
+              case _ ⇒
+                logger.warn("unknown error during checking eligibility and pay-personal-details")
+                internalServerError()
+            }
+          )
+        })
+    )
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
@@ -82,18 +85,20 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.youAreNotEligible())
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok("you are eligible") // TODO: Implement this once user info is stored in keystore
+    check(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.youAreEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     Ok(views.html.account_already_exists())
   }(routes.StrideController.accountAlreadyExists())
 
-  private def getPersonalDetails(r: EligibilityCheckResult, nino: String)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, String, Option[PayePersonalDetails]] =
+  private def getPersonalDetails(r:           EligibilityCheckResult,
+                                 ninoEncoded: String)(implicit hc: HeaderCarrier,
+                                                      request: Request[_]): EitherT[Future, String, Option[PayePersonalDetails]] = {
     r match {
 
       case Eligible(_) ⇒
-        helpToSaveConnector.getPayePersonalDetails(nino).map(Some(_))
+        helpToSaveConnector.getPayePersonalDetails(ninoEncoded).map(Some(_))
 
       case Ineligible(_) ⇒
         EitherT.pure[Future, String, Option[PayePersonalDetails]](None)
@@ -102,4 +107,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         EitherT.pure[Future, String, Option[PayePersonalDetails]](None)
 
     }
+  }
+
+  private def storeDetails(eligibilityCheckResult: EligibilityCheckResult,
+                           payeDetails:            Option[PayePersonalDetails])(implicit request: Request[_]): EitherT[Future, String, Option[Session]] = {
+    val ks = getSessionWithKey
+    val userInfo = UserInfo(Some(eligibilityCheckResult), payeDetails)
+    keyStoreConnector.put(ks.key, userInfo).map(_ ⇒ Some(ks.session))
+  }
 }

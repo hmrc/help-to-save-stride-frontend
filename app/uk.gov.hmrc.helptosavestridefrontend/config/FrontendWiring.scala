@@ -17,12 +17,12 @@
 package uk.gov.hmrc.helptosavestridefrontend.config
 
 import com.google.inject.{ImplementedBy, Inject, Singleton}
-import play.api.libs.json.Writes
+import play.api.libs.json.{Json, Writes}
+import uk.gov.hmrc.http.HttpVerbs.{PUT ⇒ PUT_VERB}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.ws._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,6 +43,12 @@ trait WSHttp
   def post[A](url:     String,
               body:    A,
               headers: Seq[(String, String)] = Seq.empty[(String, String)]
+  )(implicit w: Writes[A], hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse]
+
+  def put[A](url:           String,
+             body:          A,
+             needsAuditing: Boolean             = true,
+             headers:       Map[String, String] = Map.empty[String, String]
   )(implicit w: Writes[A], hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse]
 
 }
@@ -72,5 +78,23 @@ class WSHttpExtension @Inject() (override val auditConnector: AuditConnector, co
               body:    A,
               headers: Seq[(String, String)] = Seq.empty[(String, String)]
   )(implicit w: Writes[A], hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = super.POST(url, body)(w, httpReads, hc, ec)
+
+  /**
+   * Returns a [[Future[HttpResponse]] without throwing exceptions if the status us not `2xx`. Needed
+   * to replace [[PUT]] method provided by the hmrc library which will throw exceptions in such cases.
+   */
+  def put[A](url:           String,
+             body:          A,
+             needsAuditing: Boolean             = true,
+             headers:       Map[String, String] = Map.empty[String, String]
+  )(implicit w: Writes[A], hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+    withTracing(PUT_VERB, url) {
+      val httpResponse = doPut(url, body)(w, hc.withExtraHeaders(headers.toSeq: _*))
+      if (needsAuditing) {
+        executeHooks(url, PUT_VERB, Option(Json.stringify(w.writes(body))), httpResponse)
+      }
+      mapErrors(PUT_VERB, url, httpResponse).map(response ⇒ httpReads.read(PUT_VERB, url, response))
+    }
+  }
 }
 

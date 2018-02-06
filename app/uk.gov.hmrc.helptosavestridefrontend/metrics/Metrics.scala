@@ -38,6 +38,13 @@ class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
 
   val payePersonalDetailsErrorCounter: Counter = counter("stride.frontend.paye-personal-details-error-counter")
 
+  val keystoreWriteTimer: Timer = timer("stride.frontend.keystore-write-time")
+
+  val keystoreWriteErrorCounter: Counter = counter("stride.frontend.keystore-write-error-counter")
+
+  val keystoreReadTimer: Timer = timer("stride.frontend.keystore-read-time")
+
+  val keystoreReadErrorCounter: Counter = counter("stride.frontend.keystore-read-error-counter")
 }
 
 object Metrics {
