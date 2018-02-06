@@ -16,29 +16,16 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
-import java.util.Base64
+import play.api.test.FakeRequest
+import play.filters.csrf.CSRF.{Token, TokenProvider}
 
-import cats.data.EitherT
+trait CSRFSupport { this: TestSupport ⇒
 
-import scala.concurrent.Future
-import scala.util.matching.Regex
+  lazy val tokenProvider: TokenProvider =
+    fakeApplication.injector.instanceOf[TokenProvider]
 
-package object util {
+  lazy val fakeRequestWithCSRFToken = FakeRequest().copyFakeRequest(tags = Map(
+    Token.NameRequestTag → "csrfToken",
+    Token.RequestTag → tokenProvider.generateToken))
 
-  implicit def toFuture[A](a: A): Future[A] = Future.successful(a)
-
-  type Result[A] = EitherT[Future, String, A]
-
-  type NINO = String
-
-  private val ninoRegex: Regex = """[A-Za-z]{2}[0-9]{6}[A-Za-z]{1}""".r
-
-  def maskNino(original: String): String = {
-    Option(original) match {
-      case Some(text) ⇒ ninoRegex.replaceAllIn(text, "<NINO>")
-      case None       ⇒ original
-    }
-  }
-
-  def base64Encode(input: String): Array[Byte] = Base64.getEncoder.encode(input.getBytes)
 }

@@ -14,16 +14,10 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-
-@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
-
-@uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-    title = "Hello!",
-    bodyClasses = None) {
-
-    <h1>This is a temporary start page</h1>
-
-    <img src="https://cataas.com/cat/gif">
-
+@(args: (Symbol, String)*)(content: Html)(implicit messages: play.api.i18n.Messages)
+@argsMap = @{
+    args.toMap
 }
+<button class="@{
+    ("button " + argsMap.getOrElse('_modifierClass, "").trim)
+}" @toHtmlArgs(argsMap.filterNot(entry => entry._1.name.startsWith("_")))>@content</button>

@@ -16,28 +16,153 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
+import cats.data.EitherT
+import cats.instances.future._
 import play.api.i18n.MessagesApi
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, TestSupport}
+import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
+import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
+import uk.gov.hmrc.helptosavestridefrontend.util.NINO
+import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
+import uk.gov.hmrc.http.HeaderCarrier
 
-class StrideControllerSpec extends TestSupport with AuthSupport {
+import scala.concurrent.{ExecutionContext, Future}
+
+class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport with TestData {
+
+  val helpToSaveConnector = mock[HelpToSaveConnector]
+
+  def mockEligibility(nino: NINO)(result: Either[String, EligibilityCheckResult]) =
+    (helpToSaveConnector.getEligibility(_: String)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(nino, *, *)
+      .returning(EitherT.fromEither[Future](result))
+
+  def mockPayeDetails(nino: NINO)(result: Either[String, PayePersonalDetails]) =
+    (helpToSaveConnector.getPayePersonalDetails(_: String)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(nino, *, *)
+      .returning(EitherT.fromEither[Future](result))
 
   lazy val controller =
-    new StrideController(mockAuthConnector, fakeApplication.injector.instanceOf[MessagesApi])
+    new StrideController(mockAuthConnector,
+                         helpToSaveConnector,
+                         fakeApplication.injector.instanceOf[FrontendAppConfig],
+                         fakeApplication.injector.instanceOf[MessagesApi])
 
   "The StrideController" when {
 
-    "getting the start page" must {
+    "getting the getEligibilityPage" must {
 
-      "show the start page when the user is authorised" in {
+      "show the page when the user is authorised" in {
         mockSuccessfulAuthorisation()
 
-        val result = controller.getStartPage(FakeRequest())
+        val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("This is a temporary start page")
-
+        contentAsString(result) should include("Help to Save - Enter National Insurance number")
       }
+    }
+
+    "getting the you-are-eligible page" must {
+
+      "show the page when the user is authorised" in {
+        mockSuccessfulAuthorisation()
+
+        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("you are eligible")
+      }
+    }
+
+    "getting the you-are-not-eligible page" must {
+
+      "show the page when the user is authorised" in {
+        mockSuccessfulAuthorisation()
+
+        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("you are NOT eligible")
+      }
+    }
+
+    "getting the account-already-exists page" must {
+
+      "show the page when the user is authorised" in {
+        mockSuccessfulAuthorisation()
+
+        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("Account already exists")
+      }
+    }
+
+    "checking the eligibility and retrieving paye details" must {
+
+      val ninoEndoded = "QUUxMjM0NTZD"
+
+      val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
+      val eligibleECResponse = EligibilityCheckResponse("eligible", 1, "tax credits", 7)
+
+      "handle the forms with invalid input" in {
+        mockSuccessfulAuthorisation()
+        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → "blah")
+        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
+        status(result) shouldBe OK
+        contentAsString(result) should include("invalid input, sample valid input is : AE123456C")
+      }
+
+      "handle the case where user is not eligible" in {
+        mockSuccessfulAuthorisation()
+        mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
+
+        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
+        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save/you-are-not-eligible")
+      }
+
+      "handle the case where user has already got account" in {
+        mockSuccessfulAuthorisation()
+        mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.AlreadyHasAccount(eligibleECResponse)))
+
+        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
+        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save/account-already-exists")
+      }
+
+      "handle the case where user is eligible and paye-details exist" in {
+        mockSuccessfulAuthorisation()
+        mockEligibility(ninoEndoded)(Right(Eligible(eligibleECResponse)))
+        mockPayeDetails(ninoEndoded)(Right(ppDetails))
+
+        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
+        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
+        status(result) shouldBe OK
+        contentAsString(result) should include("Help to Save - You are eligible")
+        contentAsString(result) should include("you are eligible")
+      }
+
+      "handle the errors during eligibility check" in {
+        mockSuccessfulAuthorisation()
+        mockEligibility(ninoEndoded)(Left("unexpected error"))
+
+        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
+        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
+
+      "handle the errors during retrieve paye-personal-details" in {
+        mockSuccessfulAuthorisation()
+        mockEligibility(ninoEndoded)(Right(Eligible(eligibleECResponse)))
+        mockPayeDetails(ninoEndoded)(Left("unexpected error"))
+
+        val fakePostRequest = fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino)
+        val result = controller.checkEligibilityAndGetPersonalInfo(fakePostRequest)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
+
     }
 
   }
