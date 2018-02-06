@@ -27,6 +27,12 @@
 
 <p>Name                 : @{details.name.surname} @{details.name.firstForenameOrInitial}</p>
 <p>Date Of Birth        : @{details.dateOfBirth}</p>
-<p>Address              : @{details.address}</p>
+<p>Address              : @{details.address.line1},
+                          @{details.address.line2},
+                          @{details.address.line3},
+                          @{details.address.line4},
+                          @{details.address.line5},
+                          @{details.address.postcode}
+</p>
 
 }
