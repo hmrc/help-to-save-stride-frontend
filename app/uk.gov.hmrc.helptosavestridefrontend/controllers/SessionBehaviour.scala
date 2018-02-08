@@ -50,7 +50,7 @@ trait SessionBehaviour {
       ).flatMap(identity)
   }
 
-  private def handle(strideSession: UserInfo)(implicit request: Request[_]): Future[Result] = {
+  private def whenSession(strideSession: UserInfo)(implicit request: Request[_]): Future[Result] = {
     val ks = getSessionWithKey
     val r = (strideSession.eligibilityCheckResult, strideSession.payePersonalDetails) match {
       case (Some(Eligible(_)), Some(details)) ⇒
@@ -67,7 +67,7 @@ trait SessionBehaviour {
   }
 
   def check(noSession: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
-    checkSession(noSession)(handle)
+    checkSession(noSession)(whenSession)
   }
 
   def getSessionWithKey(implicit session: Session): SessionWithKey = {
