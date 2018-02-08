@@ -38,7 +38,7 @@ trait SessionBehaviour {
 
   val sessionKey: String = "stride-user-info"
 
-  def checkSession(noSession: ⇒ Future[Result])(whenSession: UserInfo ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
+  def checkSession(noSession: ⇒ Future[Result], whenSession: UserInfo ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
 
     keyStoreConnector.get(getSessionWithKey.key)
       .fold({
@@ -66,8 +66,8 @@ trait SessionBehaviour {
     toFuture(r)
   }
 
-  def check(noSession: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
-    checkSession(noSession)(whenSession)
+  def checkSession(noSession: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
+    checkSession(noSession, whenSession)
   }
 
   def getSessionWithKey(implicit session: Session): SessionWithKey = {

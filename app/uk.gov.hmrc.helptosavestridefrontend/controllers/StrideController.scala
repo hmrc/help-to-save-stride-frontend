@@ -48,7 +48,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
 
-    check(
+    checkSession(
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
         withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
         form ⇒ {
@@ -81,15 +81,15 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    check(SeeOther(routes.StrideController.getEligibilityPage().url))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.youAreNotEligible())
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    check(SeeOther(routes.StrideController.getEligibilityPage().url))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.youAreEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    check(SeeOther(routes.StrideController.getEligibilityPage().url))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.accountAlreadyExists())
 
   private def getPersonalDetails(r:           EligibilityCheckResult,
