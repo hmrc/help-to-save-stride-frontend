@@ -84,7 +84,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
     EitherT[Future, String, Option[UserInfo]](
       {
         val timerContext = metrics.keystoreReadTimer.time()
-        fetchAndGetEntry[UserInfo](defaultSource, formId, key)(hc, UserInfo.format, ec)
+        fetchAndGetEntry[UserInfo](defaultSource, formId, key)
           .map { details ⇒
             val time = timerContext.stop()
             Right(details)

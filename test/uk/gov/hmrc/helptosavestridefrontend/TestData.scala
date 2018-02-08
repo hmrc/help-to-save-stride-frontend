@@ -55,6 +55,10 @@ trait TestData {
   val accountExistsResponse = AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 7))
 
   val cacheKey = UUID.randomUUID().toString
+
   val strideUserInfo = UserInfo(Some(eligibleResponse), Some(ppDetails))
 
+  val inEligibleStrideUserInfo = UserInfo(Some(inEligibleResponse), Some(ppDetails))
+
+  val accountExistsStrideUserInfo = UserInfo(Some(accountExistsResponse), Some(ppDetails))
 }

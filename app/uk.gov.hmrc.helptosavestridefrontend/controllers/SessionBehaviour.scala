@@ -56,9 +56,9 @@ trait SessionBehaviour {
       case (Some(Eligible(_)), Some(details)) ⇒
         Ok(views.html.you_are_eligible(details)).withSession(ks.session)
       case (Some(Ineligible(_)), _) ⇒
-        SeeOther(routes.StrideController.youAreNotEligible().url)
+        SeeOther(routes.StrideController.youAreNotEligible().url).withSession(ks.session)
       case (Some(AlreadyHasAccount(_)), _) ⇒
-        SeeOther(routes.StrideController.accountAlreadyExists().url)
+        SeeOther(routes.StrideController.accountAlreadyExists().url).withSession(ks.session)
       case _ ⇒
         logger.warn("unknown error during checking eligibility and pay-personal-details")
         internalServerError()

@@ -67,10 +67,10 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
             {
               case (Eligible(_), Some(details), Some(session)) ⇒
                 Ok(views.html.you_are_eligible(details)).withSession(session)
-              case (Ineligible(_), _, _) ⇒
-                SeeOther(routes.StrideController.youAreNotEligible().url)
-              case (AlreadyHasAccount(_), _, _) ⇒
-                SeeOther(routes.StrideController.accountAlreadyExists().url)
+              case (Ineligible(_), _, Some(session)) ⇒
+                SeeOther(routes.StrideController.youAreNotEligible().url).withSession(session)
+              case (AlreadyHasAccount(_), _, Some(session)) ⇒
+                SeeOther(routes.StrideController.accountAlreadyExists().url).withSession(session)
               case _ ⇒
                 logger.warn("unknown error during checking eligibility and pay-personal-details")
                 internalServerError()
@@ -81,7 +81,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok(views.html.you_are_not_eligible())
+    check(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.youAreNotEligible())
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
@@ -89,7 +89,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.youAreEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok(views.html.account_already_exists())
+    check(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.accountAlreadyExists())
 
   private def getPersonalDetails(r:           EligibilityCheckResult,

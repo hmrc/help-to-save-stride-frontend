@@ -20,6 +20,7 @@ import cats.data.EitherT
 import cats.instances.future._
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{Reads, Writes}
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
@@ -82,46 +83,60 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         def doRequest = controller.youAreEligible(fakeRequestWithCSRFToken.withSession("stride-user-info" -> cacheKey))
 
-      "show the page when the stride-user-info exists in key-store" in {
-        mockSuccessfulAuthorisation()
-        mockKeyStoreGet(cacheKey)(Right(Some(strideUserInfo)))
-
-        val result = doRequest
-        status(result) shouldBe OK
-        contentAsString(result) should include("you are eligible")
-      }
-
-      "show eligibility page if the stride-user-info does not exist in key-store" in {
-        mockSuccessfulAuthorisation()
-        mockKeyStoreGet(cacheKey)(Right(None))
-
-        val result = doRequest
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save/check-eligibility-page")
-      }
+      test(doRequest)
     }
 
     "getting the you-are-not-eligible page" must {
 
-      "show the page when the user is authorised" in {
-        mockSuccessfulAuthorisation()
+        def doRequest: Future[Result] = controller.youAreNotEligible(fakeRequestWithCSRFToken.withSession("stride-user-info" -> cacheKey))
 
-        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
-        status(result) shouldBe OK
-        contentAsString(result) should include("you are NOT eligible")
-      }
+      test(doRequest)
     }
 
     "getting the account-already-exists page" must {
 
-      "show the page when the user is authorised" in {
-        mockSuccessfulAuthorisation()
+        def doRequest = controller.accountAlreadyExists(fakeRequestWithCSRFToken.withSession("stride-user-info" -> cacheKey))
 
-        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
-        status(result) shouldBe OK
-        contentAsString(result) should include("Account already exists")
-      }
+      test(doRequest)
     }
+
+      def test(doRequest: ⇒ Future[Result]): Unit = {
+        "show the /check-eligibility-page when there is no session in key-store" in {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(cacheKey)(Right(None))
+
+          val result = doRequest
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some("/help-to-save/check-eligibility-page")
+        }
+
+        "show the you-are-eligible page if session is found in key-store and user is eligible" in {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(cacheKey)(Right(Some(strideUserInfo)))
+
+          val result = doRequest
+          status(result) shouldBe OK
+          contentAsString(result) should include("you are eligible")
+        }
+
+        "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(cacheKey)(Right(Some(inEligibleStrideUserInfo)))
+
+          val result = doRequest
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some("/help-to-save/you-are-not-eligible")
+        }
+
+        "show the account-already-exists page if session is found in key-store and but user has an account already" in {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(cacheKey)(Right(Some(accountExistsStrideUserInfo)))
+
+          val result = doRequest
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some("/help-to-save/account-already-exists")
+        }
+      }
 
     "checking the eligibility and retrieving paye details" must {
 
