@@ -56,8 +56,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val r = for {
             eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
             personalDetails ← getPersonalDetails(eligibility, ninoEncoded)
-            playSession ← storeDetails(eligibility, personalDetails)
-          } yield (eligibility, personalDetails, playSession)
+            _ ← storeDetails(eligibility, personalDetails)
+          } yield (eligibility, personalDetails)
 
           r.fold(
             error ⇒ {
@@ -65,12 +65,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               internalServerError()
             },
             {
-              case (Eligible(_), Some(details), Some(session)) ⇒
-                Ok(views.html.you_are_eligible(details)).withSession(session)
-              case (Ineligible(_), _, Some(session)) ⇒
-                SeeOther(routes.StrideController.youAreNotEligible().url).withSession(session)
-              case (AlreadyHasAccount(_), _, Some(session)) ⇒
-                SeeOther(routes.StrideController.accountAlreadyExists().url).withSession(session)
+              case (Eligible(_), Some(details)) ⇒
+                Ok(views.html.you_are_eligible(details))
+              case (Ineligible(_), _) ⇒
+                SeeOther(routes.StrideController.youAreNotEligible().url)
+              case (AlreadyHasAccount(_), _) ⇒
+                SeeOther(routes.StrideController.accountAlreadyExists().url)
               case _ ⇒
                 logger.warn("unknown error during checking eligibility and pay-personal-details")
                 internalServerError()
@@ -110,9 +110,13 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }
 
   private def storeDetails(eligibilityCheckResult: EligibilityCheckResult,
-                           payeDetails:            Option[PayePersonalDetails])(implicit request: Request[_]): EitherT[Future, String, Option[Session]] = {
-    val ks = getSessionWithKey
-    val userInfo = UserInfo(Some(eligibilityCheckResult), payeDetails)
-    keyStoreConnector.put(ks.key, userInfo).map(_ ⇒ Some(ks.session))
+                           payeDetails:            Option[PayePersonalDetails])(implicit request: Request[_]): EitherT[Future, String, Unit] = {
+    getSessionKey(request.session) match {
+      case Some(key) ⇒
+        val userInfo = UserInfo(Some(eligibilityCheckResult), payeDetails)
+        keyStoreConnector.put(key, userInfo)
+      case _ ⇒
+        EitherT.fromEither(Left("key is expected in the session but not found"))
+    }
   }
 }

@@ -214,6 +214,13 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
 
+      "handle the errors when retrieving stride-user-info from keystore" in {
+        mockSuccessfulAuthorisation()
+        mockKeyStoreGet(cacheKey)(Left("unexpected key-store error"))
+
+        val result = doRequest(nino, cacheKey)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
     }
 
   }

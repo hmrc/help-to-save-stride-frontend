@@ -40,25 +40,29 @@ trait SessionBehaviour {
 
   def checkSession(noSession: ⇒ Future[Result], whenSession: UserInfo ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
 
-    keyStoreConnector.get(getSessionWithKey.key)
-      .fold({
-        error ⇒
-          logger.warn(s"error during retrieving session from keystore, error= $error")
-          toFuture(internalServerError())
-      },
-        _.fold(noSession)(whenSession)
-      ).flatMap(identity)
+    getSessionKey(request.session) match {
+      case Some(key) ⇒
+        keyStoreConnector.get(key)
+          .fold({
+            error ⇒
+              logger.warn(s"error during retrieving stride-user-info from keystore, error= $error")
+              toFuture(internalServerError())
+          },
+            _.fold(noSession)(whenSession)
+          ).flatMap(identity)
+      case None ⇒
+        noSession
+    }
   }
 
   private def whenSession(strideSession: UserInfo)(implicit request: Request[_]): Future[Result] = {
-    val ks = getSessionWithKey
     val r = (strideSession.eligibilityCheckResult, strideSession.payePersonalDetails) match {
       case (Some(Eligible(_)), Some(details)) ⇒
-        Ok(views.html.you_are_eligible(details)).withSession(ks.session)
+        Ok(views.html.you_are_eligible(details))
       case (Some(Ineligible(_)), _) ⇒
-        SeeOther(routes.StrideController.youAreNotEligible().url).withSession(ks.session)
+        SeeOther(routes.StrideController.youAreNotEligible().url)
       case (Some(AlreadyHasAccount(_)), _) ⇒
-        SeeOther(routes.StrideController.accountAlreadyExists().url).withSession(ks.session)
+        SeeOther(routes.StrideController.accountAlreadyExists().url)
       case _ ⇒
         logger.warn("unknown error during checking eligibility and pay-personal-details")
         internalServerError()
@@ -70,17 +74,13 @@ trait SessionBehaviour {
     checkSession(noSession, whenSession)
   }
 
-  def getSessionWithKey(implicit session: Session): SessionWithKey = {
-    session.get(sessionKey) match {
-      case Some(id) ⇒ SessionWithKey(id, session)
-      case _ ⇒
-        val newId = UUID.randomUUID().toString
-        val newSession = session.+(sessionKey -> newId)
-        SessionWithKey(newId, newSession)
-    }
-  }
+  def getSessionKey(session: Session): Option[String] = session.get(sessionKey)
 
-  def newSession(implicit session: Session): Session = session.-(sessionKey)
+  def newSession(implicit session: Session): Session = {
+    val newId = UUID.randomUUID().toString
+    val newSession = session.+(sessionKey -> newId)
+    newSession
+  }
 }
 
 case class UserInfo(eligibilityCheckResult: Option[EligibilityCheckResult],
