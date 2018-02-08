@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.models.eligibility
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
 
 sealed trait EligibilityCheckResult {
   val value: EligibilityCheckResponse
@@ -30,8 +30,26 @@ object EligibilityCheckResult {
 
   case class AlreadyHasAccount(value: EligibilityCheckResponse) extends EligibilityCheckResult
 
-  object Ineligible {
-    implicit val format: Format[Ineligible] = Json.format[Ineligible]
+  implicit val format: Format[EligibilityCheckResult] = new Format[EligibilityCheckResult] {
+    override def writes(result: EligibilityCheckResult): JsValue = {
+      val (a, b) = result match {
+        case Eligible(value)          ⇒ (1, value)
+        case Ineligible(value)        ⇒ (2, value)
+        case AlreadyHasAccount(value) ⇒ (3, value)
+      }
+
+      JsObject(List("code" -> JsNumber(a), "result" -> Json.toJson(b)))
+    }
+
+    override def reads(json: JsValue): JsResult[EligibilityCheckResult] = {
+      ((json \ "code").validate[Int], (json \ "result").validate[EligibilityCheckResponse]) match {
+        case (JsSuccess(1, _), JsSuccess(value, _)) ⇒ JsSuccess(Eligible(value))
+        case (JsSuccess(2, _), JsSuccess(value, _)) ⇒ JsSuccess(Eligible(value))
+        case (JsSuccess(3, _), JsSuccess(value, _)) ⇒ JsSuccess(Eligible(value))
+        case _                                      ⇒ JsError(s"error during parsing eligibility from json $json")
+      }
+    }
   }
+
 }
 

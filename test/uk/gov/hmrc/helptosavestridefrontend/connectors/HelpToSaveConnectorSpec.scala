@@ -26,14 +26,11 @@ import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckR
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-// scalastyle:ignore magic.number
 class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with GeneratorDrivenPropertyChecks with TestData {
-  MdcLoggingExecutionContext
 
   val connector = new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, environment)
 

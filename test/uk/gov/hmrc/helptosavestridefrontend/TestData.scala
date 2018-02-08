@@ -17,7 +17,11 @@
 package uk.gov.hmrc.helptosavestridefrontend
 
 import java.time.LocalDate
+import java.util.UUID
 
+import uk.gov.hmrc.helptosavestridefrontend.controllers.UserInfo
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.{Address, Name, PayePersonalDetails}
 
 trait TestData {
@@ -44,4 +48,17 @@ trait TestData {
             }
      }""".stripMargin
 
+  val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
+
+  val inEligibleResponse = Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 3))
+
+  val accountExistsResponse = AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 7))
+
+  val cacheKey = UUID.randomUUID().toString
+
+  val strideUserInfo = UserInfo(Some(eligibleResponse), Some(ppDetails))
+
+  val inEligibleStrideUserInfo = UserInfo(Some(inEligibleResponse), Some(ppDetails))
+
+  val accountExistsStrideUserInfo = UserInfo(Some(accountExistsResponse), Some(ppDetails))
 }
