@@ -2,12 +2,14 @@ GET        /assets/*file                            controllers.Assets.versioned
 
 GET        /                                        @controllers.Default.redirect(to = "/help-to-save/check-eligibility-page")
 
-GET        /check-eligibility-page                  @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
+GET        /check-eligibility-page                    @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
 
-POST       /check-eligibility-and-get-personal-info     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
+POST      /check-eligibility-and-get-personal-info    @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
 
 GET       /you-are-not-eligible                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreNotEligible()
 
-GET       /you-are-eligible                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreEligible()
+GET       /you-are-eligible                           @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreEligible()
 
-GET       /account-already-exists                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
+GET       /account-already-exists                     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
+
+GET       /terms-and-conditions                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getTermsAndConditionsPage()
