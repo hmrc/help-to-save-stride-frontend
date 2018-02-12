@@ -21,7 +21,7 @@ import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.libs.json.{Reads, Writes}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.UserInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result}
@@ -33,9 +33,9 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[KeyStoreConnectorImpl])
 trait KeyStoreConnector {
 
-  def put(key: String, body: UserInfo)(implicit writes: Writes[UserInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Unit]
+  def put(key: String, body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Unit]
 
-  def get(key: String)(implicit reads: Reads[UserInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[UserInfo]]
+  def get(key: String)(implicit reads: Reads[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[UserSessionInfo]]
 
 }
 
@@ -56,9 +56,9 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
 
   private val formId = "stride-user-info"
 
-  override def put(key: String, body: UserInfo)(implicit writes: Writes[UserInfo],
-                                                hc: HeaderCarrier,
-                                                ec: ExecutionContext): Result[Unit] = {
+  override def put(key: String, body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo],
+                                                       hc: HeaderCarrier,
+                                                       ec: ExecutionContext): Result[Unit] = {
     EitherT[Future, String, Unit](
       {
         val timerContext = metrics.keystoreWriteTimer.time()
@@ -78,13 +78,13 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
       })
   }
 
-  override def get(key: String)(implicit reads: Reads[UserInfo],
+  override def get(key: String)(implicit reads: Reads[UserSessionInfo],
                                 hc: HeaderCarrier,
-                                ec: ExecutionContext): Result[Option[UserInfo]] = {
-    EitherT[Future, String, Option[UserInfo]](
+                                ec: ExecutionContext): Result[Option[UserSessionInfo]] = {
+    EitherT[Future, String, Option[UserSessionInfo]](
       {
         val timerContext = metrics.keystoreReadTimer.time()
-        fetchAndGetEntry[UserInfo](defaultSource, formId, key)
+        fetchAndGetEntry[UserSessionInfo](defaultSource, formId, key)
           .map { details ⇒
             val time = timerContext.stop()
             Right(details)

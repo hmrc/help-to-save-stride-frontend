@@ -16,6 +16,7 @@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
 @(details: PayePersonalDetails)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
@@ -25,14 +26,15 @@
 
     <h1>you are eligible !!</h1>
 
-<p>Name                 : @{details.name.surname} @{details.name.firstForenameOrInitial}</p>
-<p>Date Of Birth        : @{details.dateOfBirth}</p>
-<p>Address              : @{details.address.line1},
-                          @{details.address.line2},
-                          @{details.address.line3},
-                          @{details.address.line4},
-                          @{details.address.line5},
-                          @{details.address.postcode}
-</p>
+    <p>Name                 : @{details.name.surname} @{details.name.firstForenameOrInitial}</p>
+    <p>Date Of Birth        : @{details.dateOfBirth}</p>
+    <p>Address              : @{details.address.line1},
+        @{details.address.line2},
+        @{details.address.line3},
+        @{details.address.line4},
+        @{details.address.line5},
+        @{details.address.postcode}
+    </p>
 
+    <a href=@routes.StrideController.getTermsAndConditionsPage().url class="button">Continue</a>
 }

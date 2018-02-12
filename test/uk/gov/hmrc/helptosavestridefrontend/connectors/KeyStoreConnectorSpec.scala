@@ -20,7 +20,7 @@ import java.util.UUID
 
 import org.scalamock.handlers.{CallHandler4, CallHandler6}
 import play.api.libs.json.{Json, Writes}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.UserInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.cache.client.CacheMap
@@ -53,11 +53,11 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       val response = CacheMap("someId", Map.empty)
 
-      val body = UserInfo(Some(eligibleResponse), Some(ppDetails))
+      val body = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
 
       "store user-info as expected" in {
 
-        mockPut[UserInfo, CacheMap](url, body)(Some(response))
+        mockPut[UserSessionInfo, CacheMap](url, body)(Some(response))
 
         Await.result(connector.put(key, body).value, 5.seconds) shouldBe Right(())
 
@@ -65,7 +65,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "handle unexpected errors" in {
 
-        mockPut[UserInfo, CacheMap](url, body)(None)
+        mockPut[UserSessionInfo, CacheMap](url, body)(None)
         mockPagerDutyAlert("unexpected error when storing stride-user-info to keystore")
 
         Await.result(connector.put(key, body).value, 5.seconds).isLeft shouldBe true
@@ -79,7 +79,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       val url = "http://localhost:8400/keystore/help-to-save-stride-frontend/stride-user-info"
 
-      val body = UserInfo(Some(eligibleResponse), Some(ppDetails))
+      val body = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
 
       val response = CacheMap(key, Map(key -> Json.toJson(body)))
 

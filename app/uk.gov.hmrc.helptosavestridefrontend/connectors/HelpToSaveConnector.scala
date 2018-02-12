@@ -119,7 +119,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
-        http.get(payePersonalDetailsUrl(nino))(hc.copy(authorization = None), ec)
+        http.get(payePersonalDetailsUrl(nino))
           .map { response ⇒
             val time = timerContext.stop()
             response.status match {

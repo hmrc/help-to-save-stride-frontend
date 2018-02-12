@@ -19,12 +19,13 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 import java.util.UUID
 
 import cats.instances.future._
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
 import play.api.mvc.{Request, Result, Session}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo.{AlreadyHasAccount, EligibleWithPayePersonalDetails, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 
@@ -38,8 +39,7 @@ trait SessionBehaviour {
 
   val sessionKey: String = "stride-user-info"
 
-  def checkSession(noSession: ⇒ Future[Result], whenSession: UserInfo ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
-
+  def checkSession(noSessionData: String ⇒ Future[Result], whenSession: UserSessionInfo ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
     getSessionKey(request.session) match {
       case Some(key) ⇒
         keyStoreConnector.get(key)
@@ -48,31 +48,26 @@ trait SessionBehaviour {
               logger.warn(s"error during retrieving stride-user-info from keystore, error= $error")
               toFuture(internalServerError())
           },
-            _.fold(noSession)(whenSession)
+            _.fold(noSessionData(key))(whenSession)
           ).flatMap(identity)
+
       case None ⇒
-        noSession
+        SeeOther(routes.StrideController.getEligibilityPage().url)
     }
-  }
 
-  private def whenSession(strideSession: UserInfo)(implicit request: Request[_]): Future[Result] = {
-    val r = (strideSession.eligibilityCheckResult, strideSession.payePersonalDetails) match {
-      case (Some(Eligible(_)), Some(details)) ⇒
-        Ok(views.html.you_are_eligible(details))
-      case (Some(Ineligible(_)), _) ⇒
-        SeeOther(routes.StrideController.youAreNotEligible().url)
-      case (Some(AlreadyHasAccount(_)), _) ⇒
-        SeeOther(routes.StrideController.accountAlreadyExists().url)
-      case _ ⇒
-        logger.warn("unknown error during checking eligibility and pay-personal-details")
-        internalServerError()
-    }
-    toFuture(r)
-  }
+  def checkSession(noSessionData: String ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
+    checkSession(
+      noSessionData,
+      {
+        case EligibleWithPayePersonalDetails(_, payePersonalDetails) ⇒
+          Ok(views.html.you_are_eligible(payePersonalDetails))
 
-  def checkSession(noSession: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] = {
-    checkSession(noSession, whenSession)
-  }
+        case Ineligible(response) ⇒
+          SeeOther(routes.StrideController.youAreNotEligible().url)
+
+        case AlreadyHasAccount(response) ⇒
+          SeeOther(routes.StrideController.accountAlreadyExists().url)
+      })
 
   def getSessionKey(session: Session): Option[String] = session.get(sessionKey)
 
@@ -81,13 +76,45 @@ trait SessionBehaviour {
     val newSession = session.+(sessionKey -> newId)
     newSession
   }
+
 }
 
-case class UserInfo(eligibilityCheckResult: Option[EligibilityCheckResult],
-                    payePersonalDetails:    Option[PayePersonalDetails])
+object SessionBehaviour {
 
-object UserInfo {
-  implicit val format: Format[UserInfo] = Json.format[UserInfo]
+  sealed trait UserSessionInfo
+
+  object UserSessionInfo {
+    case class EligibleWithPayePersonalDetails(response: EligibilityCheckResponse, payePersonalDetails: PayePersonalDetails) extends UserSessionInfo
+    case class Ineligible(response: EligibilityCheckResponse) extends UserSessionInfo
+    case class AlreadyHasAccount(response: EligibilityCheckResponse) extends UserSessionInfo
+  }
+
+  implicit val format: Format[UserSessionInfo] = new Format[UserSessionInfo] {
+    override def writes(result: UserSessionInfo): JsValue = {
+      val (a, b, c) = result match {
+        case EligibleWithPayePersonalDetails(value, details) ⇒ (1, value, Some(details))
+        case Ineligible(value)                               ⇒ (2, value, None)
+        case AlreadyHasAccount(value)                        ⇒ (3, value, None)
+      }
+
+      val fields = {
+        val f = List("code" -> JsNumber(a), "result" -> Json.toJson(b))
+        c.fold(f)(d ⇒ ("details" → Json.toJson(d)) :: f)
+      }
+      JsObject(fields)
+    }
+
+    override def reads(json: JsValue): JsResult[UserSessionInfo] = {
+      ((json \ "code").validate[Int],
+        (json \ "result").validate[EligibilityCheckResponse],
+        (json \ "details").validateOpt[PayePersonalDetails]) match {
+          case (JsSuccess(1, _), JsSuccess(value, _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithPayePersonalDetails(value, details))
+          case (JsSuccess(2, _), JsSuccess(value, _), _) ⇒ JsSuccess(Ineligible(value))
+          case (JsSuccess(3, _), JsSuccess(value, _), _) ⇒ JsSuccess(AlreadyHasAccount(value))
+          case _ ⇒ JsError(s"error during parsing eligibility from json $json")
+        }
+    }
+  }
+
 }
 
-case class SessionWithKey(key: String, session: Session)
