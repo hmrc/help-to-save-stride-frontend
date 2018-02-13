@@ -15,10 +15,10 @@
  *@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-@import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
+@import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
-@(details: PayePersonalDetails)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(details: NSIUserInfo)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
     title = messages("hts.you.are.eligible.title"),
@@ -26,14 +26,14 @@
 
     <h1>you are eligible !!</h1>
 
-    <p>Name                 : @{details.name.surname} @{details.name.firstForenameOrInitial}</p>
+    <p>Name                 : @{details.surname} @{details.forename}</p>
     <p>Date Of Birth        : @{details.dateOfBirth}</p>
-    <p>Address              : @{details.address.line1},
-        @{details.address.line2},
-        @{details.address.line3},
-        @{details.address.line4},
-        @{details.address.line5},
-        @{details.address.postcode}
+    <p>Address              : @{details.contactDetails.address1},
+        @{details.contactDetails.address2},
+        @{details.contactDetails.address3},
+        @{details.contactDetails.address4},
+        @{details.contactDetails.address5},
+        @{details.contactDetails.postcode}
     </p>
 
     @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.handleDetailsConfirmed()) {

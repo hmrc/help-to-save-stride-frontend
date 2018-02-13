@@ -21,7 +21,7 @@ import play.api.libs.json._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithPayePersonalDetails, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
@@ -52,8 +52,8 @@ trait SessionBehaviour {
     checkSession(
       noSessionData,
       htsSession ⇒ htsSession.userInfo match {
-        case EligibleWithPayePersonalDetails(_, payePersonalDetails) ⇒
-          Ok(views.html.you_are_eligible(payePersonalDetails))
+        case EligibleWithNSIUserInfo(_, nSIUserInfo) ⇒
+          Ok(views.html.you_are_eligible(nSIUserInfo))
 
         case Ineligible(response) ⇒
           SeeOther(routes.StrideController.youAreNotEligible().url)
@@ -69,7 +69,7 @@ object SessionBehaviour {
 
   object UserInfo {
 
-    case class EligibleWithPayePersonalDetails(response: EligibilityCheckResponse, payePersonalDetails: PayePersonalDetails) extends UserInfo
+    case class EligibleWithNSIUserInfo(response: EligibilityCheckResponse, nSIUserInfo: NSIUserInfo) extends UserInfo
 
     case class Ineligible(response: EligibilityCheckResponse) extends UserInfo
 
@@ -80,9 +80,9 @@ object SessionBehaviour {
   implicit val format: Format[UserInfo] = new Format[UserInfo] {
     override def writes(result: UserInfo): JsValue = {
       val (a, b, c) = result match {
-        case EligibleWithPayePersonalDetails(value, details) ⇒ (1, value, Some(details))
-        case Ineligible(value)                               ⇒ (2, value, None)
-        case AlreadyHasAccount(value)                        ⇒ (3, value, None)
+        case EligibleWithNSIUserInfo(value, details) ⇒ (1, value, Some(details))
+        case Ineligible(value)                       ⇒ (2, value, None)
+        case AlreadyHasAccount(value)                ⇒ (3, value, None)
       }
 
       val fields = {
@@ -95,8 +95,8 @@ object SessionBehaviour {
     override def reads(json: JsValue): JsResult[UserInfo] = {
       ((json \ "code").validate[Int],
         (json \ "result").validate[EligibilityCheckResponse],
-        (json \ "details").validateOpt[PayePersonalDetails]) match {
-          case (JsSuccess(1, _), JsSuccess(value, _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithPayePersonalDetails(value, details))
+        (json \ "details").validateOpt[NSIUserInfo]) match {
+          case (JsSuccess(1, _), JsSuccess(value, _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
           case (JsSuccess(2, _), JsSuccess(value, _), _) ⇒ JsSuccess(Ineligible(value))
           case (JsSuccess(3, _), JsSuccess(value, _), _) ⇒ JsSuccess(AlreadyHasAccount(value))
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")

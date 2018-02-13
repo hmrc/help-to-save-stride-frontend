@@ -17,3 +17,9 @@ GET       /terms-and-conditions                       @uk.gov.hmrc.helptosavestr
 POST       /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()
 
 POST       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
+
+GET       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
+
+GET       /account-created                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()
+
+GET       /technical-error                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getTechnicalErrorPage()

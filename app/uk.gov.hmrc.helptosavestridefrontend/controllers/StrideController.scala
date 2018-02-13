@@ -26,10 +26,11 @@ import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, UserInfo}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.EligibleWithPayePersonalDetails
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.EligibleWithNSIUserInfo
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
+import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, base64Encode, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
@@ -70,7 +71,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
               internalServerError()
             }, {
-              case UserInfo.EligibleWithPayePersonalDetails(_, details) ⇒
+              case UserInfo.EligibleWithNSIUserInfo(_, details) ⇒
                 Ok(views.html.you_are_eligible(details))
               case UserInfo.Ineligible(_) ⇒
                 SeeOther(routes.StrideController.youAreNotEligible().url)
@@ -121,7 +122,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.getTermsAndConditionsPage().url)
 
-  def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def getAccountCreatedPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
       htsSession ⇒
         if (!htsSession.detailsConfirmed) {
@@ -132,9 +133,14 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.getTermsAndConditionsPage().url)
 
-  private def checkIsEligible(ifEligible: EligibleWithPayePersonalDetails ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
+  def getTechnicalErrorPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
+      checkIsEligible(_ ⇒ Ok(views.html.technical_error())))
+  }(routes.StrideController.getTermsAndConditionsPage().url)
+
+  private def checkIsEligible(ifEligible: EligibleWithNSIUserInfo ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
     htsSession.userInfo match {
-      case e: EligibleWithPayePersonalDetails ⇒
+      case e: EligibleWithNSIUserInfo ⇒
         ifEligible(e)
 
       case UserInfo.Ineligible(_) ⇒
@@ -150,7 +156,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                                       request: Request[_]): EitherT[Future, String, UserInfo] =
     r match {
       case Eligible(value) ⇒
-        helpToSaveConnector.getPayePersonalDetails(ninoEncoded).map(UserInfo.EligibleWithPayePersonalDetails(value, _))
+        helpToSaveConnector.getNSIUserInfo(ninoEncoded).map(UserInfo.EligibleWithNSIUserInfo(value, _))
 
       case EligibilityCheckResult.Ineligible(value) ⇒
         EitherT.pure[Future, String, UserInfo](UserInfo.Ineligible(value))
@@ -159,4 +165,22 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         EitherT.pure[Future, String, UserInfo](UserInfo.AlreadyHasAccount(value))
 
     }
+
+  def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
+                 checkIsEligible(result ⇒ helpToSaveConnector.createAccount(result.nSIUserInfo)
+        .fold(
+          error ⇒ {
+            logger.warn(s"error during create account call, error: $error")
+            InternalServerError(routes.StrideController.getTechnicalErrorPage().url)
+          }, {
+            case AccountCreated ⇒
+              Ok(routes.StrideController.getAccountCreatedPage().url)
+            case AccountAlreadyExists ⇒
+              Ok(routes.StrideController.accountAlreadyExists().url)
+          }
+        ))
+    )
+  }(routes.StrideController.getTermsAndConditionsPage().url)
+
 }

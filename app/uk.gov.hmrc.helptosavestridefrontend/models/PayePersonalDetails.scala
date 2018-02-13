@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter
 import play.api.libs.json.Reads.localDateReads
 import play.api.libs.json.Writes.temporalWrites
 import play.api.libs.json._
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo.ContactDetails
 
 case class PayePersonalDetails(name:        Name,
                                dateOfBirth: LocalDate,
@@ -51,4 +52,19 @@ object PayePersonalDetails {
   }
 
   implicit val format: Format[PayePersonalDetails] = Json.format[PayePersonalDetails]
+
+  implicit class PayePersonalDetailsOps(val ppd: PayePersonalDetails) extends AnyVal {
+    def convertToNSIUserInfo(nino: String): NSIUserInfo = {
+      val contactDetails: ContactDetails = ContactDetails(ppd.address.line1,
+                                                          ppd.address.line2,
+                                                          ppd.address.line3,
+                                                          ppd.address.line4,
+                                                          ppd.address.line5,
+                                                          ppd.address.postcode, None, None, "00")
+
+      NSIUserInfo(ppd.name.firstForenameOrInitial, ppd.name.surname, ppd.dateOfBirth, nino, contactDetails, "callCentre")
+    }
+
+  }
+
 }
