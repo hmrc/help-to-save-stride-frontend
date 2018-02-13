@@ -18,8 +18,9 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.data.EitherT
 import cats.instances.future._
+import cats.syntax.either._
 import play.api.i18n.MessagesApi
-import play.api.libs.json.{Reads, Writes}
+import play.api.libs.json.{JsValue, Reads, Writes}
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheck
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.cache.client.CacheMap
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,15 +53,15 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockKeyStoreGet(key: String)(result: Either[String, Option[UserSessionInfo]]) =
-    (keystoreConnector.get(_: String)(_: Reads[UserSessionInfo], _: HeaderCarrier, _: ExecutionContext))
-      .expects(key, *, *, *)
+  def mockKeyStoreGet(result: Either[String, Option[UserSessionInfo]]) =
+    (keystoreConnector.get(_: Reads[UserSessionInfo], _: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockKeyStorePut(key: String, strideUserInfo: UserSessionInfo)(result: Either[String, Unit]) =
-    (keystoreConnector.put(_: String, _: UserSessionInfo)(_: Writes[UserSessionInfo], _: HeaderCarrier, _: ExecutionContext))
-      .expects(key, strideUserInfo, *, *, *)
-      .returning(EitherT.fromEither[Future](result))
+  def mockKeyStorePut(strideUserInfo: UserSessionInfo)(result: Either[String, Unit]): Unit =
+    (keystoreConnector.put(_: UserSessionInfo)(_: Writes[UserSessionInfo], _: HeaderCarrier, _: ExecutionContext))
+      .expects(strideUserInfo, *, *, *)
+      .returning(EitherT.fromEither[Future](result.map(_ ⇒ CacheMap("1", Map.empty[String, JsValue]))))
 
   lazy val controller =
     new StrideController(mockAuthConnector,
@@ -98,22 +100,12 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
       def test(doRequest: ⇒ Action[AnyContent]): Unit = { // scalastyle:ignore method.length
 
-        lazy val requestWithKey = fakeRequestWithCSRFToken.withSession("stride-user-info" -> cacheKey)
-
         "show the /check-eligibility-page when there is no session in key-store" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockKeyStoreGet(cacheKey)(Right(None))
+            mockKeyStoreGet(Right(None))
           }
-
-          val result = doRequest(requestWithKey)
-          status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
-        }
-
-        "show the /check-eligibility-page when there is no key in the session" in {
-          mockSuccessfulAuthorisation()
-
+          
           val result = doRequest(fakeRequestWithCSRFToken)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
@@ -122,10 +114,10 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         "show the you-are-eligible page if session is found in key-store and user is eligible" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockKeyStoreGet(cacheKey)(Right(Some(eligibleStrideUserInfo)))
+            mockKeyStoreGet(Right(Some(eligibleStrideUserInfo)))
           }
 
-          val result = doRequest(requestWithKey)
+          val result = doRequest(fakeRequestWithCSRFToken)
           status(result) shouldBe OK
           contentAsString(result) should include("you are eligible")
         }
@@ -133,10 +125,10 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockKeyStoreGet(cacheKey)(Right(Some(inEligibleStrideUserInfo)))
+            mockKeyStoreGet(Right(Some(inEligibleStrideUserInfo)))
           }
 
-          val result = doRequest(requestWithKey)
+          val result = doRequest(fakeRequestWithCSRFToken)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
         }
@@ -144,10 +136,10 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         "show the account-already-exists page if session is found in key-store and but user has an account already" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockKeyStoreGet(cacheKey)(Right(Some(accountExistsStrideUserInfo)))
+            mockKeyStoreGet(Right(Some(accountExistsStrideUserInfo)))
           }
 
-          val result = doRequest(requestWithKey)
+          val result = doRequest(fakeRequestWithCSRFToken)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
         }
@@ -160,15 +152,16 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
       val eligibleECResponse = EligibilityCheckResponse("eligible", 1, "tax credits", 7)
 
-        def doRequest(nino: String, cacheKey: String) = controller.checkEligibilityAndGetPersonalInfo(fakeRequest(nino, cacheKey))
+        def doRequest(nino: String) =
+          controller.checkEligibilityAndGetPersonalInfo(fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino))
 
       "handle the forms with invalid input" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Right(None))
+          mockKeyStoreGet(Right(None))
         }
 
-        val result = doRequest("in-valid-nino", cacheKey)
+        val result = doRequest("in-valid-nino")
         status(result) shouldBe OK
         contentAsString(result) should include("invalid input, sample valid input is : AE123456C")
       }
@@ -176,12 +169,12 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "handle the case where user is not eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Right(None))
+          mockKeyStoreGet(Right(None))
           mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
-          mockKeyStorePut(cacheKey, Ineligible(emptyECResponse))(Right(()))
+          mockKeyStorePut(Ineligible(emptyECResponse))(Right(()))
         }
 
-        val result = doRequest(nino, cacheKey)
+        val result = doRequest(nino)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
       }
@@ -191,12 +184,12 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Right(None))
+          mockKeyStoreGet(Right(None))
           mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.AlreadyHasAccount(accountExistsResponse)))
-          mockKeyStorePut(cacheKey, AlreadyHasAccount(accountExistsResponse))(Right(()))
+          mockKeyStorePut(AlreadyHasAccount(accountExistsResponse))(Right(()))
         }
 
-        val result = doRequest(nino, cacheKey)
+        val result = doRequest(nino)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
       }
@@ -204,13 +197,13 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "handle the case where user is eligible and paye-details exist" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Right(None))
+          mockKeyStoreGet(Right(None))
           mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(ninoEndoded)(Right(ppDetails))
-          mockKeyStorePut(cacheKey, EligibleWithPayePersonalDetails(eligibleECResponse, ppDetails))(Right(()))
+          mockKeyStorePut(EligibleWithPayePersonalDetails(eligibleECResponse, ppDetails))(Right(()))
         }
 
-        val result = doRequest(nino, cacheKey)
+        val result = doRequest(nino)
         status(result) shouldBe OK
         contentAsString(result) should include("Help to Save - You are eligible")
         contentAsString(result) should include("you are eligible")
@@ -219,33 +212,33 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "handle the errors during eligibility check" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Right(None))
+          mockKeyStoreGet(Right(None))
           mockEligibility(ninoEndoded)(Left("unexpected error"))
         }
 
-        val result = doRequest(nino, cacheKey)
+        val result = doRequest(nino)
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
 
       "handle the errors during retrieve paye-personal-details" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Right(None))
+          mockKeyStoreGet(Right(None))
           mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(ninoEndoded)(Left("unexpected error"))
         }
 
-        val result = doRequest(nino, cacheKey)
+        val result = doRequest(nino)
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
 
       "handle the errors when retrieving stride-user-info from keystore" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(cacheKey)(Left("unexpected key-store error"))
+          mockKeyStoreGet(Left("unexpected key-store error"))
         }
 
-        val result = doRequest(nino, cacheKey)
+        val result = doRequest(nino)
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
     }
@@ -253,7 +246,10 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
     "handling getTermsAndConditionsPage" must {
 
       "redirect to the eligibility page if there is no session data in keystore" in {
-        mockSuccessfulAuthorisation()
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+        }
 
         val result = controller.getTermsAndConditionsPage(FakeRequest())
         status(result) shouldBe SEE_OTHER
@@ -265,7 +261,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(key)(Right(Some(eligibleStrideUserInfo)))
+          mockKeyStoreGet(Right(Some(eligibleStrideUserInfo)))
         }
 
         val result = controller.getTermsAndConditionsPage(FakeRequest().withSession("stride-user-info" → key))
@@ -276,9 +272,4 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
     }
 
   }
-
-  private def fakeRequest(ninoP: String, key: String) =
-    fakeRequestWithCSRFToken
-      .withFormUrlEncodedBody("nino" → ninoP)
-      .withSession("stride-user-info" -> key)
 }

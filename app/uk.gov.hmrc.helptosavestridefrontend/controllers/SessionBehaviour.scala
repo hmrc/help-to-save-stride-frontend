@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
-import java.util.UUID
-
 import cats.instances.future._
 import play.api.libs.json._
-import play.api.mvc.{Request, Result, Session}
+import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo.{AlreadyHasAccount, EligibleWithPayePersonalDetails, Ineligible}
@@ -28,6 +26,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -39,23 +38,18 @@ trait SessionBehaviour {
 
   val sessionKey: String = "stride-user-info"
 
-  def checkSession(noSessionData: String ⇒ Future[Result], whenSession: UserSessionInfo ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
-    getSessionKey(request.session) match {
-      case Some(key) ⇒
-        keyStoreConnector.get(key)
-          .fold({
-            error ⇒
-              logger.warn(s"error during retrieving stride-user-info from keystore, error= $error")
-              toFuture(internalServerError())
-          },
-            _.fold(noSessionData(key))(whenSession)
-          ).flatMap(identity)
+  def checkSession(noSessionData: ⇒ Future[Result],
+                   whenSession:   UserSessionInfo ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    keyStoreConnector.get
+      .fold({
+        error ⇒
+          logger.warn(s"error during retrieving stride-user-info from keystore, error= $error")
+          toFuture(internalServerError())
+      },
+        _.fold(noSessionData)(whenSession)
+      ).flatMap(identity)
 
-      case None ⇒
-        SeeOther(routes.StrideController.getEligibilityPage().url)
-    }
-
-  def checkSession(noSessionData: String ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
+  def checkSession(noSessionData: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
     checkSession(
       noSessionData,
       {
@@ -68,15 +62,6 @@ trait SessionBehaviour {
         case AlreadyHasAccount(response) ⇒
           SeeOther(routes.StrideController.accountAlreadyExists().url)
       })
-
-  def getSessionKey(session: Session): Option[String] = session.get(sessionKey)
-
-  def newSession(implicit session: Session): Session = {
-    val newId = UUID.randomUUID().toString
-    val newSession = session.+(sessionKey -> newId)
-    newSession
-  }
-
 }
 
 object SessionBehaviour {
@@ -84,9 +69,13 @@ object SessionBehaviour {
   sealed trait UserSessionInfo
 
   object UserSessionInfo {
+
     case class EligibleWithPayePersonalDetails(response: EligibilityCheckResponse, payePersonalDetails: PayePersonalDetails) extends UserSessionInfo
+
     case class Ineligible(response: EligibilityCheckResponse) extends UserSessionInfo
+
     case class AlreadyHasAccount(response: EligibilityCheckResponse) extends UserSessionInfo
+
   }
 
   implicit val format: Format[UserSessionInfo] = new Format[UserSessionInfo] {

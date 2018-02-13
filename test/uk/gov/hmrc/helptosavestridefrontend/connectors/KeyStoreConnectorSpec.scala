@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.connectors
 
-import java.util.UUID
-
 import org.scalamock.handlers.{CallHandler4, CallHandler6}
 import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
@@ -43,60 +41,58 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
       .expects(url, *, *, *)
       .returning(response.fold(Future.failed[I](new Exception("")))(Future.successful))
 
+  class TestApparatus {
+
+    val sessionId = headerCarrier.sessionId.getOrElse(sys.error("Could not find session iD"))
+
+    def cacheMap(htsSession: UserSessionInfo) = CacheMap("1", Map("htsSession" -> Json.toJson(htsSession)))
+
+    val body = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
+
+    val response = cacheMap(body)
+
+    val putUrl = s"http://localhost:8400/keystore/help-to-save-stride-frontend/${sessionId.value}/data/htsSession"
+    val getUrl = s"http://localhost:8400/keystore/help-to-save-stride-frontend/${sessionId.value}"
+  }
+
   "KeyStoreConnector" when {
 
     "storing stride-user-info" must {
 
-      val key = UUID.randomUUID().toString
+      "store user-info as expected" in new TestApparatus {
 
-      val url = s"http://localhost:8400/keystore/help-to-save-stride-frontend/stride-user-info/data/$key"
+        mockPut[UserSessionInfo, CacheMap](putUrl, body)(Some(response))
 
-      val response = CacheMap("someId", Map.empty)
-
-      val body = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
-
-      "store user-info as expected" in {
-
-        mockPut[UserSessionInfo, CacheMap](url, body)(Some(response))
-
-        Await.result(connector.put(key, body).value, 5.seconds) shouldBe Right(())
+        Await.result(connector.put(body).value, 5.seconds) shouldBe Right(response)
 
       }
 
-      "handle unexpected errors" in {
+      "handle unexpected errors" in new TestApparatus {
 
-        mockPut[UserSessionInfo, CacheMap](url, body)(None)
+        mockPut[UserSessionInfo, CacheMap](putUrl, body)(None)
         mockPagerDutyAlert("unexpected error when storing stride-user-info to keystore")
 
-        Await.result(connector.put(key, body).value, 5.seconds).isLeft shouldBe true
+        Await.result(connector.put(body).value, 5.seconds).isLeft shouldBe true
 
       }
     }
 
     "retrieving the stride-user-info" must {
 
-      val key = UUID.randomUUID().toString
+      "return successful result when retrieving stride-user-info" in new TestApparatus {
 
-      val url = "http://localhost:8400/keystore/help-to-save-stride-frontend/stride-user-info"
+        mockGet[CacheMap](getUrl)(Some(response))
 
-      val body = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
-
-      val response = CacheMap(key, Map(key -> Json.toJson(body)))
-
-      "return successful result when retrieving stride-user-info" in {
-
-        mockGet[CacheMap](url)(Some(response))
-
-        Await.result(connector.get(key).value, 5.seconds) shouldBe Right(Some(body))
+        Await.result(connector.get.value, 5.seconds) shouldBe Right(Some(body))
 
       }
 
-      "handle unexpected errors" in {
+      "handle unexpected errors" in new TestApparatus {
 
-        mockGet[CacheMap](url)(None)
+        mockGet[CacheMap](getUrl)(None)
         mockPagerDutyAlert("unexpected error when retrieving stride-user-info from keystore")
 
-        Await.result(connector.get(key).value, 5.seconds).isLeft shouldBe true
+        Await.result(connector.get.value, 5.seconds).isLeft shouldBe true
 
       }
     }
