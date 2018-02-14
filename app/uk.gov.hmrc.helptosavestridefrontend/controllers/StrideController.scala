@@ -45,7 +45,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
-  }(routes.StrideController.getEligibilityPage())
+  }(routes.StrideController.getEligibilityPage().url)
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -74,25 +74,25 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           )
         })
     )
-  }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
+  }(routes.StrideController.checkEligibilityAndGetPersonalInfo().url)
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreNotEligible())
+  }(routes.StrideController.youAreNotEligible().url)
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreEligible())
+  }(routes.StrideController.youAreEligible().url)
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.accountAlreadyExists())
+  }(routes.StrideController.accountAlreadyExists().url)
 
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
                  checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))
     )
-  }(routes.StrideController.getTermsAndConditionsPage())
+  }(routes.StrideController.getTermsAndConditionsPage().url)
 
   private def checkIsEligible(ifEligible: EligibleWithPayePersonalDetails ⇒ Future[Result])(userInfo: UserSessionInfo): Future[Result] =
     userInfo match {
