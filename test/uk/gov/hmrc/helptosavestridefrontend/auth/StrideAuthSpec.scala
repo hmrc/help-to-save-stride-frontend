@@ -18,9 +18,9 @@ package uk.gov.hmrc.helptosavestridefrontend.auth
 
 import java.net.URLEncoder
 
-import play.api.mvc.{AnyContentAsEmpty, Call, RequestHeader}
-import play.api.{Configuration, Environment, Mode}
+import play.api.Configuration
 import play.api.mvc.Results._
+import play.api.mvc.{AnyContentAsEmpty, Call}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
@@ -59,11 +59,9 @@ class StrideAuthSpec extends TestSupport {
 
   "StrideAuth" must {
 
-    val call = Call("GET", "url")
-
     lazy val test = new TestStrideAuth(roles, fakeApplication.injector.instanceOf[FrontendAppConfig])
 
-    lazy val action = test.authorisedFromStride { _ ⇒ Ok }(call)
+    lazy val action = test.authorisedFromStride { _ ⇒ Ok }("/url")
 
     "provide a authorised method" which {
 
@@ -73,7 +71,7 @@ class StrideAuthSpec extends TestSupport {
 
         val result = action(request)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(test.strideLoginUrl + s"?successURL=${URLEncoder.encode("http://url", "UTF-8")}&origin=help-to-save-stride-frontend")
+        redirectLocation(result) shouldBe Some(test.strideLoginUrl + s"?successURL=${URLEncoder.encode("/url", "UTF-8")}&origin=help-to-save-stride-frontend")
       }
 
       "returns an Unauthorised status" when {

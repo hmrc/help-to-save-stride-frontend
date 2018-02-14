@@ -105,7 +105,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
             mockSuccessfulAuthorisation()
             mockKeyStoreGet(Right(None))
           }
-          
+
           val result = doRequest(fakeRequestWithCSRFToken)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
