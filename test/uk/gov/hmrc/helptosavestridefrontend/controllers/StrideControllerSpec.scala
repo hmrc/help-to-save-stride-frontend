@@ -108,7 +108,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
           val result = doRequest(requestWithKey)
           status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save/check-eligibility-page")
+          redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
         }
 
         "show the /check-eligibility-page when there is no key in the session" in {
@@ -116,7 +116,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
           val result = doRequest(fakeRequestWithCSRFToken)
           status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save/check-eligibility-page")
+          redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
         }
 
         "show the you-are-eligible page if session is found in key-store and user is eligible" in {
@@ -138,7 +138,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
           val result = doRequest(requestWithKey)
           status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save/you-are-not-eligible")
+          redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
         }
 
         "show the account-already-exists page if session is found in key-store and but user has an account already" in {
@@ -149,7 +149,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
           val result = doRequest(requestWithKey)
           status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save/account-already-exists")
+          redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
         }
       }
 
@@ -183,7 +183,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = doRequest(nino, cacheKey)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save/you-are-not-eligible")
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
       }
 
       "handle the case where user has already got account" in {
@@ -198,7 +198,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = doRequest(nino, cacheKey)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save/account-already-exists")
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
       }
 
       "handle the case where user is eligible and paye-details exist" in {
