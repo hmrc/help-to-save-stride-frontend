@@ -18,6 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject, Singleton}
+import play.api.http.Status
 import play.api.libs.json.{Reads, Writes}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
@@ -37,6 +38,8 @@ trait KeyStoreConnector {
   def put(body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[CacheMap]
 
   def get(implicit reads: Reads[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[UserSessionInfo]]
+
+  def delete(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[Unit]
 
 }
 
@@ -72,8 +75,8 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
         case NonFatal(e) ⇒
           val _ = timerContext.stop()
           metrics.keystoreWriteErrorCounter.inc()
-          logger.warn(s"unexpected error when writing stride-user-info to keystore, error=${e.getMessage}")
-          pagerDutyAlerting.alert("unexpected error when storing stride-user-info to keystore")
+          logger.warn(s"unexpected error when writing UserSessionInfo to keystore, error=${e.getMessage}")
+          pagerDutyAlerting.alert("unexpected error when storing UserSessionInfo to keystore")
           Left(e.getMessage)
       }
     }
@@ -91,8 +94,31 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
         case NonFatal(e) ⇒
           val _ = timerContext.stop()
           metrics.keystoreReadErrorCounter.inc()
-          logger.warn(s"unexpected error when retrieving stride-user-info from keystore, error=${e.getMessage}")
-          pagerDutyAlerting.alert("unexpected error when retrieving stride-user-info from keystore")
+          logger.warn(s"unexpected error when retrieving UserSessionInfo from keystore, error=${e.getMessage}")
+          pagerDutyAlerting.alert("unexpected error when retrieving UserSessionInfo from keystore")
+          Left(e.getMessage)
+      }
+    }
+
+  override def delete(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[Unit] =
+    EitherT[Future, String, Unit] {
+      val timerContext = metrics.keystoreDeleteTimer.time()
+
+      remove().map[Either[String, Unit]] { response ⇒
+        response.status match {
+          case Status.NO_CONTENT ⇒
+            val _ = timerContext.stop()
+            Right(())
+          case other: Int ⇒
+            metrics.keystoreDeleteErrorCounter.inc()
+            pagerDutyAlerting.alert("unexpected error when deleting UserSessionInfo from keystore")
+            Left(s"unexpected error when deleting UserSessionInfo from keystore, status=$other")
+        }
+      }.recover {
+        case NonFatal(e) ⇒
+          val _ = timerContext.stop()
+          metrics.keystoreDeleteErrorCounter.inc()
+          pagerDutyAlerting.alert("unexpected error when deleting UserSessionInfo from keystore")
           Left(e.getMessage)
       }
     }

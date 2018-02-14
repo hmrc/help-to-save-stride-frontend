@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
 @(appConfig: FrontendAppConfig,
         title: String,
@@ -38,7 +39,13 @@
     <meta name="format-detection" content="telephone=no" />
 }
 
-@headerNavLinks = {}
+@headerNavLinks = {
+<li>
+    <a href=@routes.StrideController.getEligibilityPage().url id="nav-restart-journey">
+        @Messages("hts.restart.journey")
+    </a>
+</li>
+}
 
 @insideHeader = {
 @uiLayouts.header_nav(

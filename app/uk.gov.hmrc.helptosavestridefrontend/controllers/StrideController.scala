@@ -44,7 +44,13 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
+    keyStoreConnector.delete.fold(
+      error ⇒ {
+        logger.warn(error)
+        internalServerError()
+      },
+      _ ⇒ Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
+    )
   }(routes.StrideController.getEligibilityPage().url)
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
