@@ -45,6 +45,10 @@ class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
   val keystoreReadTimer: Timer = timer("stride.frontend.keystore-read-time")
 
   val keystoreReadErrorCounter: Counter = counter("stride.frontend.keystore-read-error-counter")
+
+  val keystoreDeleteTimer: Timer = timer("stride.frontend.keystore-delete-time")
+
+  val keystoreDeleteErrorCounter: Counter = counter("stride.frontend.keystore-delete-error-counter")
 }
 
 object Metrics {

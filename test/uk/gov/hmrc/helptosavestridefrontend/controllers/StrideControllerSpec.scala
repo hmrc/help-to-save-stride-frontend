@@ -63,6 +63,11 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       .expects(strideUserInfo, *, *, *)
       .returning(EitherT.fromEither[Future](result.map(_ ⇒ CacheMap("1", Map.empty[String, JsValue]))))
 
+  def mockKeyStoreDelete(result: Either[String, Unit]): Unit =
+    (keystoreConnector.delete(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *)
+      .returning(EitherT.fromEither[Future](result))
+
   lazy val controller =
     new StrideController(mockAuthConnector,
                          helpToSaveConnector,
@@ -75,11 +80,24 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
     "getting the getEligibilityPage" must {
 
       "show the page when the user is authorised" in {
-        mockSuccessfulAuthorisation()
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreDelete(Right(()))
+        }
 
         val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
         contentAsString(result) should include("Help to Save - Enter National Insurance number")
+      }
+
+      "handle error during keystore delete after the user is authorised" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreDelete(Left(("error during keystore delete")))
+        }
+
+        val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
       }
     }
 

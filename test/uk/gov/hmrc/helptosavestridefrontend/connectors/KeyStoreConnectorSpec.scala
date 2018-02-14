@@ -22,12 +22,12 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSes
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.cache.client.CacheMap
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData {
+class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData { // scalastyle:off magic.number
 
   val connector = new KeyStoreConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, environment)
 
@@ -41,6 +41,11 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
       .expects(url, *, *, *)
       .returning(response.fold(Future.failed[I](new Exception("")))(Future.successful))
 
+  def mockDelete[O](url: String)(response: Option[O]): CallHandler4[String, HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
+    (mockHttp.DELETE[O](_: String)(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
+      .expects(url, *, *, *)
+      .returning(response.fold(Future.failed[O](new Exception("")))(Future.successful))
+
   class TestApparatus {
 
     val sessionId = headerCarrier.sessionId.getOrElse(sys.error("Could not find session iD"))
@@ -53,6 +58,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
     val putUrl = s"http://localhost:8400/keystore/help-to-save-stride-frontend/${sessionId.value}/data/htsSession"
     val getUrl = s"http://localhost:8400/keystore/help-to-save-stride-frontend/${sessionId.value}"
+    val deleteUrl = s"http://localhost:8400/keystore/help-to-save-stride-frontend/${sessionId.value}"
   }
 
   "KeyStoreConnector" when {
@@ -70,7 +76,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
       "handle unexpected errors" in new TestApparatus {
 
         mockPut[UserSessionInfo, CacheMap](putUrl, body)(None)
-        mockPagerDutyAlert("unexpected error when storing stride-user-info to keystore")
+        mockPagerDutyAlert("unexpected error when storing UserSessionInfo to keystore")
 
         Await.result(connector.put(body).value, 5.seconds).isLeft shouldBe true
 
@@ -90,9 +96,43 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
       "handle unexpected errors" in new TestApparatus {
 
         mockGet[CacheMap](getUrl)(None)
-        mockPagerDutyAlert("unexpected error when retrieving stride-user-info from keystore")
+        mockPagerDutyAlert("unexpected error when retrieving UserSessionInfo from keystore")
 
         Await.result(connector.get.value, 5.seconds).isLeft shouldBe true
+
+      }
+    }
+
+    "deleting" must {
+
+      "return successful result after deleting user session info" in new TestApparatus {
+
+        val res = Some(HttpResponse(204))
+        mockDelete(deleteUrl)(res)
+
+        Await.result(connector.delete.value, 5.seconds) shouldBe Right(())
+
+      }
+
+      "handle responses other than 204 from keystore when deleting user session info" in new TestApparatus {
+
+        val res = Some(HttpResponse(400))
+        inSequence {
+          mockDelete(deleteUrl)(res)
+          mockPagerDutyAlert("unexpected error when deleting UserSessionInfo from keystore")
+        }
+        Await.result(connector.delete.value, 5.seconds).isLeft shouldBe true
+
+      }
+
+      "handle unexpected errors" in new TestApparatus {
+
+        inSequence {
+          mockDelete(deleteUrl)(None)
+          mockPagerDutyAlert("unexpected error when deleting UserSessionInfo from keystore")
+        }
+
+        Await.result(connector.delete.value, 5.seconds).isLeft shouldBe true
 
       }
     }
