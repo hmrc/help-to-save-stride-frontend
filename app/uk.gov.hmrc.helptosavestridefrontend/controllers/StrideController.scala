@@ -44,11 +44,11 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm)).withSession(newSession)
+    Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
   }(routes.StrideController.getEligibilityPage())
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(key ⇒
+    checkSession(
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
         withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
         form ⇒ {
@@ -56,12 +56,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val r = for {
             eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
             sessionUserInfo ← getPersonalDetails(eligibility, ninoEncoded)
-            _ ← keyStoreConnector.put(key, sessionUserInfo)
+            _ ← keyStoreConnector.put(sessionUserInfo)
           } yield sessionUserInfo
 
           r.fold(
             error ⇒ {
-              logger.warn(s"error during get eligibility result and paye-personal-info, error: $error")
+              logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
               internalServerError()
             }, {
               case UserSessionInfo.EligibleWithPayePersonalDetails(_, details) ⇒
@@ -77,20 +77,20 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(_ ⇒ SeeOther(routes.StrideController.getEligibilityPage().url))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.youAreNotEligible())
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(_ ⇒ SeeOther(routes.StrideController.getEligibilityPage().url))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.youAreEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(_ ⇒ SeeOther(routes.StrideController.getEligibilityPage().url))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.accountAlreadyExists())
 
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(_ ⇒ SeeOther(routes.StrideController.getEligibilityPage().url),
-      checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
+                 checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))
     )
   }(routes.StrideController.getTermsAndConditionsPage())
 

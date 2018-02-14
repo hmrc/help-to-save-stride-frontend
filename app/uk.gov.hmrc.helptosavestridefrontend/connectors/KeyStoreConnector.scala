@@ -23,19 +23,20 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
-import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.cache.client.HttpCaching
+import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
+import uk.gov.hmrc.play.config.AppName
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[KeyStoreConnectorImpl])
 trait KeyStoreConnector {
 
-  def put(key: String, body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Unit]
+  def put(body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[CacheMap]
 
-  def get(key: String)(implicit reads: Reads[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[UserSessionInfo]]
+  def get(implicit reads: Reads[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[UserSessionInfo]]
 
 }
 
@@ -46,60 +47,53 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
                                        override val runModeConfiguration: Configuration,
                                        override val environment:          Environment
 )
-  extends FrontendAppConfig(runModeConfiguration, environment) with KeyStoreConnector with HttpCaching with Logging {
+  extends FrontendAppConfig(runModeConfiguration, environment) with KeyStoreConnector with SessionCache with Logging with AppName {
 
-  def defaultSource: String = "help-to-save-stride-frontend"
+  override protected def appNameConfiguration: Configuration = runModeConfiguration
+
+  def defaultSource: String = appName
 
   def baseUri: String = baseUrl("keystore")
 
   def domain: String = "keystore"
 
-  private val formId = "stride-user-info"
+  val sessionKey: String = "htsSession"
 
-  override def put(key: String, body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo],
-                                                       hc: HeaderCarrier,
-                                                       ec: ExecutionContext): Result[Unit] = {
-    EitherT[Future, String, Unit](
-      {
-        val timerContext = metrics.keystoreWriteTimer.time()
-        cache(defaultSource, formId, key, body)
-          .map { _ ⇒
-            val time = timerContext.stop()
-            Right(())
-          }
-          .recover {
-            case e ⇒
-              val time = timerContext.stop()
-              metrics.keystoreWriteErrorCounter.inc()
-              logger.warn(s"unexpected error when writing stride-user-info to keystore, error=${e.getMessage}")
-              pagerDutyAlerting.alert("unexpected error when storing stride-user-info to keystore")
-              Left(s"error when storing stride-user-info to keystore, id=$key, error=${e.getMessage}, ${timeString(time)}")
-          }
-      })
-  }
+  override def put(body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo],
+                                          hc: HeaderCarrier,
+                                          ec: ExecutionContext): Result[CacheMap] =
+    EitherT[Future, String, CacheMap] {
+      val timerContext = metrics.keystoreWriteTimer.time()
 
-  override def get(key: String)(implicit reads: Reads[UserSessionInfo],
-                                hc: HeaderCarrier,
-                                ec: ExecutionContext): Result[Option[UserSessionInfo]] = {
-    EitherT[Future, String, Option[UserSessionInfo]](
-      {
-        val timerContext = metrics.keystoreReadTimer.time()
-        fetchAndGetEntry[UserSessionInfo](defaultSource, formId, key)
-          .map { details ⇒
-            val time = timerContext.stop()
-            Right(details)
-          }
-          .recover {
-            case e ⇒
-              val time = timerContext.stop()
-              metrics.keystoreReadErrorCounter.inc()
-              logger.warn(s"unexpected error when retrieving stride-user-info from keystore, error=${e.getMessage}")
-              pagerDutyAlerting.alert("unexpected error when retrieving stride-user-info from keystore")
-              Left(s"error when retrieving stride-user-info from keystore, id=$key, error=${e.getMessage},(round-trip time: ${timeString(time)})")
-          }
-      })
-  }
+      cache[UserSessionInfo](sessionKey, body).map { cacheMap ⇒
+        val _ = timerContext.stop()
+        Right(cacheMap)
+      }.recover {
+        case NonFatal(e) ⇒
+          val _ = timerContext.stop()
+          metrics.keystoreWriteErrorCounter.inc()
+          logger.warn(s"unexpected error when writing stride-user-info to keystore, error=${e.getMessage}")
+          pagerDutyAlerting.alert("unexpected error when storing stride-user-info to keystore")
+          Left(e.getMessage)
+      }
+    }
 
-  private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
+  override def get(implicit reads: Reads[UserSessionInfo],
+                   hc: HeaderCarrier,
+                   ec: ExecutionContext): Result[Option[UserSessionInfo]] =
+    EitherT[Future, String, Option[UserSessionInfo]] {
+      val timerContext = metrics.keystoreReadTimer.time()
 
+      fetchAndGetEntry[UserSessionInfo](sessionKey).map { session ⇒
+        val _ = timerContext.stop()
+        Right(session)
+      }.recover {
+        case NonFatal(e) ⇒
+          val _ = timerContext.stop()
+          metrics.keystoreReadErrorCounter.inc()
+          logger.warn(s"unexpected error when retrieving stride-user-info from keystore, error=${e.getMessage}")
+          pagerDutyAlerting.alert("unexpected error when retrieving stride-user-info from keystore")
+          Left(e.getMessage)
+      }
+    }
 }
