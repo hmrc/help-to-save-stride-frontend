@@ -61,7 +61,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
           r.fold(
             error ⇒ {
-              logger.warn(s"error during get eligibility result and paye-personal-info, error: $error")
+              logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
               internalServerError()
             }, {
               case UserSessionInfo.EligibleWithPayePersonalDetails(_, details) ⇒

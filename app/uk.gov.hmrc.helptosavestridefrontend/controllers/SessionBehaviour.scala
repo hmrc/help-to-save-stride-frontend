@@ -36,14 +36,13 @@ trait SessionBehaviour {
 
   val keyStoreConnector: KeyStoreConnector
 
-  val sessionKey: String = "stride-user-info"
-
   def checkSession(noSessionData: ⇒ Future[Result],
                    whenSession:   UserSessionInfo ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
-    keyStoreConnector.get
+    keyStoreConnector
+      .get
       .fold({
         error ⇒
-          logger.warn(s"error during retrieving stride-user-info from keystore, error= $error")
+          logger.warn(s"error during retrieving UserSessionInfo from keystore, error= $error")
           toFuture(internalServerError())
       },
         _.fold(noSessionData)(whenSession)

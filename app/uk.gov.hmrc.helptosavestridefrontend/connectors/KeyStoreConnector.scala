@@ -65,7 +65,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
     EitherT[Future, String, CacheMap] {
       val timerContext = metrics.keystoreWriteTimer.time()
 
-      cache[UserSessionInfo](sessionKey, body)(writes, hc, ec).map { cacheMap ⇒
+      cache[UserSessionInfo](sessionKey, body).map { cacheMap ⇒
         val _ = timerContext.stop()
         Right(cacheMap)
       }.recover {
@@ -84,7 +84,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
     EitherT[Future, String, Option[UserSessionInfo]] {
       val timerContext = metrics.keystoreReadTimer.time()
 
-      fetchAndGetEntry[UserSessionInfo](sessionKey)(hc, reads, ec).map { session ⇒
+      fetchAndGetEntry[UserSessionInfo](sessionKey).map { session ⇒
         val _ = timerContext.stop()
         Right(session)
       }.recover {

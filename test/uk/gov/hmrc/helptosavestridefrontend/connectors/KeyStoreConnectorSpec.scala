@@ -57,9 +57,9 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
   "KeyStoreConnector" when {
 
-    "storing stride-user-info" must {
+    "storing" must {
 
-      "store user-info as expected" in new TestApparatus {
+      "store user session info as expected" in new TestApparatus {
 
         mockPut[UserSessionInfo, CacheMap](putUrl, body)(Some(response))
 
@@ -77,9 +77,9 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
       }
     }
 
-    "retrieving the stride-user-info" must {
+    "retrieving" must {
 
-      "return successful result when retrieving stride-user-info" in new TestApparatus {
+      "return successful result when retrieving user session info" in new TestApparatus {
 
         mockGet[CacheMap](getUrl)(Some(response))
 

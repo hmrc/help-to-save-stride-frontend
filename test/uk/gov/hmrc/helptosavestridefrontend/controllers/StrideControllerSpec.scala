@@ -37,7 +37,7 @@ import uk.gov.hmrc.http.cache.client.CacheMap
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport with TestData {
+class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport with TestData { // scalastyle:off magic.number
 
   val helpToSaveConnector = mock[HelpToSaveConnector]
 
@@ -220,7 +220,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
 
-      "handle the errors during retrieve paye-personal-details" in {
+      "handle the errors during retrieve user session info" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -232,7 +232,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
 
-      "handle the errors when retrieving stride-user-info from keystore" in {
+      "handle the errors when retrieving user session info from keystore" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Left("unexpected key-store error"))
@@ -257,14 +257,12 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       }
 
       "show the terms and conditions if the user is eligible" in {
-        val key = "key"
-
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(eligibleStrideUserInfo)))
         }
 
-        val result = controller.getTermsAndConditionsPage(FakeRequest().withSession("stride-user-info" → key))
+        val result = controller.getTermsAndConditionsPage(FakeRequest())
         status(result) shouldBe OK
         contentAsString(result) should include("Websites you to link opens in prove")
       }
