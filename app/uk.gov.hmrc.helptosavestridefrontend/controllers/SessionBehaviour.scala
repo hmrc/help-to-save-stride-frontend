@@ -20,8 +20,8 @@ import cats.instances.future._
 import play.api.libs.json._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo.{AlreadyHasAccount, EligibleWithPayePersonalDetails, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithPayePersonalDetails, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
@@ -37,7 +37,7 @@ trait SessionBehaviour {
   val keyStoreConnector: KeyStoreConnector
 
   def checkSession(noSessionData: ⇒ Future[Result],
-                   whenSession:   UserSessionInfo ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+                   whenSession:   HtsSession ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     keyStoreConnector
       .get
       .fold({
@@ -51,7 +51,7 @@ trait SessionBehaviour {
   def checkSession(noSessionData: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
     checkSession(
       noSessionData,
-      {
+      htsSession ⇒ htsSession.userInfo match {
         case EligibleWithPayePersonalDetails(_, payePersonalDetails) ⇒
           Ok(views.html.you_are_eligible(payePersonalDetails))
 
@@ -65,20 +65,20 @@ trait SessionBehaviour {
 
 object SessionBehaviour {
 
-  sealed trait UserSessionInfo
+  sealed trait UserInfo
 
-  object UserSessionInfo {
+  object UserInfo {
 
-    case class EligibleWithPayePersonalDetails(response: EligibilityCheckResponse, payePersonalDetails: PayePersonalDetails) extends UserSessionInfo
+    case class EligibleWithPayePersonalDetails(response: EligibilityCheckResponse, payePersonalDetails: PayePersonalDetails) extends UserInfo
 
-    case class Ineligible(response: EligibilityCheckResponse) extends UserSessionInfo
+    case class Ineligible(response: EligibilityCheckResponse) extends UserInfo
 
-    case class AlreadyHasAccount(response: EligibilityCheckResponse) extends UserSessionInfo
+    case class AlreadyHasAccount(response: EligibilityCheckResponse) extends UserInfo
 
   }
 
-  implicit val format: Format[UserSessionInfo] = new Format[UserSessionInfo] {
-    override def writes(result: UserSessionInfo): JsValue = {
+  implicit val format: Format[UserInfo] = new Format[UserInfo] {
+    override def writes(result: UserInfo): JsValue = {
       val (a, b, c) = result match {
         case EligibleWithPayePersonalDetails(value, details) ⇒ (1, value, Some(details))
         case Ineligible(value)                               ⇒ (2, value, None)
@@ -92,7 +92,7 @@ object SessionBehaviour {
       JsObject(fields)
     }
 
-    override def reads(json: JsValue): JsResult[UserSessionInfo] = {
+    override def reads(json: JsValue): JsResult[UserInfo] = {
       ((json \ "code").validate[Int],
         (json \ "result").validate[EligibilityCheckResponse],
         (json \ "details").validateOpt[PayePersonalDetails]) match {
@@ -102,6 +102,12 @@ object SessionBehaviour {
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")
         }
     }
+  }
+
+  case class HtsSession(userInfo: UserInfo, detailsConfirmed: Boolean = false)
+
+  object HtsSession {
+    implicit val format: Format[HtsSession] = Json.format[HtsSession]
   }
 
 }

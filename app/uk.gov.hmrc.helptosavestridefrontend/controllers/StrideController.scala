@@ -25,11 +25,11 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo.EligibleWithPayePersonalDetails
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, UserInfo}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.EligibleWithPayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, base64Encode, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
@@ -62,7 +62,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val r = for {
             eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
             sessionUserInfo ← getPersonalDetails(eligibility, ninoEncoded)
-            _ ← keyStoreConnector.put(sessionUserInfo)
+            _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
           } yield sessionUserInfo
 
           r.fold(
@@ -70,11 +70,11 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
               internalServerError()
             }, {
-              case UserSessionInfo.EligibleWithPayePersonalDetails(_, details) ⇒
+              case UserInfo.EligibleWithPayePersonalDetails(_, details) ⇒
                 Ok(views.html.you_are_eligible(details))
-              case UserSessionInfo.Ineligible(_) ⇒
+              case UserInfo.Ineligible(_) ⇒
                 SeeOther(routes.StrideController.youAreNotEligible().url)
-              case UserSessionInfo.AlreadyHasAccount(_) ⇒
+              case UserInfo.AlreadyHasAccount(_) ⇒
                 SeeOther(routes.StrideController.accountAlreadyExists().url)
             }
           )
@@ -94,37 +94,69 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.accountAlreadyExists().url)
 
+  def handleDetailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(
+      SeeOther(routes.StrideController.getEligibilityPage().url),
+      session ⇒
+        keyStoreConnector.put(session.copy(detailsConfirmed = true)).fold(
+          error ⇒ {
+            logger.warn(error)
+            internalServerError()
+          },
+          _ ⇒ SeeOther(routes.StrideController.getTermsAndConditionsPage().url)
+        )
+
+    )
+  }(routes.StrideController.accountAlreadyExists().url)
+
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-                 checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))
+    checkSession(
+      SeeOther(routes.StrideController.getEligibilityPage().url),
+      htsSession ⇒
+        if (!htsSession.detailsConfirmed) {
+          SeeOther(routes.StrideController.youAreEligible().url)
+        } else {
+          checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))(htsSession)
+        }
     )
   }(routes.StrideController.getTermsAndConditionsPage().url)
 
-  private def checkIsEligible(ifEligible: EligibleWithPayePersonalDetails ⇒ Future[Result])(userInfo: UserSessionInfo): Future[Result] =
-    userInfo match {
+  def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
+      htsSession ⇒
+        if (!htsSession.detailsConfirmed) {
+          SeeOther(routes.StrideController.youAreEligible().url)
+        } else {
+          Ok(views.html.account_created())
+        }
+    )
+  }(routes.StrideController.getTermsAndConditionsPage().url)
+
+  private def checkIsEligible(ifEligible: EligibleWithPayePersonalDetails ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
+    htsSession.userInfo match {
       case e: EligibleWithPayePersonalDetails ⇒
         ifEligible(e)
 
-      case UserSessionInfo.Ineligible(_) ⇒
+      case UserInfo.Ineligible(_) ⇒
         SeeOther(routes.StrideController.youAreNotEligible().url)
 
-      case UserSessionInfo.AlreadyHasAccount(_) ⇒
+      case UserInfo.AlreadyHasAccount(_) ⇒
         SeeOther(routes.StrideController.accountAlreadyExists().url)
 
     }
 
   private def getPersonalDetails(r:           EligibilityCheckResult,
                                  ninoEncoded: String)(implicit hc: HeaderCarrier,
-                                                      request: Request[_]): EitherT[Future, String, UserSessionInfo] =
+                                                      request: Request[_]): EitherT[Future, String, UserInfo] =
     r match {
       case Eligible(value) ⇒
-        helpToSaveConnector.getPayePersonalDetails(ninoEncoded).map(UserSessionInfo.EligibleWithPayePersonalDetails(value, _))
+        helpToSaveConnector.getPayePersonalDetails(ninoEncoded).map(UserInfo.EligibleWithPayePersonalDetails(value, _))
 
-      case Ineligible(value) ⇒
-        EitherT.pure[Future, String, UserSessionInfo](UserSessionInfo.Ineligible(value))
+      case EligibilityCheckResult.Ineligible(value) ⇒
+        EitherT.pure[Future, String, UserInfo](UserInfo.Ineligible(value))
 
-      case AlreadyHasAccount(value) ⇒
-        EitherT.pure[Future, String, UserSessionInfo](UserSessionInfo.AlreadyHasAccount(value))
+      case EligibilityCheckResult.AlreadyHasAccount(value) ⇒
+        EitherT.pure[Future, String, UserInfo](UserInfo.AlreadyHasAccount(value))
 
     }
 }

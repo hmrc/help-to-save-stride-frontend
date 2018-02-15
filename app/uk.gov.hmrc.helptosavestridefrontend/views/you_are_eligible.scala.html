@@ -36,5 +36,9 @@
         @{details.address.postcode}
     </p>
 
-    <a href=@routes.StrideController.getTermsAndConditionsPage().url class="button">Continue</a>
+    @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.handleDetailsConfirmed()) {
+    <section class="subsection">
+        @helpers.submit('_buttonClass -> "", 'id → "continue") { @messages("hts.global.continue-button") }
+    </section>
+    }
 }

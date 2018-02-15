@@ -3,3 +3,5 @@ hts.eligibility.invalid.nino=invalid input, sample valid input is : AE123456C
 hts.give-nino.title=Help to Save - Enter National Insurance number
 hts.you.are.eligible.title=Help to Save - You are eligible
 hts.restart.journey=Restart Journey
+hts.create-account.continue-button=Create Account
+hts.global.continue-button=Continue
