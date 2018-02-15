@@ -20,9 +20,8 @@ import cats.instances.future._
 import play.api.libs.json._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo.{AlreadyHasAccount, EligibleWithPayePersonalDetails, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
+import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSession, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
@@ -37,7 +36,7 @@ trait SessionBehaviour {
   val keyStoreConnector: KeyStoreConnector
 
   def checkSession(noSessionData: ⇒ Future[Result],
-                   whenSession:   UserSessionInfo ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+                   whenSession:   HtsSession ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     keyStoreConnector
       .get
       .fold({
@@ -51,7 +50,7 @@ trait SessionBehaviour {
   def checkSession(noSessionData: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
     checkSession(
       noSessionData,
-      {
+      htsSession ⇒ htsSession.userSessionInfo match {
         case EligibleWithPayePersonalDetails(_, payePersonalDetails) ⇒
           Ok(views.html.you_are_eligible(payePersonalDetails))
 

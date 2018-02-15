@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
 @()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
@@ -47,5 +48,5 @@
   all statement of the HMRC is use. Your use. You will be revise and materials. It is policy.
  </p>
 
-    <button>Create account</button>
+<a href=@routes.StrideController.createAccount().url class="button">Create account</a>
 }

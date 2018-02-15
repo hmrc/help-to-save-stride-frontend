@@ -28,8 +28,9 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, Key
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo.EligibleWithPayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
+import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, base64Encode, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
@@ -62,7 +63,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val r = for {
             eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
             sessionUserInfo ← getPersonalDetails(eligibility, ninoEncoded)
-            _ ← keyStoreConnector.put(sessionUserInfo)
+            _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
           } yield sessionUserInfo
 
           r.fold(
@@ -94,14 +95,52 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
   }(routes.StrideController.accountAlreadyExists().url)
 
+  def detailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(
+      SeeOther(routes.StrideController.getEligibilityPage().url),
+      session ⇒
+        keyStoreConnector.put(session.copy(detailsConfirmed = true)).fold(
+          error ⇒ {
+            logger.warn(error)
+            internalServerError()
+          },
+          _ ⇒ SeeOther(routes.StrideController.getTermsAndConditionsPage().url)
+        )
+
+    )
+  }(routes.StrideController.accountAlreadyExists().url)
+
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-                 checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))
+    checkSession(
+      SeeOther(routes.StrideController.getEligibilityPage().url),
+      htsSession ⇒
+        if (!htsSession.detailsConfirmed) {
+          SeeOther(routes.StrideController.youAreEligible().url)
+        } else {
+          checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))(htsSession)
+        }
     )
   }(routes.StrideController.getTermsAndConditionsPage().url)
 
-  private def checkIsEligible(ifEligible: EligibleWithPayePersonalDetails ⇒ Future[Result])(userInfo: UserSessionInfo): Future[Result] =
-    userInfo match {
+  def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
+      htsSession ⇒
+        if (!htsSession.detailsConfirmed) {
+          SeeOther(routes.StrideController.youAreEligible().url)
+        } else {
+          htsSession.userSessionInfo match {
+            case EligibleWithPayePersonalDetails(_, payePersonalDetails) ⇒
+              Ok(views.html.account_created(payePersonalDetails))
+            case _ ⇒
+              logger.warn(s"something wrong, user should be eligible at this point")
+              internalServerError()
+          }
+        }
+    )
+  }(routes.StrideController.getTermsAndConditionsPage().url)
+
+  private def checkIsEligible(ifEligible: EligibleWithPayePersonalDetails ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
+    htsSession.userSessionInfo match {
       case e: EligibleWithPayePersonalDetails ⇒
         ifEligible(e)
 
@@ -120,10 +159,10 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       case Eligible(value) ⇒
         helpToSaveConnector.getPayePersonalDetails(ninoEncoded).map(UserSessionInfo.EligibleWithPayePersonalDetails(value, _))
 
-      case Ineligible(value) ⇒
+      case EligibilityCheckResult.Ineligible(value) ⇒
         EitherT.pure[Future, String, UserSessionInfo](UserSessionInfo.Ineligible(value))
 
-      case AlreadyHasAccount(value) ⇒
+      case EligibilityCheckResult.AlreadyHasAccount(value) ⇒
         EitherT.pure[Future, String, UserSessionInfo](UserSessionInfo.AlreadyHasAccount(value))
 
     }

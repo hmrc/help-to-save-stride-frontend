@@ -22,8 +22,8 @@ import play.api.http.Status
 import play.api.libs.json.{Reads, Writes}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
+import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
@@ -35,9 +35,9 @@ import scala.util.control.NonFatal
 @ImplementedBy(classOf[KeyStoreConnectorImpl])
 trait KeyStoreConnector {
 
-  def put(body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[CacheMap]
+  def put(body: HtsSession)(implicit writes: Writes[HtsSession], hc: HeaderCarrier, ec: ExecutionContext): Result[CacheMap]
 
-  def get(implicit reads: Reads[UserSessionInfo], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[UserSessionInfo]]
+  def get(implicit reads: Reads[HtsSession], hc: HeaderCarrier, ec: ExecutionContext): Result[Option[HtsSession]]
 
   def delete(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[Unit]
 
@@ -62,13 +62,13 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
 
   val sessionKey: String = "htsSession"
 
-  override def put(body: UserSessionInfo)(implicit writes: Writes[UserSessionInfo],
-                                          hc: HeaderCarrier,
-                                          ec: ExecutionContext): Result[CacheMap] =
+  override def put(body: HtsSession)(implicit writes: Writes[HtsSession],
+                                     hc: HeaderCarrier,
+                                     ec: ExecutionContext): Result[CacheMap] =
     EitherT[Future, String, CacheMap] {
       val timerContext = metrics.keystoreWriteTimer.time()
 
-      cache[UserSessionInfo](sessionKey, body).map { cacheMap ⇒
+      cache[HtsSession](sessionKey, body).map { cacheMap ⇒
         val _ = timerContext.stop()
         Right(cacheMap)
       }.recover {
@@ -81,13 +81,13 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
       }
     }
 
-  override def get(implicit reads: Reads[UserSessionInfo],
+  override def get(implicit reads: Reads[HtsSession],
                    hc: HeaderCarrier,
-                   ec: ExecutionContext): Result[Option[UserSessionInfo]] =
-    EitherT[Future, String, Option[UserSessionInfo]] {
+                   ec: ExecutionContext): Result[Option[HtsSession]] =
+    EitherT[Future, String, Option[HtsSession]] {
       val timerContext = metrics.keystoreReadTimer.time()
 
-      fetchAndGetEntry[UserSessionInfo](sessionKey).map { session ⇒
+      fetchAndGetEntry[HtsSession](sessionKey).map { session ⇒
         val _ = timerContext.stop()
         Right(session)
       }.recover {

@@ -13,3 +13,7 @@ GET       /you-are-eligible                           @uk.gov.hmrc.helptosavestr
 GET       /account-already-exists                     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 
 GET       /terms-and-conditions                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getTermsAndConditionsPage()
+
+GET       /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.detailsConfirmed()
+
+GET       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
