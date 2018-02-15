@@ -280,7 +280,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
         }
 
-        val result = controller.getTermsAndConditionsPage(FakeRequest())
+        val result = controller.getTermsAndConditionsPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
         contentAsString(result) should include("Websites you to link opens in prove")
       }
@@ -288,7 +288,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "show the terms and conditions if the user is eligible and details are NOT confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = false))))
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
         }
 
         val result = controller.getTermsAndConditionsPage(FakeRequest())
