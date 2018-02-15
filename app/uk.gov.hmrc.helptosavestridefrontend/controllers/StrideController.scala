@@ -59,11 +59,10 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
         withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
         form ⇒ {
-          val ninoEncoded = new String(base64Encode(form.nino))
           val r = for {
-            eligibility ← helpToSaveConnector.getEligibility(ninoEncoded)
-            sessionUserInfo ← getPersonalDetails(eligibility, ninoEncoded)
-            _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
+            eligibility ← helpToSaveConnector.getEligibility(form.nino)
+            sessionUserInfo ← getPersonalDetails(eligibility, form.nino)
+            _ ← keyStoreConnector.put(sessionUserInfo)
           } yield sessionUserInfo
 
           r.fold(

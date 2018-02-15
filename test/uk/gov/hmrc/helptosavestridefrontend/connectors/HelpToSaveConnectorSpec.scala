@@ -53,29 +53,29 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
 
       "return a successful eligibility response for a valid NINO" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1))))))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1))))))
         Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
       }
 
       "handles the case of success response but user is not eligible" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2))))))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2))))))
         Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
       }
 
       "handles the case of success response but user has hot an account already" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3))))))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3))))))
         Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
       }
 
       "handles the case of success response but invalid eligibility result code" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5))))))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5))))))
         mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
         Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
       }
 
       "handles the case of success response but no eligibility result json" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, None)))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, None)))
         mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
         Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
@@ -83,7 +83,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       "handle responses when they contain invalid json" in {
         inSequence {
-          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}""")))))
+          mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}""")))))
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
         }
         Await.result(connector.getEligibility(nino).value, 555.seconds).isLeft shouldBe true
@@ -92,7 +92,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       "return with an error" when {
         "the call fails" in {
           inSequence {
-            mockGet(connector.eligibilityUrl(nino))(None)
+            mockGet(connector.eligibilityUrl(ninoEncoded))(None)
             // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
             mockPagerDutyAlert("Failed to make call to check eligibility")
           }
@@ -104,7 +104,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
           forAll { status: Int ⇒
             whenever(status > 0 && status =!= 200 && status =!= 404) {
               inSequence {
-                mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(status)))
+                mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(status)))
                 // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
                 mockPagerDutyAlert("Failed to make call to check eligibility")
               }
@@ -121,18 +121,18 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
     "getting paye-personal-details and converting to nsi-user-info" must {
 
       "return a successful paye-details response for a valid NINO and convert to nsi-user-info" in {
-        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse(payeDetailsJson))))) // scalastyle:ignore magic.number
+        mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse(payeDetailsJson))))) // scalastyle:ignore magic.number
         Await.result(connector.getNSIUserInfo(nino).value, 5.seconds) shouldBe Right(nsiUserInfo)
       }
 
       "handle responses when they contain invalid json" in {
-        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
+        mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
         Await.result(connector.getNSIUserInfo(nino).value, 5.seconds).isLeft shouldBe true
       }
 
       "handle responses when they contain empty json" in {
-        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) // scalastyle:ignore magic.number
+        mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
         Await.result(connector.getNSIUserInfo(nino).value, 5.seconds).isLeft shouldBe true
       }
@@ -140,7 +140,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       "return with an error" when {
         "the call fails" in {
           inSequence {
-            mockGet(connector.payePersonalDetailsUrl(nino))(None)
+            mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(None)
             // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
             mockPagerDutyAlert("Failed to make call to paye-personal-details")
           }
@@ -152,7 +152,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
           forAll { status: Int ⇒
             whenever(status > 0 && status =!= 200 && status =!= 404) {
               inSequence {
-                mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(status)))
+                mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(status)))
                 // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
                 mockPagerDutyAlert("Failed to make call to paye-personal-details")
               }

@@ -28,6 +28,7 @@ import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo._
+import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
 import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
@@ -179,11 +180,6 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
     "checking the eligibility and retrieving paye details" must {
 
-      val ninoEndoded = "QUUxMjM0NTZD"
-
-      val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
-      val eligibleECResponse = EligibilityCheckResponse("eligible", 1, "tax credits", 7)
-
         def doRequest(nino: String) =
           controller.checkEligibilityAndGetPersonalInfo(fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino))
 
@@ -202,8 +198,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
-          mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
-          mockKeyStorePut(HtsSession(Ineligible(emptyECResponse)))(Right(()))
+          mockEligibility(nino)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
+          mockKeyStorePut(Ineligible(emptyECResponse))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -217,8 +213,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
-          mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.AlreadyHasAccount(accountExistsResponse)))
-          mockKeyStorePut(AlreadyHasAccount(accountExistsResponse))(Right(()))
+          mockEligibility(nino)(Right(EligibilityCheckResult.AlreadyHasAccount(accountExistsResponseECR)))
+          mockKeyStorePut(AlreadyHasAccount(accountExistsResponseECR))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -230,9 +226,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
-          mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
+          mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
 
-          mockPayeDetails(ninoEndoded)(Right(nsiUserInfo))
+          mockPayeDetails(nino)(Right(nsiUserInfo))
           mockKeyStorePut(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo))(Right(()))
         }
 
@@ -246,7 +242,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
-          mockEligibility(ninoEndoded)(Left("unexpected error"))
+          mockEligibility(nino)(Left("unexpected error"))
         }
 
         val result = doRequest(nino)
@@ -257,8 +253,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
-          mockEligibility(ninoEndoded)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
-          mockPayeDetails(ninoEndoded)(Left("unexpected error"))
+          mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
+          mockPayeDetails(nino)(Left("unexpected error"))
         }
 
         val result = doRequest(nino)

@@ -32,7 +32,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, NSIUser
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
+import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, base64Encode}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -71,7 +71,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.eligibilityCheckTimer.time()
 
-        http.get(eligibilityUrl(nino)).map { response ⇒
+        http.get(eligibilityUrl(base64Encode(nino))).map { response ⇒
           val time = timerContext.stop()
 
           response.status match {
@@ -125,7 +125,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
-        http.get(payePersonalDetailsUrl(nino))
+        http.get(payePersonalDetailsUrl(base64Encode(nino)))
           .map { response ⇒
             val time = timerContext.stop()
             response.status match {
