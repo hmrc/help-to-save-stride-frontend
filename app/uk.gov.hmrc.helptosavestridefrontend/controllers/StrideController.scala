@@ -134,8 +134,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
   def getTechnicalErrorPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-      checkIsEligible(_ ⇒ Ok(views.html.technical_error())))
-  }(routes.StrideController.getTermsAndConditionsPage().url)
+                 checkIsEligible(_ ⇒ Ok(views.html.technical_error())))
+  }(routes.StrideController.getTechnicalErrorPage().url)
 
   private def checkIsEligible(ifEligible: EligibleWithNSIUserInfo ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
     htsSession.userInfo match {
