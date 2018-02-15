@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import org.scalamock.handlers.{CallHandler4, CallHandler6}
 import play.api.libs.json.{Json, Writes}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, UserInfo}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.cache.client.CacheMap
@@ -50,9 +50,9 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
     val sessionId = headerCarrier.sessionId.getOrElse(sys.error("Could not find session iD"))
 
-    def cacheMap(htsSession: UserSessionInfo) = CacheMap("1", Map("htsSession" -> Json.toJson(htsSession)))
+    def cacheMap(htsSession: HtsSession) = CacheMap("1", Map("htsSession" -> Json.toJson(htsSession)))
 
-    val body = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
+    val body = HtsSession(UserInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails))
 
     val response = cacheMap(body)
 
@@ -67,7 +67,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "store user session info as expected" in new TestApparatus {
 
-        mockPut[UserSessionInfo, CacheMap](putUrl, body)(Some(response))
+        mockPut[HtsSession, CacheMap](putUrl, body)(Some(response))
 
         Await.result(connector.put(body).value, 5.seconds) shouldBe Right(response)
 
@@ -75,7 +75,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "handle unexpected errors" in new TestApparatus {
 
-        mockPut[UserSessionInfo, CacheMap](putUrl, body)(None)
+        mockPut[HtsSession, CacheMap](putUrl, body)(None)
         mockPagerDutyAlert("unexpected error when storing UserSessionInfo to keystore")
 
         Await.result(connector.put(body).value, 5.seconds).isLeft shouldBe true

@@ -22,8 +22,8 @@ import play.api.http.Status
 import play.api.libs.json.{Reads, Writes}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
-import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}

@@ -15,16 +15,11 @@
  *@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-@import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
-@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
-@(details: PayePersonalDetails)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
     title = "Successfully created account",
     bodyClasses = None) {
-
-    <h1>Hi @{details.name.surname} @{details.name.firstForenameOrInitial},</h1>
-
-    <p> your help-to-save account has been created </p>
+    <p> Your help-to-save account has been created </p>
 }

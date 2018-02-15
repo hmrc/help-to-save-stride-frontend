@@ -19,12 +19,12 @@ package uk.gov.hmrc.helptosavestridefrontend
 import java.time.LocalDate
 import java.util.UUID
 
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserSessionInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.{Address, Name, PayePersonalDetails}
 
-trait TestData {
+trait TestData { // scalastyle:off magic.number
 
   val ppDetails = PayePersonalDetails(
     Name("A", "Smith"),
@@ -56,9 +56,9 @@ trait TestData {
 
   val cacheKey = UUID.randomUUID().toString
 
-  val eligibleStrideUserInfo = UserSessionInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
+  val eligibleStrideUserInfo = UserInfo.EligibleWithPayePersonalDetails(eligibleResponse.value, ppDetails)
 
-  val inEligibleStrideUserInfo = UserSessionInfo.Ineligible(inEligibleResponse.value)
+  val inEligibleStrideUserInfo = UserInfo.Ineligible(inEligibleResponse.value)
 
-  val accountExistsStrideUserInfo = UserSessionInfo.AlreadyHasAccount(accountExistsResponse.value)
+  val accountExistsStrideUserInfo = UserInfo.AlreadyHasAccount(accountExistsResponse.value)
 }
