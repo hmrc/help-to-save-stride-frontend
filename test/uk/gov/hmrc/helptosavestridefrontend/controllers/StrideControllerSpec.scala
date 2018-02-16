@@ -78,7 +78,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       .expects(*, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockProxyConnectorCreateAccount(nSIUserInfo: NSIUserInfo)(result: Either[String, CreateAccountResult]) =
+  def mockBEConnectorCreateAccount(nSIUserInfo: NSIUserInfo)(result: Either[String, CreateAccountResult]) =
     (helpToSaveConnector.createAccount(_: NSIUserInfo)(_: HeaderCarrier, _: ExecutionContext))
       .expects(nSIUserInfo, *, *)
       .returning(EitherT.fromEither[Future](result))
@@ -199,7 +199,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
           mockEligibility(nino)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
-          mockKeyStorePut(Ineligible(emptyECResponse))(Right(()))
+          mockKeyStorePut(HtsSession(Ineligible(emptyECResponse)))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -214,7 +214,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
           mockEligibility(nino)(Right(EligibilityCheckResult.AlreadyHasAccount(accountExistsResponseECR)))
-          mockKeyStorePut(AlreadyHasAccount(accountExistsResponseECR))(Right(()))
+          mockKeyStorePut(HtsSession(AlreadyHasAccount(accountExistsResponseECR)))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -229,7 +229,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
 
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo))(Right(()))
+          mockKeyStorePut(HtsSession(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo)))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -360,69 +360,45 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "redirect to youAreEligible page if session data found in keystore but details are not confirmed" in {
+      "redirect to the technical error page if session data found in keystore but details are not confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = false))))
+          mockBEConnectorCreateAccount(nsiUserInfo)(Left(""))
         }
 
         val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+        contentAsString(result) should include("An account was not created due to a technical error")
       }
 
       "show the account created page if session data found and details are confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
+          mockBEConnectorCreateAccount(nsiUserInfo)(Right(AccountCreated))
         }
 
         val result = controller.createAccount(FakeRequest())
         status(result) shouldBe OK
-        contentAsString(result) should include("Successfully created account")
-      }
-
-    }
-
-    "createAccount" must {
-
-      "redirect to the eligibility page if there is no session data in keystore" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
-        }
-
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
-      }
-
-      "show the account created page if an account is successfully created" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(eligibleStrideUserInfo)))
-          mockProxyConnectorCreateAccount(nsiUserInfo)(Right(AccountCreated))
-        }
-
-        val result = controller.createAccount(FakeRequest())
         contentAsString(result) shouldBe routes.StrideController.getAccountCreatedPage().url
       }
 
       "show the account already exists page when the applicant is already enrolled into HTS" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(accountExistsStrideUserInfo)))
+          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
         }
 
         val result = controller.createAccount(FakeRequest())
         redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
 
-      "return an Internal Server Error when the proxy returns a status other than 201 or 409" in {
+      "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(eligibleStrideUserInfo)))
-          mockProxyConnectorCreateAccount(nsiUserInfo)(Left("error occured creating an account"))
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
+          mockBEConnectorCreateAccount(nsiUserInfo)(Left("error occured creating an account"))
         }
 
         val result = controller.createAccount(FakeRequest())

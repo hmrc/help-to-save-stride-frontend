@@ -81,7 +81,7 @@ trait TestData { // scalastyle:off magic.number
 
   val cacheKey = UUID.randomUUID().toString
 
-  val eligibleStrideUserInfo = UserInfo.EligibleWithNSIUserInfo(eligibleResponse.value, ppDetails)
+  val eligibleStrideUserInfo = UserInfo.EligibleWithNSIUserInfo(eligibleResponse.value, nsiUserInfo)
 
   val inEligibleStrideUserInfo = UserInfo.Ineligible(inEligibleResponse.value)
 

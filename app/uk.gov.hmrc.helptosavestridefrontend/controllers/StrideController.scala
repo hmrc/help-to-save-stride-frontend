@@ -30,8 +30,8 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInf
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, base64Encode, toFuture}
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
+import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -62,7 +62,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val r = for {
             eligibility ← helpToSaveConnector.getEligibility(form.nino)
             sessionUserInfo ← getPersonalDetails(eligibility, form.nino)
-            _ ← keyStoreConnector.put(sessionUserInfo)
+            _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
           } yield sessionUserInfo
 
           r.fold(
@@ -171,7 +171,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         .fold(
           error ⇒ {
             logger.warn(s"error during create account call, error: $error")
-            InternalServerError(routes.StrideController.getTechnicalErrorPage().url)
+            InternalServerError(views.html.technical_error())
           }, {
             case AccountCreated ⇒
               Ok(routes.StrideController.getAccountCreatedPage().url)
