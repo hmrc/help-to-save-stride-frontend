@@ -107,7 +107,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         )
 
     )
-  }(routes.StrideController.accountAlreadyExists().url)
+  }(routes.StrideController.getEligibilityPage().url)
 
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -131,11 +131,6 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         }
     )
   }(routes.StrideController.getTermsAndConditionsPage().url)
-
-  def getTechnicalErrorPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-                 checkIsEligible(_ ⇒ Ok(views.html.technical_error())))
-  }(routes.StrideController.getTechnicalErrorPage().url)
 
   private def checkIsEligible(ifEligible: EligibleWithNSIUserInfo ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
     htsSession.userInfo match {
@@ -171,7 +166,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         .fold(
           error ⇒ {
             logger.warn(s"error during create account call, error: $error")
-            InternalServerError(views.html.technical_error())
+            InternalServerError
           }, {
             case AccountCreated ⇒
               Ok(routes.StrideController.getAccountCreatedPage().url)

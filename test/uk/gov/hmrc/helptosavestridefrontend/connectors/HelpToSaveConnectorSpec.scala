@@ -188,14 +188,14 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
         mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(Some(HttpResponse(BAD_REQUEST)))
 
         val result = await(connector.createAccount(nsiUserInfo).value)
-        result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400 with response body: null, for nino: AE123456C")
+        result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400 with response body: null")
       }
 
       "return a Left when the future fails" in {
         mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(None)
 
         val result = await(connector.createAccount(nsiUserInfo).value)
-        result shouldBe Left("Encountered error while trying to make createAccount call, with message: , for nino: AE123456C")
+        result shouldBe Left("Encountered error while trying to make createAccount call, with message: ")
       }
     }
 

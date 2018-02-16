@@ -21,5 +21,3 @@ POST       /create-account                             @uk.gov.hmrc.helptosavest
 GET       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
 
 GET       /account-created                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()
-
-GET       /technical-error                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getTechnicalErrorPage()

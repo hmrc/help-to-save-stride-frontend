@@ -344,6 +344,13 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
 
+      "redirect the user when they are not logged in" in {
+        mockAuthFail()
+        val result = controller.handleDetailsConfirmed(FakeRequest())
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=%2Fhelp-to-save-stride%2Fcheck-eligibility-page&origin=help-to-save-stride-frontend")
+      }
+
     }
 
     "handling createAccount" must {
@@ -359,7 +366,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "redirect to the technical error page if session data found in keystore but details are not confirmed" in {
+      "return an InternalServerError if session data found in keystore but details are not confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = false))))
@@ -368,7 +375,6 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.createAccount(FakeRequest())
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsString(result) should include("An account was not created due to a technical error")
       }
 
       "show the account created page if session data found and details are confirmed" in {

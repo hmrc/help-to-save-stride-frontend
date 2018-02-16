@@ -161,18 +161,21 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
     EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, nSIUserInfo).map[Either[String, CreateAccountResult]] { response ⇒
       response.status match {
         case Status.CREATED ⇒
-          logger.info(s"createAccount returned 201 (Created) with nino: ${nSIUserInfo.nino}")
+          logger.info(s"createAccount returned 201 (Created) with nino: ", nSIUserInfo.nino)
           Right(AccountCreated)
         case Status.CONFLICT ⇒
-          logger.info(s"createAccount returned 409 (Conflict) with nino: ${nSIUserInfo.nino}")
+          logger.warn(s"createAccount returned 409 (Conflict) with nino: ", nSIUserInfo.nino)
           Right(AccountAlreadyExists)
         case _ ⇒
+          logger.warn(s"createAccount returned a status: ${response.status} " +
+            s"with response body: ${response.body}, for nino: ", nSIUserInfo.nino)
           Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status} " +
-            s"with response body: ${response.body}, for nino: ${nSIUserInfo.nino}")
+            s"with response body: ${response.body}")
       }
     }.recover {
       case e ⇒
-        Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}, for nino: ${nSIUserInfo.nino}")
+        logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}, for nino: ", nSIUserInfo.nino)
+        Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
     })
   }
 
