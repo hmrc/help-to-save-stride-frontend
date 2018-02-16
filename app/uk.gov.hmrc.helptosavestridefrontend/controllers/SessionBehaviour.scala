@@ -22,7 +22,7 @@ import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.models.{NSIUserInfo, PayePersonalDetails}
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views

@@ -29,7 +29,6 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, Key
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
-import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, NSIUserInfo}
