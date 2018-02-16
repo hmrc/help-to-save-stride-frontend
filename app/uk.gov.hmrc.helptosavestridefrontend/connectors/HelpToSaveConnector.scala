@@ -34,6 +34,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, base64Encode}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.helptosavestridefrontend.util.maskNino
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -161,20 +162,20 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
     EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, nSIUserInfo).map[Either[String, CreateAccountResult]] { response ⇒
       response.status match {
         case Status.CREATED ⇒
-          logger.info(s"createAccount returned 201 (Created) with nino: ", nSIUserInfo.nino)
+          logger.debug("createAccount returned 201 (Created)")
           Right(AccountCreated)
         case Status.CONFLICT ⇒
-          logger.warn(s"createAccount returned 409 (Conflict) with nino: ", nSIUserInfo.nino)
+          logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
           Right(AccountAlreadyExists)
         case _ ⇒
           logger.warn(s"createAccount returned a status: ${response.status} " +
-            s"with response body: ${response.body}, for nino: ", nSIUserInfo.nino)
+            s"with response body: ${maskNino(response.body)}", nSIUserInfo.nino)
           Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status} " +
-            s"with response body: ${response.body}")
+            s"with response body: ${maskNino(response.body)}")
       }
     }.recover {
       case e ⇒
-        logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}, for nino: ", nSIUserInfo.nino)
+        logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}", nSIUserInfo.nino)
         Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
     })
   }

@@ -107,7 +107,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         )
 
     )
-  }(routes.StrideController.getEligibilityPage().url)
+  }(routes.StrideController.handleDetailsConfirmed().url)
 
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -130,7 +130,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           Ok(views.html.account_created())
         }
     )
-  }(routes.StrideController.getTermsAndConditionsPage().url)
+  }(routes.StrideController.getAccountCreatedPage().url)
 
   private def checkIsEligible(ifEligible: EligibleWithNSIUserInfo ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
     htsSession.userInfo match {
@@ -175,6 +175,6 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           }
         ))
     )
-  }(routes.StrideController.getTermsAndConditionsPage().url)
+  }(routes.StrideController.createAccount().url)
 
 }
