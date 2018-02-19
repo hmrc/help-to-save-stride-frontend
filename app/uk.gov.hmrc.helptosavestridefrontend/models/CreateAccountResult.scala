@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.models
 
-sealed trait CreateAccountResult {
-
-}
+sealed trait CreateAccountResult
 
 object CreateAccountResult {
 

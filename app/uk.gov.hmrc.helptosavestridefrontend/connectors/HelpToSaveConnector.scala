@@ -164,7 +164,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
     EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, nSIUserInfo).map[Either[String, CreateAccountResult]] { response ⇒
       response.status match {
         case Status.CREATED ⇒
-          logger.debug("createAccount returned 201 (Created)")
+          logger.debug("createAccount returned 201 (Created)", nSIUserInfo.nino)
           Right(AccountCreated)
         case Status.CONFLICT ⇒
           logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
