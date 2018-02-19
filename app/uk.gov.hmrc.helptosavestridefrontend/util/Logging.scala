@@ -32,6 +32,9 @@ object Logging {
     def info(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
       logger.info(transformer.transform(message, nino))
 
+    def debug(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
+      logger.debug(transformer.transform(message, nino))
+
     def warn(message: String, nino: NINO)(implicit transformer: NINOLogMessageTransformer): Unit =
       logger.warn(transformer.transform(message, nino))
   }

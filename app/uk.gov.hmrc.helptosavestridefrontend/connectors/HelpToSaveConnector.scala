@@ -19,6 +19,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 import cats.data.EitherT
 import cats.syntax.either._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
+import play.api.http.Status
 import play.api.http.Status.OK
 import play.api.libs.json._
 import play.api.{Configuration, Environment}
@@ -26,12 +27,14 @@ import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECResponseHolder
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
-import uk.gov.hmrc.helptosavestridefrontend.models.PayePersonalDetails
+import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
+import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, NSIUserInfo, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
+import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, base64Encode}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.helptosavestridefrontend.util.maskNino
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,7 +43,9 @@ trait HelpToSaveConnector {
 
   def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult]
 
-  def getPayePersonalDetails(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[PayePersonalDetails]
+  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIUserInfo]
+
+  def createAccount(nSIUserInfo: NSIUserInfo)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
 
 }
 
@@ -58,6 +63,8 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   def payePersonalDetailsUrl(nino: String): String = s"$htsUrl/help-to-save/stride/paye-personal-details?nino=$nino"
 
+  val createAccountUrl: String = s"$htsUrl/help-to-save/create-de-account"
+
   type EitherStringOr[A] = Either[String, A]
 
   override def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult] = {
@@ -65,12 +72,14 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.eligibilityCheckTimer.time()
 
-        http.get(eligibilityUrl(nino)).map { response ⇒
+        http.get(eligibilityUrl(base64Encode(nino))).map { response ⇒
           val time = timerContext.stop()
 
           response.status match {
             case OK ⇒
-              val result = response.parseJson[ECResponseHolder].flatMap(ecHolder ⇒ toEligibilityCheckResult(ecHolder.response))
+              val result = {
+                response.parseJson[ECResponseHolder].flatMap(ecHolder ⇒ toEligibilityCheckResult(ecHolder.response))
+              }
               result.fold({
                 e ⇒
                   metrics.eligibilityCheckErrorCounter.inc()
@@ -114,17 +123,17 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
 
-  override def getPayePersonalDetails(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[PayePersonalDetails] =
-    EitherT[Future, String, PayePersonalDetails](
+  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIUserInfo] =
+    EitherT[Future, String, NSIUserInfo](
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
-        http.get(payePersonalDetailsUrl(nino))
+        http.get(payePersonalDetailsUrl(base64Encode(nino)))
           .map { response ⇒
             val time = timerContext.stop()
             response.status match {
               case OK ⇒
-                val result = response.parseJson[PayePersonalDetails]
+                val result = response.parseJson[PayePersonalDetails].map(_.convertToNSIUserInfo(nino))
                 result.fold({
                   e ⇒
                     metrics.payePersonalDetailsErrorCounter.inc()
@@ -149,6 +158,29 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
               Left(s"Call to paye-personal-details unsuccessful: ${e.getMessage} (round-trip time: ${timeString(time)})")
           }
       })
+
+  override def createAccount(nSIUserInfo: NSIUserInfo)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
+
+    EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, nSIUserInfo).map[Either[String, CreateAccountResult]] { response ⇒
+      response.status match {
+        case Status.CREATED ⇒
+          logger.debug("createAccount returned 201 (Created)", nSIUserInfo.nino)
+          Right(AccountCreated)
+        case Status.CONFLICT ⇒
+          logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
+          Right(AccountAlreadyExists)
+        case _ ⇒
+          logger.warn(s"createAccount returned a status: ${response.status} " +
+            s"with response body: ${maskNino(response.body)}", nSIUserInfo.nino)
+          Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status} " +
+            s"with response body: ${maskNino(response.body)}")
+      }
+    }.recover {
+      case e ⇒
+        logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}", nSIUserInfo.nino)
+        Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
+    })
+  }
 
 }
 

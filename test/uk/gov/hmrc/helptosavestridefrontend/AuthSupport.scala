@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import configs.syntax._
 import org.scalamock.handlers.CallHandler4
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, Enrolment, Enrolments}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
@@ -42,4 +42,8 @@ trait AuthSupport { this: TestSupport ⇒
   def mockSuccessfulAuthorisation(): CallHandler4[Predicate, Retrieval[Enrolments], HeaderCarrier, ExecutionContext, Future[Enrolments]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
       Right(Enrolments(roles.map(Enrolment(_)).toSet)))
+
+  def mockAuthFail(): Unit =
+    mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
+      Left(BearerTokenExpired("no login session exists")))
 }

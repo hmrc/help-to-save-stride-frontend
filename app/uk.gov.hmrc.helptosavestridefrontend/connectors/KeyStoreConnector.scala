@@ -79,6 +79,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
           pagerDutyAlerting.alert("unexpected error when storing UserSessionInfo to keystore")
           Left(e.getMessage)
       }
+
     }
 
   override def get(implicit reads: Reads[HtsSession],
