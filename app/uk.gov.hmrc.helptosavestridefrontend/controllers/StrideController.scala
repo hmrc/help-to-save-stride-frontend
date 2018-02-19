@@ -166,12 +166,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         .fold(
           error ⇒ {
             logger.warn(s"error during create account call, error: $error")
-            InternalServerError
+            internalServerError()
           }, {
             case AccountCreated ⇒
-              Ok(routes.StrideController.getAccountCreatedPage().url)
+              Ok(views.html.account_created())
             case AccountAlreadyExists ⇒
-              Ok(routes.StrideController.accountAlreadyExists().url)
+              Ok(views.html.account_already_exists())
           }
         ))
     )

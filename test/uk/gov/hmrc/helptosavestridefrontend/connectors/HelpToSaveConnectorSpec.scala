@@ -53,37 +53,41 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
 
       "return a successful eligibility response for a valid NINO" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1))))))
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1)))))) // scalastyle:ignore magic.number
+        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+          Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
       }
 
       "handles the case of success response but user is not eligible" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2))))))
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2)))))) // scalastyle:ignore magic.number
+        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+          Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
       }
 
       "handles the case of success response but user has hot an account already" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3))))))
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3)))))) // scalastyle:ignore magic.number
+        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+          AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
       }
 
       "handles the case of success response but invalid eligibility result code" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5))))))
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5)))))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
         Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
       }
 
       "handles the case of success response but no eligibility result json" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, None)))
-        mockPagerDutyAlert("Could not parse JSON in eligibility check response")
+        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("{}"))))) // scalastyle:ignore magic.number
 
-        Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
+        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+          Ineligible(EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)))
       }
 
       "handle responses when they contain invalid json" in {
         inSequence {
-          mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}""")))))
+          mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(
+            200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
         }
         Await.result(connector.getEligibility(nino).value, 555.seconds).isLeft shouldBe true

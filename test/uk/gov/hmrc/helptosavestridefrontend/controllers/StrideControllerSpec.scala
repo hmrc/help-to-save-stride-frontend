@@ -386,7 +386,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.createAccount(FakeRequest())
         status(result) shouldBe OK
-        contentAsString(result) shouldBe routes.StrideController.getAccountCreatedPage().url
+        contentAsString(result) should include("Your help-to-save account has been created")
       }
 
       "show the account already exists page when the applicant is already enrolled into HTS" in {

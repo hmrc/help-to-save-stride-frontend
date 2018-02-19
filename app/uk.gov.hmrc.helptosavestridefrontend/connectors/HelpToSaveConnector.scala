@@ -77,7 +77,9 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
           response.status match {
             case OK ⇒
-              val result = response.parseJson[ECResponseHolder].flatMap(ecHolder ⇒ toEligibilityCheckResult(ecHolder.response))
+              val result = {
+                response.parseJson[ECResponseHolder].flatMap(ecHolder ⇒ toEligibilityCheckResult(ecHolder.response))
+              }
               result.fold({
                 e ⇒
                   metrics.eligibilityCheckErrorCounter.inc()
