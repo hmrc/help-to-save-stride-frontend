@@ -52,7 +52,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       },
       _ ⇒ Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
     )
-  }(routes.StrideController.getEligibilityPage().url)
+  }(routes.StrideController.getEligibilityPage)
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -80,19 +80,19 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           )
         })
     )
-  }(routes.StrideController.checkEligibilityAndGetPersonalInfo().url)
+  }(routes.StrideController.checkEligibilityAndGetPersonalInfo)
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreNotEligible().url)
+  }(routes.StrideController.youAreNotEligible)
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreEligible().url)
+  }(routes.StrideController.youAreEligible)
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.accountAlreadyExists().url)
+  }(routes.StrideController.accountAlreadyExists)
 
   def handleDetailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -107,7 +107,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         )
 
     )
-  }(routes.StrideController.handleDetailsConfirmed().url)
+  }(routes.StrideController.handleDetailsConfirmed)
 
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -119,7 +119,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))(htsSession)
         }
     )
-  }(routes.StrideController.getTermsAndConditionsPage().url)
+  }(routes.StrideController.getTermsAndConditionsPage())
 
   def getAccountCreatedPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
@@ -130,7 +130,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           Ok(views.html.account_created())
         }
     )
-  }(routes.StrideController.getAccountCreatedPage().url)
+  }(routes.StrideController.getAccountCreatedPage())
 
   private def checkIsEligible(ifEligible: EligibleWithNSIUserInfo ⇒ Future[Result])(htsSession: HtsSession): Future[Result] =
     htsSession.userInfo match {
@@ -175,6 +175,6 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           }
         ))
     )
-  }(routes.StrideController.createAccount().url)
+  }(routes.StrideController.createAccount())
 
 }

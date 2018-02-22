@@ -22,6 +22,7 @@ import cats.syntax.traverse._
 import configs.syntax._
 import play.api.{Configuration, Environment}
 import play.api.mvc._
+import play.mvc.Http
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.allEnrolments
 import uk.gov.hmrc.auth.core.{AuthProviders, AuthorisedFunctions, Enrolment, NoActiveSession}
@@ -42,7 +43,13 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects { this: Frontend
 
   private val requiredRoles: List[String] = config.underlying.get[List[String]]("stride.roles").value
 
-  def authorisedFromStride(action: Request[AnyContent] ⇒ Future[Result])(redirectOnLoginUrl: String): Action[AnyContent] =
+  private val getRedirectUrl: (Request[AnyContent], Call) ⇒ String = if (config.underlying.get[Boolean]("stride.redirect-with-absolute-urls").value) {
+    case (r, c) ⇒ c.absoluteURL()(r)
+  } else {
+    case (_, c) ⇒ c.url
+  }
+
+  def authorisedFromStride(action: Request[AnyContent] ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
         enrolments ⇒
@@ -52,7 +59,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects { this: Frontend
           necessaryRoles.fold[Future[Result]](Unauthorized("Insufficient roles")){ _ ⇒ action(request) }
       }.recover{
         case _: NoActiveSession ⇒
-          toStrideLogin(redirectOnLoginUrl)
+          toStrideLogin(getRedirectUrl(request, redirectCall))
       }
     }
 
