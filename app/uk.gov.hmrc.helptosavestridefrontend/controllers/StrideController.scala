@@ -26,7 +26,7 @@ import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, UserInfo}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.EligibleWithNSIUserInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
@@ -52,7 +52,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       },
       _ ⇒ Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
     )
-  }(routes.StrideController.getEligibilityPage)
+  }(routes.StrideController.getEligibilityPage())
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -80,19 +80,41 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           )
         })
     )
-  }(routes.StrideController.checkEligibilityAndGetPersonalInfo)
+  }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreNotEligible)
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url), {
+      _.userInfo match {
+        case EligibleWithNSIUserInfo(_, _) ⇒
+          SeeOther(routes.StrideController.youAreEligible().url)
+
+        case Ineligible(_) ⇒
+          Ok(views.html.you_are_not_eligible())
+
+        case AlreadyHasAccount(_) ⇒
+          SeeOther(routes.StrideController.accountAlreadyExists().url)
+      }
+    })
+  }(routes.StrideController.youAreNotEligible())
+
+  def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url), {
+      _.userInfo match {
+        case EligibleWithNSIUserInfo(_, _) ⇒
+          SeeOther(routes.StrideController.youAreEligible().url)
+
+        case Ineligible(_) ⇒
+          SeeOther(routes.StrideController.youAreNotEligible().url)
+
+        case AlreadyHasAccount(_) ⇒
+          Ok(views.html.account_already_exists())
+      }
+    })
+  }(routes.StrideController.accountAlreadyExists())
 
   def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreEligible)
-
-  def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.accountAlreadyExists)
+  }(routes.StrideController.youAreEligible())
 
   def handleDetailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -107,7 +129,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         )
 
     )
-  }(routes.StrideController.handleDetailsConfirmed)
+  }(routes.StrideController.handleDetailsConfirmed())
 
   def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(

@@ -117,65 +117,146 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
     "getting the you-are-eligible page" must {
 
-      test(controller.youAreEligible)
+      "show the /check-eligibility-page when there is no session in key-store" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+        }
+
+        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
+      }
+
+      "show the you-are-eligible page if session is found in key-store and user is eligible" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
+        }
+
+        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("you are eligible")
+      }
+
+      "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
+        }
+
+        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
+      }
+
+      "redirect to the account-already-exists page if session is found in key-store and but user has an account already" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
+        }
+
+        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
+      }
+
     }
 
     "getting the you-are-not-eligible page" must {
 
-      test(controller.youAreNotEligible)
+      "show the /check-eligibility-page when there is no session in key-store" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+        }
+
+        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
+      }
+
+      "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
+        }
+
+        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
+      }
+
+      "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
+        }
+
+        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("you are NOT eligible")
+      }
+
+      "redirect to the account-already-exists page if session is found in key-store and but user has an account already" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
+        }
+
+        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
+      }
+
     }
 
     "getting the account-already-exists page" must {
 
-      test(controller.accountAlreadyExists)
-    }
-
-      def test(doRequest: ⇒ Action[AnyContent]): Unit = { // scalastyle:ignore method.length
-
-        "show the /check-eligibility-page when there is no session in key-store" in {
-          inSequence {
-            mockSuccessfulAuthorisation()
-            mockKeyStoreGet(Right(None))
-          }
-
-          val result = doRequest(fakeRequestWithCSRFToken)
-          status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
+      "show the /check-eligibility-page when there is no session in key-store" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
         }
 
-        "show the you-are-eligible page if session is found in key-store and user is eligible" in {
-          inSequence {
-            mockSuccessfulAuthorisation()
-            mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
-          }
-
-          val result = doRequest(fakeRequestWithCSRFToken)
-          status(result) shouldBe OK
-          contentAsString(result) should include("you are eligible")
-        }
-
-        "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
-          inSequence {
-            mockSuccessfulAuthorisation()
-            mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
-          }
-
-          val result = doRequest(fakeRequestWithCSRFToken)
-          status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
-        }
-
-        "show the account-already-exists page if session is found in key-store and but user has an account already" in {
-          inSequence {
-            mockSuccessfulAuthorisation()
-            mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
-          }
-
-          val result = doRequest(fakeRequestWithCSRFToken)
-          status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
-        }
+        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
       }
+
+      "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
+        }
+
+        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
+      }
+
+      "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
+        }
+
+        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
+      }
+
+      "show the account-already-exists page if session is found in key-store and but user has an account already" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
+        }
+
+        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("Account already exists")
+      }
+    }
 
     "checking the eligibility and retrieving paye details" must {
 
@@ -333,7 +414,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         redirectLocation(result) shouldBe Some(routes.StrideController.getTermsAndConditionsPage().url)
       }
 
-      "handle errors incase of updating keystore with detailsConfirmed flag" in {
+      "handle errors in case of updating keystore with detailsConfirmed flag" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
@@ -348,7 +429,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         mockAuthFail()
         val result = controller.handleDetailsConfirmed(FakeRequest())
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=%2Fhelp-to-save-stride%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
+        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save-stride%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
       }
 
     }
