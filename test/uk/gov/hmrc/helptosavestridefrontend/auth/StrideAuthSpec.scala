@@ -61,7 +61,7 @@ class StrideAuthSpec extends TestSupport {
 
     lazy val test = new TestStrideAuth(roles, fakeApplication.injector.instanceOf[FrontendAppConfig])
 
-    lazy val action = test.authorisedFromStride { _ ⇒ Ok }("/url")
+    lazy val action = test.authorisedFromStride { _ ⇒ Ok }(controllers.routes.Default.redirect())
 
     "provide a authorised method" which {
 
@@ -71,7 +71,10 @@ class StrideAuthSpec extends TestSupport {
 
         val result = action(request)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(test.strideLoginUrl + s"?successURL=${URLEncoder.encode("/url", "UTF-8")}&origin=help-to-save-stride-frontend")
+        redirectLocation(result) shouldBe Some(test.strideLoginUrl + s"?successURL=${
+          URLEncoder.encode(
+            controllers.routes.Default.redirect().absoluteURL(), "UTF-8")
+        }&origin=help-to-save-stride-frontend")
       }
 
       "returns an Unauthorised status" when {
