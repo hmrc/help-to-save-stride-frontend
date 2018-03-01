@@ -31,6 +31,7 @@ import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
+import uk.gov.hmrc.helptosavestridefrontend.services.CheckEligibilityService
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,6 +44,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val frontendAppConfig:   FrontendAppConfig,
                                   messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
+
+  val checkEligibilityService: CheckEligibilityService = new CheckEligibilityService(authConnector, helpToSaveConnector, frontendAppConfig, messageApi)
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     keyStoreConnector.delete.fold(
@@ -60,7 +63,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
         form ⇒ {
           val r = for {
-            eligibility ← helpToSaveConnector.getEligibility(form.nino)
+            eligibility ← checkEligibilityService.doEligibilityCheck(form.nino)
             sessionUserInfo ← getPersonalDetails(eligibility, form.nino)
             _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
           } yield sessionUserInfo
