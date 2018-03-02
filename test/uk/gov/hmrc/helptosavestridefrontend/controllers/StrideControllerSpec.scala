@@ -29,9 +29,10 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, Key
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{NotEnrolled, Enrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
-import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, NSIUserInfo}
+import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo}
 import uk.gov.hmrc.helptosavestridefrontend.util.{Result ⇒ _, _}
 import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -80,6 +81,11 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
   def mockBEConnectorCreateAccount(nSIUserInfo: NSIUserInfo)(result: Either[String, CreateAccountResult]) =
     (helpToSaveConnector.createAccount(_: NSIUserInfo)(_: HeaderCarrier, _: ExecutionContext))
       .expects(nSIUserInfo, *, *)
+      .returning(EitherT.fromEither[Future](result))
+
+  def mockGetEnrolmentStatus(nino: String)(result: Either[String, EnrolmentStatus]) =
+    (helpToSaveConnector.getEnrolmentStatus(_: String)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
 
   lazy val controller =
@@ -278,6 +284,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
           mockKeyStorePut(HtsSession(Ineligible(emptyECResponse)))(Right(()))
         }
@@ -293,21 +300,20 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
-          mockEligibility(nino)(Right(EligibilityCheckResult.AlreadyHasAccount(accountExistsResponseECR)))
-          mockKeyStorePut(HtsSession(AlreadyHasAccount(accountExistsResponseECR)))(Right(()))
+          mockGetEnrolmentStatus(nino)(Right(Enrolled))
+          mockKeyStorePut(HtsSession(AlreadyHasAccount))(Right(()))
         }
 
         val result = doRequest(nino)
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
+        status(result) shouldBe OK
       }
 
       "handle the case where user is eligible and paye-details exist" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
-
           mockPayeDetails(nino)(Right(nsiUserInfo))
           mockKeyStorePut(HtsSession(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo)))(Right(()))
         }
@@ -322,6 +328,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Left("unexpected error"))
         }
 
@@ -333,6 +340,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Left("unexpected error"))
         }
@@ -347,6 +355,29 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Left("unexpected key-store error"))
         }
 
+        val result = doRequest(nino)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
+
+      "return an Internal Server Error when the getEnrolmentStatus call fails" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Left("error occurred when getting enrolment status"))
+        }
+        val result = doRequest(nino)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
+
+      "return an Internal Server Error when the updateSessionIfEnrolled returns a Left" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
+          mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
+          mockPayeDetails(nino)(Right(nsiUserInfo))
+          mockKeyStorePut(HtsSession(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo)))(Left("Error occurred"))
+        }
         val result = doRequest(nino)
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }

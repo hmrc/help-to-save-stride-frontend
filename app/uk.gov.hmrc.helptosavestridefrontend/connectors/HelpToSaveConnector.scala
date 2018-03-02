@@ -18,6 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.data.EitherT
 import cats.syntax.either._
+import cats.instances.future._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.http.Status.OK
@@ -191,21 +192,19 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
     EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl).map[Either[String, EnrolmentStatus]] { response ⇒
       response.status match {
-        case OK ⇒ {
-          response.parseJson[EnrolmentStatus] match {
-            case Right(Enrolled) ⇒
-              logger.debug("getEnrolmentStatus returned Enrolled", nino)
-              Right(Enrolled)
-            case Right(NotEnrolled) ⇒
-              logger.warn("getEnrolmentStatus returned NotEnrolled", nino)
-              Right(NotEnrolled)
-          }
-        }
-        case _ ⇒
-          logger.warn(s"getEnrolmentStatus returned a status: ${response.status} " +
-            s"with response body: ${maskNino(response.body)}", nino)
-          Left(s"getEnrolmentStatus returned a status other than 201, and 409, status was: ${response.status} " +
-            s"with response body: ${maskNino(response.body)}")
+        case OK ⇒
+          val result = response.parseJson[EnrolmentStatus]
+          result.fold({
+            e ⇒
+              logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK)", nino)
+          }, _ ⇒
+            logger.debug(s"Call to get enrolment status successful, received 200 (OK)", nino)
+          )
+          result
+
+        case other: Int ⇒
+          logger.warn(s"Call to get enrolment status unsuccessful. Received unexpected status $other", nino)
+          Left(s"Received unexpected status $other")
       }
     }.recover {
       case e ⇒
