@@ -29,6 +29,8 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSes
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
@@ -54,31 +56,59 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.getEligibilityPage())
 
+  def updateSessionIfEnrolled(enrolmentStatus: EnrolmentStatus)(implicit hc: HeaderCarrier): EitherT[Future, String, Unit] = enrolmentStatus match {
+    case Enrolled    ⇒ keyStoreConnector.put(HtsSession(AlreadyHasAccount)).map(_ ⇒ ())
+    case NotEnrolled ⇒ EitherT.pure[Future, String, Unit](())
+  }
+
+  private def checkIfAlreadyEnrolled(nino: String)(ifNotEnrolled: ⇒ Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier): Future[Result] = {
+    val result = for {
+      status ← helpToSaveConnector.getEnrolmentStatus(nino)
+      _ ← updateSessionIfEnrolled(status)
+    } yield status
+
+    result.fold(
+      {
+        e ⇒
+          logger.warn(e)
+          toFuture(internalServerError())
+      }, {
+        res ⇒
+          res match {
+            case Enrolled    ⇒ toFuture(Ok(views.html.account_already_exists()))
+            case NotEnrolled ⇒ ifNotEnrolled
+          }
+      }
+    ).flatMap(identity)
+  }
+
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+
     checkSession(
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
         withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
-        form ⇒ {
-          val r = for {
-            eligibility ← helpToSaveConnector.getEligibility(form.nino)
-            sessionUserInfo ← getPersonalDetails(eligibility, form.nino)
-            _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
-          } yield sessionUserInfo
+        form ⇒
+          checkIfAlreadyEnrolled(form.nino){
+            val r = for {
+              eligibility ← helpToSaveConnector.getEligibility(form.nino)
+              sessionUserInfo ← getPersonalDetails(eligibility, form.nino)
+              _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
+            } yield sessionUserInfo
 
-          r.fold(
-            error ⇒ {
-              logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
-              internalServerError()
-            }, {
-              case UserInfo.EligibleWithNSIUserInfo(_, details) ⇒
-                Ok(views.html.you_are_eligible(details))
-              case UserInfo.Ineligible(_) ⇒
-                SeeOther(routes.StrideController.youAreNotEligible().url)
-              case UserInfo.AlreadyHasAccount(_) ⇒
-                SeeOther(routes.StrideController.accountAlreadyExists().url)
-            }
-          )
-        })
+            r.fold(
+              error ⇒ {
+                logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
+                internalServerError()
+              }, {
+                case UserInfo.EligibleWithNSIUserInfo(_, details) ⇒
+                  Ok(views.html.you_are_eligible(details))
+                case UserInfo.Ineligible(_) ⇒
+                  SeeOther(routes.StrideController.youAreNotEligible().url)
+                case UserInfo.AlreadyHasAccount ⇒
+                  SeeOther(routes.StrideController.accountAlreadyExists().url)
+              }
+            )
+          })
     )
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
@@ -91,7 +121,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         case Ineligible(_) ⇒
           Ok(views.html.you_are_not_eligible())
 
-        case AlreadyHasAccount(_) ⇒
+        case AlreadyHasAccount ⇒
           SeeOther(routes.StrideController.accountAlreadyExists().url)
       }
     })
@@ -106,7 +136,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         case Ineligible(_) ⇒
           SeeOther(routes.StrideController.youAreNotEligible().url)
 
-        case AlreadyHasAccount(_) ⇒
+        case AlreadyHasAccount ⇒
           Ok(views.html.account_already_exists())
       }
     })
@@ -162,7 +192,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       case UserInfo.Ineligible(_) ⇒
         SeeOther(routes.StrideController.youAreNotEligible().url)
 
-      case UserInfo.AlreadyHasAccount(_) ⇒
+      case UserInfo.AlreadyHasAccount ⇒
         SeeOther(routes.StrideController.accountAlreadyExists().url)
 
     }
@@ -178,7 +208,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         EitherT.pure[Future, String, UserInfo](UserInfo.Ineligible(value))
 
       case EligibilityCheckResult.AlreadyHasAccount(value) ⇒
-        EitherT.pure[Future, String, UserInfo](UserInfo.AlreadyHasAccount(value))
+        EitherT.pure[Future, String, UserInfo](UserInfo.AlreadyHasAccount)
 
     }
 

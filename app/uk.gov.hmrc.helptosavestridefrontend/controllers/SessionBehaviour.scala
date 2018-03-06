@@ -58,7 +58,7 @@ trait SessionBehaviour {
         case Ineligible(response) ⇒
           SeeOther(routes.StrideController.youAreNotEligible().url)
 
-        case AlreadyHasAccount(response) ⇒
+        case AlreadyHasAccount ⇒
           SeeOther(routes.StrideController.accountAlreadyExists().url)
       })
 }
@@ -73,22 +73,24 @@ object SessionBehaviour {
 
     case class Ineligible(response: EligibilityCheckResponse) extends UserInfo
 
-    case class AlreadyHasAccount(response: EligibilityCheckResponse) extends UserInfo
+    case object AlreadyHasAccount extends UserInfo
 
   }
 
   implicit val format: Format[UserInfo] = new Format[UserInfo] {
-    override def writes(result: UserInfo): JsValue = {
-      val (a, b, c) = result match {
-        case EligibleWithNSIUserInfo(value, details) ⇒ (1, value, Some(details))
-        case Ineligible(value)                       ⇒ (2, value, None)
-        case AlreadyHasAccount(value)                ⇒ (3, value, None)
+    override def writes(u: UserInfo): JsValue = {
+      val (code, result, details) = u match {
+        case EligibleWithNSIUserInfo(value, details) ⇒ (1, Some(value), Some(details))
+        case Ineligible(value)                       ⇒ (2, Some(value), None)
+        case AlreadyHasAccount                       ⇒ (3, None, None)
       }
 
-      val fields = {
-        val f = List("code" -> JsNumber(a), "result" -> Json.toJson(b))
-        c.fold(f)(d ⇒ ("details" → Json.toJson(d)) :: f)
-      }
+      val fields: List[(String, JsValue)] =
+        List("code" → Some(JsNumber(code)),
+          "result" → result.map(Json.toJson(_)),
+          "details" → details.map(Json.toJson(_))
+        ).collect { case (key, Some(value)) ⇒ key → value }
+
       JsObject(fields)
     }
 
@@ -98,7 +100,7 @@ object SessionBehaviour {
         (json \ "details").validateOpt[NSIUserInfo]) match {
           case (JsSuccess(1, _), JsSuccess(value, _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
           case (JsSuccess(2, _), JsSuccess(value, _), _) ⇒ JsSuccess(Ineligible(value))
-          case (JsSuccess(3, _), JsSuccess(value, _), _) ⇒ JsSuccess(AlreadyHasAccount(value))
+          case (JsSuccess(3, _), JsSuccess(value, _), _) ⇒ JsSuccess(AlreadyHasAccount)
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")
         }
     }

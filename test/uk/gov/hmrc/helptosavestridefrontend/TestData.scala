@@ -85,5 +85,5 @@ trait TestData { // scalastyle:off magic.number
 
   val inEligibleStrideUserInfo = UserInfo.Ineligible(inEligibleResponse.value)
 
-  val accountExistsStrideUserInfo = UserInfo.AlreadyHasAccount(accountExistsResponse.value)
+  val accountExistsStrideUserInfo = UserInfo.AlreadyHasAccount
 }

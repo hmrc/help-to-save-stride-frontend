@@ -18,6 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.data.EitherT
 import cats.syntax.either._
+import cats.instances.future._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.http.Status.OK
@@ -28,7 +29,8 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECRes
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, NSIUserInfo, PayePersonalDetails}
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
+import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
@@ -47,6 +49,8 @@ trait HelpToSaveConnector {
 
   def createAccount(nSIUserInfo: NSIUserInfo)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
 
+  def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus]
+
 }
 
 @Singleton
@@ -64,6 +68,8 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
   def payePersonalDetailsUrl(nino: String): String = s"$htsUrl/help-to-save/stride/paye-personal-details?nino=$nino"
 
   val createAccountUrl: String = s"$htsUrl/help-to-save/create-de-account"
+
+  val enrolmentStatusUrl: String = s"$htsUrl/help-to-save/enrolment-status"
 
   type EitherStringOr[A] = Either[String, A]
 
@@ -172,14 +178,44 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
         case _ ⇒
           logger.warn(s"createAccount returned a status: ${response.status} " +
             s"with response body: ${maskNino(response.body)}", nSIUserInfo.nino)
+          pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the create account url")
           Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status} " +
             s"with response body: ${maskNino(response.body)}")
       }
     }.recover {
       case e ⇒
         logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}", nSIUserInfo.nino)
+        pagerDutyAlerting.alert("Failed to make call to the back end create account url")
         Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
     })
+  }
+
+  override def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] = {
+
+    EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl).map[Either[String, EnrolmentStatus]] { response ⇒
+      response.status match {
+        case OK ⇒
+          val result = response.parseJson[EnrolmentStatus]
+          result.fold({
+            e ⇒
+              logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK)", nino)
+          }, _ ⇒
+            logger.debug(s"Call to get enrolment status successful, received 200 (OK)", nino)
+          )
+          result
+
+        case other: Int ⇒
+          logger.warn(s"Call to get enrolment status unsuccessful. Received unexpected status $other", nino)
+          pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the get enrolment status url")
+          Left(s"Received unexpected status $other")
+      }
+    }.recover {
+      case e ⇒
+        logger.warn(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}", nino)
+        pagerDutyAlerting.alert("Failed to make call to the back end get enrolment status url")
+        Left(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}")
+    })
+
   }
 
 }
