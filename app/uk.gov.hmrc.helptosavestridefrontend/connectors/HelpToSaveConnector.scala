@@ -178,12 +178,14 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
         case _ ⇒
           logger.warn(s"createAccount returned a status: ${response.status} " +
             s"with response body: ${maskNino(response.body)}", nSIUserInfo.nino)
+          pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the create account url")
           Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status} " +
             s"with response body: ${maskNino(response.body)}")
       }
     }.recover {
       case e ⇒
         logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}", nSIUserInfo.nino)
+        pagerDutyAlerting.alert("Failed to make call to the back end create account url")
         Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
     })
   }
@@ -204,11 +206,13 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
         case other: Int ⇒
           logger.warn(s"Call to get enrolment status unsuccessful. Received unexpected status $other", nino)
+          pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the get enrolment status url")
           Left(s"Received unexpected status $other")
       }
     }.recover {
       case e ⇒
         logger.warn(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}", nino)
+        pagerDutyAlerting.alert("Failed to make call to the back end get enrolment status url")
         Left(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}")
     })
 
