@@ -189,15 +189,19 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       }
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
-        mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(Some(HttpResponse(BAD_REQUEST)))
-
+        inSequence {
+          mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(Some(HttpResponse(BAD_REQUEST)))
+          mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
+        }
         val result = await(connector.createAccount(nsiUserInfo).value)
         result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400 with response body: null")
       }
 
       "return a Left when the future fails" in {
-        mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(None)
-
+        inSequence {
+          mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(None)
+          mockPagerDutyAlert("Failed to make call to the back end create account url")
+        }
         val result = await(connector.createAccount(nsiUserInfo).value)
         result shouldBe Left("Encountered error while trying to make createAccount call, with message: ")
       }
