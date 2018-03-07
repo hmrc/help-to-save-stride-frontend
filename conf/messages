@@ -1,7 +1,12 @@
+hts.you.are.eligible.title=Help to Save - You are eligible
+hts.you.are.eligible.h1=Introduction to Help to Save
+hts.you.are.eligible.p1=You need to:
+hts.you.are.eligible.ul1-li1=confirm the customer''s identity
+hts.you.are.eligible.ul1-li2=explain Help to Save to the customer
+
 hts.give-nino.label=Enter your National Insurance number.
 hts.eligibility.invalid.nino=invalid input, sample valid input is : AE123456C
 hts.give-nino.title=Help to Save - Enter National Insurance number
-hts.you.are.eligible.title=Help to Save - You are eligible
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
 hts.global.continue-button=Continue

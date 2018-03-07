@@ -21,11 +21,12 @@ secondaryLabel: Option[String] = None,
 inputClass: Option[String] = None,
 hint: Option[String] = None,
 name: String = "value",
+containerClass: Option[String] = None,
 labelClass: Option[String] = None,
 errorMessage: Option[Html] = None
 )(implicit messages: Messages)
 
-<div class="form-group @if(errorMessage.isDefined){form-group-error}">
+<div class="form-group @if(errorMessage.isDefined){form-group-error} @if(containerClass.nonEmpty){@containerClass}">
     <label class="form-label @if(labelClass.nonEmpty){@labelClass}" for="@id">
         @label
         @if(hint.nonEmpty){
