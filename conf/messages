@@ -4,7 +4,7 @@ hts.you.are.eligible.p1=You need to:
 hts.you.are.eligible.ul1-li1=confirm the customer''s identity
 hts.you.are.eligible.ul1-li2=explain Help to Save to the customer
 
-hts.give-nino.label=Enter your National Insurance number.
+hts.give-nino.label=Check the customer''s eligibility
 hts.eligibility.invalid.nino=invalid input, sample valid input is : AE123456C
 hts.give-nino.title=Help to Save - Enter National Insurance number
 hts.restart.journey=Restart Journey

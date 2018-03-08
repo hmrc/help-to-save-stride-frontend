@@ -37,6 +37,7 @@
         @helpers.input_text(
           id = "nino",
           name = "nino",
+          hint = Some("Paste customer's NINO into field to check eligibility"),
           containerClass = Some("subsection--wide"),
           label = messages("hts.give-nino.label"),
           errorMessage = form.error("nino").map(_ ⇒ Html(messages("hts.eligibility.invalid.nino")))
