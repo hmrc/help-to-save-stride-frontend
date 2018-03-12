@@ -1,0 +1,25 @@
+/*
+Required styles cherry-picked from Assets Frontend:
+https://github.com/hmrc/assets-frontend
+*/
+
+/*
+Sub Section
+
+Subsections provide extra margin for elements.
+They are useful for layout and providing sections with more white space on the
+top and bottom of its contained elements.
+Markup:
+
+<section class="subsection {{modifier_class}}">
+  <h2>Subsection Title</h2>
+  <p>Subsection content</p>
+</section>
+
+.subsection--wide - A subsection with larger margin.
+
+Styleguide Section.Sub Section
+*/
+.subsection--wide {
+  margin: 2.5em 0;
+}

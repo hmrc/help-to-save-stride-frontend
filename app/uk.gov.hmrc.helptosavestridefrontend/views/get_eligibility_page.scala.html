@@ -27,19 +27,20 @@
     <h1 class="heading-large">@messages("hts.you.are.eligible.h1")</h1>
     <p>@messages("hts.you.are.eligible.p1")</p>
 
-    <ul class="bullets">
+    <ul class="list list-bullet">
       <li>@messages("hts.you.are.eligible.ul1-li1")</li>
       <li>@messages("hts.you.are.eligible.ul1-li2")</li>
     </ul>
 
     @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.checkEligibilityAndGetPersonalInfo()) {
-      <div class="divider--top subsection--wide">
+      <div class="divider--top subsection--wide push--bottom">
         @helpers.input_text(
           id = "nino",
           name = "nino",
           hint = Some("Paste customer's NINO into field to check eligibility"),
-          containerClass = Some("subsection--wide"),
+          containerClass = Some("subsection--wide push--bottom"),
           label = messages("hts.give-nino.label"),
+          labelClass = Some("oversize-label"),
           errorMessage = form.error("nino").map(_ ⇒ Html(messages("hts.eligibility.invalid.nino")))
         )
       </div>
