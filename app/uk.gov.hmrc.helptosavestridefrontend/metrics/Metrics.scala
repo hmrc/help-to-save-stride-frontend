@@ -32,23 +32,23 @@ class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
 
   val eligibilityCheckTimer: Timer = timer("stride.frontend.eligibility-check-time")
 
-  val eligibilityCheckErrorCounter: Counter = counter("stride.frontend.eligibility-check-error-counter")
+  val eligibilityCheckErrorCounter: Counter = counter("stride.frontend.eligibility-check-error.count")
 
   val payePersonalDetailsTimer: Timer = timer("stride.frontend.paye-personal-details.time")
 
-  val payePersonalDetailsErrorCounter: Counter = counter("stride.frontend.paye-personal-details-error-counter")
+  val payePersonalDetailsErrorCounter: Counter = counter("stride.frontend.paye-personal-details-error.count")
 
   val keystoreWriteTimer: Timer = timer("stride.frontend.keystore-write-time")
 
-  val keystoreWriteErrorCounter: Counter = counter("stride.frontend.keystore-write-error-counter")
+  val keystoreWriteErrorCounter: Counter = counter("stride.frontend.keystore-write-error.count")
 
   val keystoreReadTimer: Timer = timer("stride.frontend.keystore-read-time")
 
-  val keystoreReadErrorCounter: Counter = counter("stride.frontend.keystore-read-error-counter")
+  val keystoreReadErrorCounter: Counter = counter("stride.frontend.keystore-read-error.count")
 
   val keystoreDeleteTimer: Timer = timer("stride.frontend.keystore-delete-time")
 
-  val keystoreDeleteErrorCounter: Counter = counter("stride.frontend.keystore-delete-error-counter")
+  val keystoreDeleteErrorCounter: Counter = counter("stride.frontend.keystore-delete-error.count")
 }
 
 object Metrics {
