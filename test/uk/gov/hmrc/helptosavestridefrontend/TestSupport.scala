@@ -63,8 +63,6 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
   val nino = "AE123456C"
 
-  val ninoEncoded = "QUUxMjM0NTZD"
-
   val mockHttp: WSHttp = mock[WSHttp]
 
   val mockMetrics = new Metrics(stub[PlayMetrics]) {

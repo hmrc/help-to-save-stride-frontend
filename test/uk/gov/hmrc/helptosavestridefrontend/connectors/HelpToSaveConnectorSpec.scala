@@ -23,14 +23,15 @@ import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECResponseHolder
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with GeneratorDrivenPropertyChecks with TestData {
 
@@ -50,70 +51,69 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
     "checking eligibility" must {
         def ecHolder(resultCode: Int) = ECResponseHolder(Some(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1)))
-      val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
 
       "return a successful eligibility response for a valid NINO" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1)))))) // scalastyle:ignore magic.number
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1)))))) // scalastyle:ignore magic.number
+        await(connector.getEligibility(nino).value) shouldBe Right(
           Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
       }
 
       "handles the case of success response but user is not eligible" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2)))))) // scalastyle:ignore magic.number
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2)))))) // scalastyle:ignore magic.number
+        await(connector.getEligibility(nino).value) shouldBe Right(
           Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
       }
 
       "handles the case of success response but user has hot an account already" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3)))))) // scalastyle:ignore magic.number
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3)))))) // scalastyle:ignore magic.number
+        await(connector.getEligibility(nino).value) shouldBe Right(
           AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
       }
 
       "handles the case of success response but invalid eligibility result code" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5)))))) // scalastyle:ignore magic.number
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5)))))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
-        Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
+        await(connector.getEligibility(nino).value).isLeft shouldBe true
       }
 
       "handles the case of success response but no eligibility result json" in {
-        mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("{}"))))) // scalastyle:ignore magic.number
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.parse("{}"))))) // scalastyle:ignore magic.number
 
-        Await.result(connector.getEligibility(nino).value, 5.seconds) shouldBe Right(
+        await(connector.getEligibility(nino).value) shouldBe Right(
           Ineligible(EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)))
       }
 
       "handle responses when they contain invalid json" in {
         inSequence {
-          mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(
+          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(
             200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
         }
-        Await.result(connector.getEligibility(nino).value, 555.seconds).isLeft shouldBe true
+        await(connector.getEligibility(nino).value).isLeft shouldBe true
       }
 
       "return with an error" when {
         "the call fails" in {
           inSequence {
-            mockGet(connector.eligibilityUrl(ninoEncoded))(None)
+            mockGet(connector.eligibilityUrl(nino))(None)
             // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
             mockPagerDutyAlert("Failed to make call to check eligibility")
           }
 
-          Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
+          await(connector.getEligibility(nino).value).isLeft shouldBe true
         }
 
         "the call comes back with an unexpected http status" in {
           forAll { status: Int ⇒
             whenever(status > 0 && status =!= 200 && status =!= 404) {
               inSequence {
-                mockGet(connector.eligibilityUrl(ninoEncoded))(Some(HttpResponse(status)))
+                mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(status)))
                 // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
                 mockPagerDutyAlert("Failed to make call to check eligibility")
               }
 
-              Await.result(connector.getEligibility(nino).value, 5.seconds).isLeft shouldBe true
+              await(connector.getEligibility(nino).value).isLeft shouldBe true
             }
 
           }
@@ -125,43 +125,43 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
     "getting paye-personal-details and converting to nsi-user-info" must {
 
       "return a successful paye-details response for a valid NINO and convert to nsi-user-info" in {
-        mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse(payeDetailsJson))))) // scalastyle:ignore magic.number
-        Await.result(connector.getNSIUserInfo(nino).value, 5.seconds) shouldBe Right(nsiUserInfo)
+        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse(payeDetailsJson))))) // scalastyle:ignore magic.number
+        await(connector.getNSIUserInfo(nino).value) shouldBe Right(nsiUserInfo)
       }
 
       "handle responses when they contain invalid json" in {
-        mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
+        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{"invalid": "foo"}"""))))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
-        Await.result(connector.getNSIUserInfo(nino).value, 5.seconds).isLeft shouldBe true
+        await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
       }
 
       "handle responses when they contain empty json" in {
-        mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) // scalastyle:ignore magic.number
+        mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
-        Await.result(connector.getNSIUserInfo(nino).value, 5.seconds).isLeft shouldBe true
+        await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
       }
 
       "return with an error" when {
         "the call fails" in {
           inSequence {
-            mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(None)
+            mockGet(connector.payePersonalDetailsUrl(nino))(None)
             // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
             mockPagerDutyAlert("Failed to make call to paye-personal-details")
           }
 
-          Await.result(connector.getNSIUserInfo(nino).value, 5.seconds).isLeft shouldBe true
+          await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
         }
 
         "the call comes back with an unexpected http status" in {
           forAll { status: Int ⇒
             whenever(status > 0 && status =!= 200 && status =!= 404) {
               inSequence {
-                mockGet(connector.payePersonalDetailsUrl(ninoEncoded))(Some(HttpResponse(status)))
+                mockGet(connector.payePersonalDetailsUrl(nino))(Some(HttpResponse(status)))
                 // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
                 mockPagerDutyAlert("Failed to make call to paye-personal-details")
               }
 
-              Await.result(connector.getNSIUserInfo(nino).value, 5.seconds).isLeft shouldBe true
+              await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
             }
 
           }
@@ -205,6 +205,89 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
         val result = await(connector.createAccount(nsiUserInfo).value)
         result shouldBe Left("Encountered error while trying to make createAccount call, with message: ")
       }
+    }
+
+    "getEnrolmentStatus" must {
+      val statusToJSON: Map[EnrolmentStatus, String] = Map(
+        Enrolled →
+          """
+            |{
+            |  "enrolled"    : true,
+            |  "itmpHtSFlag" : true
+            |}
+          """.stripMargin,
+        Enrolled →
+          """
+            |{
+            |  "enrolled"    : true,
+            |  "itmpHtSFlag" : false
+            |}
+          """.stripMargin,
+        NotEnrolled →
+          """
+            |{
+            |  "enrolled"    : false,
+            |  "itmpHtSFlag" : false
+            |}
+          """.stripMargin
+      )
+
+      "return the enrolment status" in {
+        statusToJSON.foreach{
+          case (s, j) ⇒
+            mockGet(connector.enrolmentStatusUrl(nino))(Some(HttpResponse(200, Some(Json.parse(j)))))
+
+            val result = connector.getEnrolmentStatus(nino)
+            await(result.value) shouldBe Right(s)
+        }
+
+      }
+
+      "return an error" when {
+        "there is no JSON" in {
+          mockGet(connector.enrolmentStatusUrl(nino))(Some(HttpResponse(200, None)))
+
+          val result = connector.getEnrolmentStatus(nino)
+          await(result.value).isLeft shouldBe true
+        }
+
+        "there is unexpected JSON" in {
+          mockGet(connector.enrolmentStatusUrl(nino))(Some(HttpResponse(200, Some(Json.parse("""{ "a" : 1 }""")))))
+
+          val result = connector.getEnrolmentStatus(nino)
+          await(result.value).isLeft shouldBe true
+        }
+
+        "the response comes back with any status other than 200" in {
+          forAll{ status: Int ⇒
+            whenever(status > 0 && status =!= 200) {
+              statusToJSON.foreach {
+                case (_, j) ⇒
+                  inSequence {
+                    mockGet(connector.enrolmentStatusUrl(nino))(Some(HttpResponse(status, Some(Json.parse(j)))))
+                    mockPagerDutyAlert("Received unexpected http status from the back end when calling the get enrolment status url")
+                  }
+
+                  val result = connector.getEnrolmentStatus(nino)
+                  await(result.value).isLeft shouldBe true
+
+              }
+            }
+          }
+
+        }
+
+        "the future fails" in {
+          inSequence {
+            mockGet(connector.enrolmentStatusUrl(nino))(None)
+            mockPagerDutyAlert("Failed to make call to the back end get enrolment status url")
+          }
+
+          val result = connector.getEnrolmentStatus(nino)
+          await(result.value).isLeft shouldBe true
+        }
+      }
+
     }
 
   }
