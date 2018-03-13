@@ -1,12 +1,18 @@
-hts.you.are.eligible.title=Help to Save - You are eligible
-hts.you.are.eligible.h1=Introduction to Help to Save
-hts.you.are.eligible.p1=You need to:
-hts.you.are.eligible.ul1-li1=confirm the customer''s identity
-hts.you.are.eligible.ul1-li2=explain Help to Save to the customer
+hts.global.continue-button=Continue
+hts.global.title-suffix=- Help to Save - GOV.UK
+hts.global.title.prepended-error-message=Error:
 
-hts.give-nino.label=Check the customer''s eligibility
-hts.eligibility.invalid.nino=invalid input, sample valid input is : AE123456C
-hts.give-nino.title=Help to Save - Enter National Insurance number
+hts.eligibility.title=Introduction to Help to Save - Digitally excluded
+hts.eligibility.h1=Introduction to Help to Save
+hts.eligibility.p1=You need to:
+hts.eligibility.ul1-li1=confirm the customer''s identity
+hts.eligibility.ul1-li2=explain Help to Save to the customer
+hts.eligibility.give-nino.h2=Check the customer''s eligibility
+hts.eligibility.invalid.nino.error.title=There is a problem
+hts.eligibility.invalid.nino=Enter a valid National Insurance number (NINO), for example QQ 12 34 56 C
+hts.eligibility.blank.nino=Enter the customer''s National Insurance number (NINO)
+
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
-hts.global.continue-button=Continue
+hts.you.are.eligible.title=Help to Save - You are eligible
+
