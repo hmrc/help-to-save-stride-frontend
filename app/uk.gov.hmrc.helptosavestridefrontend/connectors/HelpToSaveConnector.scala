@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.data.EitherT
 import cats.syntax.either._
-import cats.instances.future._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.http.Status.OK
@@ -29,12 +28,11 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECRes
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, base64Encode}
+import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.helptosavestridefrontend.util.maskNino
 
@@ -69,7 +67,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   val createAccountUrl: String = s"$htsUrl/help-to-save/create-de-account"
 
-  val enrolmentStatusUrl: String = s"$htsUrl/help-to-save/enrolment-status"
+  def enrolmentStatusUrl(nino: String): String = s"$htsUrl/help-to-save/stride/enrolment-status?nino=$nino"
 
   type EitherStringOr[A] = Either[String, A]
 
@@ -78,7 +76,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.eligibilityCheckTimer.time()
 
-        http.get(eligibilityUrl(base64Encode(nino))).map { response ⇒
+        http.get(eligibilityUrl(nino)).map { response ⇒
           val time = timerContext.stop()
 
           response.status match {
@@ -134,7 +132,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
-        http.get(payePersonalDetailsUrl(base64Encode(nino)))
+        http.get(payePersonalDetailsUrl(nino))
           .map { response ⇒
             val time = timerContext.stop()
             response.status match {
@@ -192,13 +190,13 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   override def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] = {
 
-    EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl).map[Either[String, EnrolmentStatus]] { response ⇒
+    EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl(nino)).map[Either[String, EnrolmentStatus]] { response ⇒
       response.status match {
         case OK ⇒
           val result = response.parseJson[EnrolmentStatus]
           result.fold({
             e ⇒
-              logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK)", nino)
+              logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK): $e", nino)
           }, _ ⇒
             logger.debug(s"Call to get enrolment status successful, received 200 (OK)", nino)
           )
