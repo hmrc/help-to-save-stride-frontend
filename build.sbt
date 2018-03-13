@@ -7,6 +7,11 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
+import com.typesafe.sbt.web.Import._
+import com.typesafe.sbt.web.Import.WebKeys._
+import net.ground5hark.sbt.concat.Import._
+import com.typesafe.sbt.uglify.Import._
+import com.typesafe.sbt.digest.Import._
 
 val ScalatestVersion = "3.0.4"
 val test = "test"

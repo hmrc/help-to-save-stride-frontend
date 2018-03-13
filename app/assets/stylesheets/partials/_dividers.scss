@@ -1,0 +1,27 @@
+/*
+Required styles cherry-picked from Assets Frontend:
+https://github.com/hmrc/assets-frontend
+*/
+
+/*
+Divider
+
+Dividers allow visual sectioning of content.
+
+Markup:
+<div class="{{modifier_class}}">Example Content</div>
+
+.divider--bottom     - Selector that adds a bottom border
+.divider--top        - Selector that adds a top border
+.divider--top--thick - Selector that adds a thick top border
+
+Discussion: https://hmrcdigital.hackpad.com/Dividers-M7xA1gwZOqv
+
+Styleguide Dividers
+*/
+
+$border-colour: #bfc1c3;
+
+.divider--top {
+  border-top: 1px solid $border-colour;
+}

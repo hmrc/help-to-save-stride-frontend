@@ -37,6 +37,7 @@
     linkElem = None,
     headScripts = None)
     <meta name="format-detection" content="telephone=no" />
+    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("stylesheets/main.css")' />
 }
 
 @headerNavLinks = {
@@ -49,10 +50,10 @@
 
 @insideHeader = {
 @uiLayouts.header_nav(
-    navTitle = Some("help-to-save-stride"),
+    navTitle = Some("Check eligibility and create a Help to Save account"),
     navTitleLink = None,
     showBetaLink = false,
-    navLinks = Some(headerNavLinks))
+    navLinks = None)
 }
 
 @afterHeader = {}
@@ -73,7 +74,8 @@
 @uiLayouts.serviceInfo(
     betaBanner = HtmlFormat.empty,
     includeGridWrapper = false,
-    serviceInfoContent = Some(serviceInfoContent))
+    serviceInfoContent = Some(serviceInfoContent),
+    includeHMRCBranding = false)
 }
 
 @mainContentHeader = {
@@ -91,8 +93,7 @@
     mainDataAttributes = mainDataAttributes,
     mainContentHeader = mainContentHeader,
     serviceInfo = serviceInfo,
-    getHelpForm = getHelpForm,
     sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
+@helpers.govuk_template(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)

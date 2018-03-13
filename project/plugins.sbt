@@ -19,3 +19,11 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.0")
 
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.1.1")
+
+addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.2")
+
+addSbtPlugin("net.ground5hark.sbt" % "sbt-concat" % "0.1.9")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-uglify" % "1.0.3")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.1")

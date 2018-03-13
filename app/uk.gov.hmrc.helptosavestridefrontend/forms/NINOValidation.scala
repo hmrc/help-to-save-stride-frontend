@@ -18,8 +18,10 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
+import cats.instances.string._
 import cats.syntax.either._
-import play.api.data.FormError
+import cats.syntax.eq._
+import play.api.data.{Form, FormError}
 import play.api.data.Forms.text
 import play.api.data.format.Formatter
 
@@ -38,7 +40,7 @@ object NINOValidation {
 
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], String] = {
       val validation: Validated[NonEmptyList[String], String] =
-        data.get(key).fold(invalid[String](ErrorMessages.blankNINO)) {
+        data.get(key).filter(_.nonEmpty).fold(invalid[String](ErrorMessages.blankNINO)) {
           s ⇒
             validatedFromBoolean(s)(_.matches(ninoRegex.regex), ErrorMessages.invalidNinoPattern)
               .map(_ ⇒ s)
@@ -56,6 +58,14 @@ object NINOValidation {
     val invalidNinoPattern: String = "invalid_nino_pattern"
 
     val blankNINO = "blank_nino"
+  }
+
+  implicit class FormOps(val f: Form[GiveNINO]) {
+
+    def hasInvalidNINO: Boolean = f.error("nino").exists(_.message === ErrorMessages.invalidNinoPattern)
+
+    def hasBlankNINO: Boolean = f.error("nino").exists(_.message === ErrorMessages.blankNINO)
+
   }
 
 }
