@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.instances.future._
-import controllers.Assets
 import play.api.libs.json._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
