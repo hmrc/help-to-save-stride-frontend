@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
+import java.time.format.DateTimeFormatter
 import java.util.Base64
 
 import cats.data.EitherT
@@ -41,5 +42,7 @@ package object util {
   }
 
   def base64Encode(input: String): String = new String(Base64.getEncoder.encode(input.getBytes))
+
+  val browserDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
 
 }

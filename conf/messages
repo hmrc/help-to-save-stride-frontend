@@ -13,6 +13,15 @@ hts.eligibility.invalid.nino.error.title=There is a problem
 hts.eligibility.invalid.nino=Enter a valid National Insurance number (NINO), for example QQ 12 34 56 C
 hts.eligibility.blank.nino=Enter the customer''s National Insurance number (NINO)
 
+hts.you.are.eligible.h1=Customer is eligible for a Help to Save account
+hts.you.are.eligible.h2=Ask the customer if these details are correct:
+hts.you.are.eligible.user.details.name-label=Name
+hts.you.are.eligible.user.details.nino-label=National Insurance number (NINO)
+hts.you.are.eligible.user.details.dob-label=Date of birth
+hts.you.are.eligible.user.details.address-label=Address
+hts.you.are.eligible.continue-button=Customer''s details are correct
+hts.you.are.eligible.end-call.button=Cancel application / End call
+
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
 hts.you.are.eligible.title=Help to Save - You are eligible

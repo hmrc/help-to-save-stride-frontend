@@ -24,3 +24,27 @@ https://github.com/hmrc/assets-frontend
 .push--bottom {
   margin-bottom: 0 !important;
 }
+
+
+.soft-half--right {
+  padding-right: 0 !important;
+}
+
+.soft-half--left {
+  padding-left: 0 !important;
+}
+
+.float--right {
+  float: right !important;
+}
+
+@media (max-width:641px) {
+  .button-row {
+    .soft-half--left {
+      padding: 0 !important;
+    }
+    .soft-half--right {
+      padding: 0 !important;
+    }
+  }
+}
