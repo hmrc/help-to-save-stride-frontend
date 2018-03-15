@@ -31,7 +31,7 @@ import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
@@ -110,7 +110,14 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def customerNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenIneligible = _ ⇒ Ok(views.html.you_are_not_eligible())
+      whenIneligible = { ineligible ⇒
+        IneligibilityReason.fromIneligible(ineligible).fold{
+          logger.warn(s"Could not parse ineligiblity reason: $ineligible")
+          SeeOther(routes.StrideController.getErrorPage().url)
+        }{ reason ⇒
+          Ok(views.html.you_are_not_eligible(reason))
+        }
+      }
     )
   }(routes.StrideController.customerNotEligible())
 

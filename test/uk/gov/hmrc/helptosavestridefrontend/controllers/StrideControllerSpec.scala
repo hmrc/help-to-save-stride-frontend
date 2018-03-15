@@ -19,6 +19,7 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 import cats.data.EitherT
 import cats.instances.future._
 import cats.syntax.either._
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsValue, Reads, Writes}
 import play.api.mvc._
@@ -39,7 +40,8 @@ import uk.gov.hmrc.http.cache.client.CacheMap
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport with TestData { // scalastyle:off magic.number
+class StrideControllerSpec
+  extends TestSupport with AuthSupport with CSRFSupport with TestData with GeneratorDrivenPropertyChecks { // scalastyle:off magic.number
 
   val helpToSaveConnector = mock[HelpToSaveConnector]
 
@@ -170,6 +172,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
     }
 
     "getting the you-are-not-eligible page" must {
+      val ineligibleReasonCodes = List(2, 3, 4, 5, 9, -1)
+
+        def ineligibleResponse(reasonCode: Int) = EligibilityCheckResponse("", 2, "", reasonCode)
 
       "show the /introduction-help-to-save when there is no session in key-store" in {
         inSequence {
@@ -194,14 +199,31 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       }
 
       "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo))))
-        }
+        ineligibleReasonCodes.foreach { code ⇒
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code))))))
+          }
 
-        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
-        status(result) shouldBe OK
-        contentAsString(result) should include("you are NOT eligible")
+          val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+          status(result) shouldBe OK
+          contentAsString(result) should include("Customer is not eligible for a Help to Save account")
+        }
+      }
+
+      "show an error page if the session is found in key-store and the user is ineligible but the reason code cannot be parsed" in {
+        forAll { code: Int ⇒
+          whenever(!ineligibleReasonCodes.contains(code)) {
+            inSequence {
+              mockSuccessfulAuthorisation()
+              mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code))))))
+            }
+
+            val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+            status(result) shouldBe SEE_OTHER
+            redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+          }
+        }
       }
 
       "redirect to the account-already-exists page if session is found in key-store and but user has an account already" in {
@@ -613,6 +635,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       }
 
     }
-
   }
+
 }
+
