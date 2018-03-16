@@ -62,6 +62,12 @@
       </tbody>
     </table>
 
+    <div class="grid-row">
+      <div class="column-one-half">
+        <h2 class="heading-medium flush--bottom">@messages("hts.you.are.eligible.h3")</h2>
+      </div>
+    </div>
+
     @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.handleDetailsConfirmed()) {
     <section class="subsection grid-row button-row">
         @helpers.submit('_buttonClass -> "", 'id → "continue", '_modifierClass -> "column-one-half soft-half--left") { @messages("hts.you.are.eligible.continue-button") }
