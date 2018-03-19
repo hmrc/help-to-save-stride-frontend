@@ -15,13 +15,16 @@
  *@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
 @()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-title = "Help to Save",
+title = Messages("hts.account.exists.title"),
 bodyClasses = None) {
 
-<h1>Account already exists</h1>
+  <h1 class="heading-large">@Messages("hts.account.exists.h1")</h1>
+
+  <a role="button" class="button" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
 
 }

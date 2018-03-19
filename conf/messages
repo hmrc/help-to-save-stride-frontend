@@ -1,5 +1,6 @@
 hts.global.header.nav-title=Check eligibility and create a Help to Save account
 hts.global.continue-button=Continue
+hts.global.end-call.button=End call
 hts.global.title-suffix=- Digitally excluded - Help to Save - GOV.UK
 hts.global.title.prepended-error-message=Error:
 
@@ -32,6 +33,9 @@ hts.create.account.ul1-li2=tell them they only have until the end of each calend
 hts.create.account.ul1-li3=ask them if they want to open a Help to Save account
 hts.create.account.h2-1=Ask customer if they understand - and accept the terms and conditions
 hts.create.account.h2-2=- and want to open an account.
+
+hts.account.exists.title=Customer already has an account
+hts.account.exists.h1=Customer already has an account
 
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
