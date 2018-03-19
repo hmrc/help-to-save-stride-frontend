@@ -1,0 +1,44 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
+
+@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+
+@uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+ title = "Terms and conditions",
+ bodyClasses = None) {
+
+  <h1 class="heading-large">@Messages("hts.create.account.h1")</h1>
+
+  <p>@Messages("hts.create.account.p1")</p>
+  <ul class="list list-bullet">
+   <li>@Messages("hts.create.account.ul1-li1")</li>
+   <li>@Messages("hts.create.account.ul1-li2")</li>
+   <li>@Messages("hts.create.account.ul1-li3")</li>
+  </ul>
+
+  @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
+    <section class="subsection divider--top grid-row button-row">
+      <h2 class="heading-medium">@Messages("hts.create.account.h2-1")<br />@Messages("hts.create.account.h2-2")</h2>
+      @helpers.submit('_buttonClass -> "", 'id → "continue", '_modifierClass -> "column-one-half soft-half--left") { @messages("hts.create-account.continue-button") }
+      <div class="column-one-half soft-half--right">
+        <a role="button" class="button button--secondary float--right" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
+      </div>
+    </section>
+   }
+}

@@ -155,23 +155,23 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
             logger.warn(error)
             internalServerError()
           },
-          _ ⇒ SeeOther(routes.StrideController.getTermsAndConditionsPage().url)
+          _ ⇒ SeeOther(routes.StrideController.getCreateAccountPage().url)
         )
 
     )
   }(routes.StrideController.handleDetailsConfirmed())
 
-  def getTermsAndConditionsPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def getCreateAccountPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
       htsSession ⇒
         if (!htsSession.detailsConfirmed) {
           SeeOther(routes.StrideController.youAreEligible().url)
         } else {
-          checkIsEligible(_ ⇒ Ok(views.html.terms_and_conditions()))(htsSession)
+          checkIsEligible(_ ⇒ Ok(views.html.create_account()))(htsSession)
         }
     )
-  }(routes.StrideController.getTermsAndConditionsPage())
+  }(routes.StrideController.getCreateAccountPage())
 
   def getAccountCreatedPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),

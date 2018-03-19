@@ -107,7 +107,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("Help to Save - Enter National Insurance number")
+        contentAsString(result) should include("explain Help to Save to the customer")
       }
 
       "handle error during keystore delete after the user is authorised" in {
@@ -142,7 +142,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.youAreEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("you are eligible")
+        contentAsString(result) should include("Customer is eligible for a Help to Save account")
       }
 
       "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
@@ -277,7 +277,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = doRequest("in-valid-nino")
         status(result) shouldBe OK
-        contentAsString(result) should include("invalid input, sample valid input is : AE123456C")
+        contentAsString(result) should include("Enter a valid National Insurance number")
       }
 
       "handle the case where user is not eligible" in {
@@ -321,7 +321,6 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         val result = doRequest(nino)
         status(result) shouldBe OK
         contentAsString(result) should include("Help to Save - You are eligible")
-        contentAsString(result) should include("you are eligible")
       }
 
       "handle the errors during eligibility check" in {
@@ -383,7 +382,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       }
     }
 
-    "handling getTermsAndConditionsPage" must {
+    "handling getCreateAccountPage" must {
 
       "redirect to the eligibility page if there is no session data in keystore" in {
         inSequence {
@@ -391,7 +390,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(None))
         }
 
-        val result = controller.getTermsAndConditionsPage(FakeRequest())
+        val result = controller.getCreateAccountPage(FakeRequest())
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
@@ -402,7 +401,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
         }
 
-        val result = controller.getTermsAndConditionsPage(fakeRequestWithCSRFToken)
+        val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
         contentAsString(result) should include("Websites you to link opens in prove")
       }
@@ -413,7 +412,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
         }
 
-        val result = controller.getTermsAndConditionsPage(FakeRequest())
+        val result = controller.getCreateAccountPage(FakeRequest())
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
       }
@@ -442,7 +441,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.handleDetailsConfirmed(FakeRequest())
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getTermsAndConditionsPage().url)
+        redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
       }
 
       "handle errors in case of updating keystore with detailsConfirmed flag" in {

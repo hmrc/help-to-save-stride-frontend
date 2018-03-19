@@ -12,10 +12,10 @@ GET       /you-are-eligible                           @uk.gov.hmrc.helptosavestr
 
 GET       /account-already-exists                     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 
-GET       /terms-and-conditions                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getTermsAndConditionsPage()
+POST      /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()
 
-POST       /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()
+GET       /create-account                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getCreateAccountPage()
 
-POST       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
+POST      /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
 
 GET       /account-created                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()

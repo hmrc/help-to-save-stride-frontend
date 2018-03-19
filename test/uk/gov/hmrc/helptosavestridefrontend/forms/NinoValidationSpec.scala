@@ -42,7 +42,7 @@ class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenProp
     }
 
     "validate against blank strings" in {
-      test("")(Left(Set(ErrorMessages.invalidNinoPattern)))
+      test("")(Left(Set(ErrorMessages.blankNINO)))
     }
 
     "validate against in-valid patterns" in {
