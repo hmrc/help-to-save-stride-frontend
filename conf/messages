@@ -1,9 +1,9 @@
 hts.global.header.nav-title=Check eligibility and create a Help to Save account
 hts.global.continue-button=Continue
-hts.global.title-suffix=- Help to Save - GOV.UK
+hts.global.title-suffix=- Digitally excluded - Help to Save - GOV.UK
 hts.global.title.prepended-error-message=Error:
 
-hts.eligibility.title=Introduction to Help to Save - Digitally excluded
+hts.eligibility.title=Introduction to Help to Save
 hts.eligibility.h1=Introduction to Help to Save
 hts.eligibility.p1=You need to:
 hts.eligibility.ul1-li1=confirm the customer''s identity
@@ -13,6 +13,7 @@ hts.eligibility.invalid.nino.error.title=There is a problem
 hts.eligibility.invalid.nino=Enter a valid National Insurance number (NINO), for example QQ 12 34 56 C
 hts.eligibility.blank.nino=Enter the customer''s National Insurance number (NINO)
 
+hts.you.are.eligible.title=Customer is eligible for a Help to Save account
 hts.you.are.eligible.h1=Customer is eligible for a Help to Save account
 hts.you.are.eligible.h2=Ask the customer if these details are correct:
 hts.you.are.eligible.user.details.name-label=Name
@@ -23,6 +24,7 @@ hts.you.are.eligible.h3=Tell the customer that, by continuing, they are confirmi
 hts.you.are.eligible.continue-button=Customer''s details are correct
 hts.you.are.eligible.end-call.button=Cancel application / End call
 
+hts.create.account.title=Create an account
 hts.create.account.h1=Create an account
 hts.create.account.p1=You need to:
 hts.create.account.ul1-li1=read the customer the terms and conditions
@@ -33,5 +35,4 @@ hts.create.account.h2-2=- and want to open an account.
 
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
-hts.you.are.eligible.title=Help to Save - You are eligible
 
