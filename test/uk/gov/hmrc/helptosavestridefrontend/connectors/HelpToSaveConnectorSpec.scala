@@ -71,10 +71,13 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       }
 
       "handles the case of success response but invalid eligibility result code" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(5)))))) // scalastyle:ignore magic.number
-        mockPagerDutyAlert("Could not parse JSON in eligibility check response")
+        (4 to 10).foreach{ resultCode ⇒
+          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(resultCode)))))) // scalastyle:ignore magic.number
+          mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
-        await(connector.getEligibility(nino).value).isLeft shouldBe true
+          await(connector.getEligibility(nino).value).isLeft shouldBe true
+        }
+
       }
 
       "handles the case of success response but no eligibility result json" in {
