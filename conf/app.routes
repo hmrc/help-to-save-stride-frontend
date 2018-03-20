@@ -1,10 +1,10 @@
-GET        /assets/*file                            controllers.Assets.versioned(path="/public", file: Asset)
+GET       /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
 
-GET        /                                        @controllers.Default.redirect(to = "/help-to-save-stride/check-eligibility-page")
+GET       /                                           @controllers.Default.redirect(to = "/help-to-save-stride/check-eligibility-page")
 
-GET        /check-eligibility-page                    @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
+GET       /check-eligibility-page                     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
 
-POST      /check-eligibility-and-get-personal-info    @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
+POST      /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
 
 GET       /you-are-not-eligible                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreNotEligible()
 
@@ -14,7 +14,7 @@ GET       /account-already-exists                     @uk.gov.hmrc.helptosavestr
 
 POST      /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()
 
-GET       /create-account                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getCreateAccountPage()
+GET       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getCreateAccountPage()
 
 POST      /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
 
