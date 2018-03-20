@@ -36,31 +36,36 @@ trait SessionBehaviour {
 
   val keyStoreConnector: KeyStoreConnector
 
-  def checkSession(noSessionData: ⇒ Future[Result],
-                   whenSession:   HtsSession ⇒ Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+  private def checkSessionInternal(noSessionData: ⇒ Future[Result],
+                                   whenSession:   HtsSession ⇒ Future[Result])(
+      implicit
+      hc: HeaderCarrier, request: Request[_]
+  ): Future[Result] =
     keyStoreConnector
       .get
-      .fold({
+      .fold[Future[Result]]({
         error ⇒
           logger.warn(s"error during retrieving UserSessionInfo from keystore, error= $error")
-          toFuture(internalServerError())
+          SeeOther(routes.StrideController.getErrorPage().url)
       },
         _.fold(noSessionData)(whenSession)
       ).flatMap(identity)
 
-  def checkSession(noSessionData: ⇒ Future[Result])(implicit request: Request[_]): Future[Result] =
-    checkSession(
+  def checkSession(noSessionData:         ⇒ Future[Result],
+                   whenEligible:          (EligibleWithNSIUserInfo, Boolean) ⇒ Future[Result] = (_, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                   whenIneligible:        Ineligible ⇒ Future[Result]                         = _ ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                   whenAlreadyHasAccount: () ⇒ Future[Result]                                 = () ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
+  )(implicit request: Request[_]): Future[Result] =
+    checkSessionInternal(
       noSessionData,
-      htsSession ⇒ htsSession.userInfo match {
-        case EligibleWithNSIUserInfo(_, nSIUserInfo) ⇒
-          Ok(views.html.you_are_eligible(nSIUserInfo))
 
-        case Ineligible(response) ⇒
-          SeeOther(routes.StrideController.customerNotEligible().url)
-
-        case AlreadyHasAccount ⇒
-          SeeOther(routes.StrideController.accountAlreadyExists().url)
-      })
+      htsSession ⇒
+        htsSession.userInfo match {
+          case e: EligibleWithNSIUserInfo ⇒ whenEligible(e, htsSession.detailsConfirmed)
+          case i: Ineligible              ⇒ whenIneligible(i)
+          case AlreadyHasAccount          ⇒ whenAlreadyHasAccount()
+        }
+    )
 }
 
 object SessionBehaviour {
@@ -96,11 +101,11 @@ object SessionBehaviour {
 
     override def reads(json: JsValue): JsResult[UserInfo] = {
       ((json \ "code").validate[Int],
-        (json \ "result").validate[EligibilityCheckResponse],
+        (json \ "result").validateOpt[EligibilityCheckResponse],
         (json \ "details").validateOpt[NSIUserInfo]) match {
-          case (JsSuccess(1, _), JsSuccess(value, _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
-          case (JsSuccess(2, _), JsSuccess(value, _), _) ⇒ JsSuccess(Ineligible(value))
-          case (JsSuccess(3, _), JsSuccess(value, _), _) ⇒ JsSuccess(AlreadyHasAccount)
+          case (JsSuccess(1, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
+          case (JsSuccess(2, _), JsSuccess(Some(value), _), _) ⇒ JsSuccess(Ineligible(value))
+          case (JsSuccess(3, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")
         }
     }

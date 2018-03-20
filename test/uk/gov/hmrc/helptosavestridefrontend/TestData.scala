@@ -75,7 +75,7 @@ trait TestData { // scalastyle:off magic.number
 
   val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
 
-  val inEligibleResponse = Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 3))
+  val ineligibleResponse = Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 3))
 
   val accountExistsResponse = AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 7))
 
@@ -83,7 +83,7 @@ trait TestData { // scalastyle:off magic.number
 
   val eligibleStrideUserInfo = UserInfo.EligibleWithNSIUserInfo(eligibleResponse.value, nsiUserInfo)
 
-  val inEligibleStrideUserInfo = UserInfo.Ineligible(inEligibleResponse.value)
+  val ineligibleStrideUserInfo = UserInfo.Ineligible(ineligibleResponse.value)
 
   val accountExistsStrideUserInfo = UserInfo.AlreadyHasAccount
 }

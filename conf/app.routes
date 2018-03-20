@@ -1,6 +1,6 @@
 GET       /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
 
-GET       /                                           @controllers.Default.redirect(to = "/help-to-save-stride/introduction-help-to-save")
+GET       /                                           @controllers.Default.redirect(to = "/digitally-excluded/introduction-help-to-save")
 
 GET       /introduction-help-to-save                  @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
 
@@ -19,3 +19,7 @@ GET       /create-account                             @uk.gov.hmrc.helptosavestr
 POST      /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
 
 GET       /account-created                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()
+
+GET       /error                                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getErrorPage()
+
+GET       /application-cancelled                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getApplicationCancelledPage()

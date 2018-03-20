@@ -21,6 +21,7 @@ import cats.instances.future._
 import cats.syntax.either._
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsValue, Reads, Writes}
+import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
@@ -31,7 +32,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCr
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo}
-import uk.gov.hmrc.helptosavestridefrontend.util.{NINO, Result ⇒ _}
+import uk.gov.hmrc.helptosavestridefrontend.util.{Result ⇒ _, _}
 import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.CacheMap
@@ -115,7 +116,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
     }
 
@@ -129,7 +131,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/introduction-help-to-save")
+        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
       "show the you-are-eligible page if session is found in key-store and user is eligible" in {
@@ -146,7 +148,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
+          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo))))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
@@ -177,7 +179,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/introduction-help-to-save")
+        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
       "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
@@ -194,7 +196,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
+          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo))))
         }
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -225,7 +227,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/introduction-help-to-save")
+        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
       "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
@@ -242,7 +244,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
+          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo))))
         }
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
@@ -301,8 +303,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = doRequest(nino)
-        status(result) shouldBe OK
-        contentAsString(result) should include("Customer already has an account")
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
 
       "handle the case where user is eligible and paye-details exist" in {
@@ -329,7 +331,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = doRequest(nino)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
 
       "handle the errors during retrieve user session info" in {
@@ -342,7 +345,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = doRequest(nino)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
 
       "handle the errors when retrieving user session info from keystore" in {
@@ -352,7 +356,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = doRequest(nino)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
 
       "return an Internal Server Error when the getEnrolmentStatus call fails" in {
@@ -362,7 +367,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockGetEnrolmentStatus(nino)(Left("error occurred when getting enrolment status"))
         }
         val result = doRequest(nino)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
 
       "return an Internal Server Error when the updateSessionIfEnrolled returns a Left" in {
@@ -375,7 +381,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStorePut(HtsSession(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo)))(Left("Error occurred"))
         }
         val result = doRequest(nino)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
     }
 
@@ -449,14 +456,15 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = controller.handleDetailsConfirmed(FakeRequest())
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
 
       "redirect the user when they are not logged in" in {
         mockAuthFail()
         val result = controller.handleDetailsConfirmed(FakeRequest())
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save-stride%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
+        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fdigitally-excluded%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
       }
 
     }
@@ -474,15 +482,15 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "return an InternalServerError if session data found in keystore but details are not confirmed" in {
+      "redirect to the eligible page if session data found in keystore but details are not confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = false))))
-          mockBEConnectorCreateAccount(nsiUserInfo)(Left(""))
         }
 
         val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe INTERNAL_SERVER_ERROR
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
       "show the account created page if session data found and details are confirmed" in {
@@ -493,8 +501,8 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         }
 
         val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe OK
-        contentAsString(result) should include("Your help-to-save account has been created")
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
       }
 
       "show the account already exists page when the applicant is already enrolled into HTS" in {
@@ -510,13 +518,100 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
           mockBEConnectorCreateAccount(nsiUserInfo)(Left("error occured creating an account"))
         }
 
         val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe 500
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
+    }
+
+    "handling getAccountCreatedPage" must {
+
+        def doRequest(): Future[Result] = controller.getAccountCreatedPage()(FakeRequest())
+
+      "redirect to the eligibility page if there is no session data in keystore" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+        }
+
+        val result = doRequest()
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
+      }
+
+      "redirect the not eligible page if the session data indicates ineligibility" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo))))
+        }
+
+        val result = doRequest()
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
+      }
+
+      "redirect the account created page if the session data indicates ineligibility" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
+        }
+
+        val result = doRequest()
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+      }
+
+      "redirect to the eligible page if the user is eligible and the details have ntt been confirmed" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = false))))
+        }
+
+        val result = doRequest()
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
+      }
+
+      "write an already has account status to keystore and then show the account created page" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
+          mockKeyStorePut(HtsSession(accountExistsStrideUserInfo))(Right(()))
+        }
+
+        val result = doRequest()
+        status(result) shouldBe OK
+        contentAsString(result) should include("account has been created")
+      }
+
+      "show an error page if the keystore write fails" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
+          mockKeyStorePut(HtsSession(accountExistsStrideUserInfo))(Left(""))
+        }
+
+        val result = doRequest()
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+      }
+
+    }
+
+    "handling getErrorPage" must {
+
+      "show the error page" in {
+        mockSuccessfulAuthorisation()
+
+        val result = controller.getErrorPage()(FakeRequest())
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      }
+
     }
 
   }
