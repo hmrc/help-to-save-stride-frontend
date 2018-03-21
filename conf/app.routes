@@ -10,7 +10,7 @@ GET       /you-are-not-eligible                       @uk.gov.hmrc.helptosavestr
 
 GET       /you-are-eligible                           @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreEligible()
 
-GET       /account-already-exists                     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
+GET       /customer-already-has-account               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 
 POST      /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()
 
