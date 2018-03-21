@@ -73,11 +73,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           logger.warn(e)
           toFuture(internalServerError())
       }, {
-        res ⇒
-          res match {
-            case Enrolled    ⇒ toFuture(Ok(views.html.account_already_exists()))
-            case NotEnrolled ⇒ ifNotEnrolled
-          }
+        case Enrolled    ⇒ toFuture(Ok(views.html.account_already_exists()))
+        case NotEnrolled ⇒ ifNotEnrolled
       }
     ).flatMap(identity)
   }

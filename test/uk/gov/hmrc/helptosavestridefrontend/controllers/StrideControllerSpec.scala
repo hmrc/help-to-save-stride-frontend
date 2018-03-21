@@ -21,7 +21,6 @@ import cats.instances.future._
 import cats.syntax.either._
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsValue, Reads, Writes}
-import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
@@ -29,11 +28,10 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, Key
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
-import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{NotEnrolled, Enrolled}
+import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
-import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo}
-import uk.gov.hmrc.helptosavestridefrontend.util.{Result ⇒ _, _}
+import uk.gov.hmrc.helptosavestridefrontend.util.{NINO, Result ⇒ _}
 import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.cache.client.CacheMap
@@ -121,9 +119,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       }
     }
 
-    "getting the you-are-eligible page" must {
+    "the introduction-help-to-save page" must {
 
-      "show the /check-eligibility-page when there is no session in key-store" in {
+      "show the /introduction-help-to-save when there is no session in key-store" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -131,7 +129,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/introduction-help-to-save")
       }
 
       "show the you-are-eligible page if session is found in key-store and user is eligible" in {
@@ -171,7 +169,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
     "getting the you-are-not-eligible page" must {
 
-      "show the /check-eligibility-page when there is no session in key-store" in {
+      "show the /introduction-help-to-save when there is no session in key-store" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -179,7 +177,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/introduction-help-to-save")
       }
 
       "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
@@ -219,7 +217,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
     "getting the account-already-exists page" must {
 
-      "show the /check-eligibility-page when there is no session in key-store" in {
+      "show the /introduction-help-to-save when there is no session in key-store" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -227,7 +225,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
+        redirectLocation(result) shouldBe Some("/help-to-save-stride/introduction-help-to-save")
       }
 
       "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
