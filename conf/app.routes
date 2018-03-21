@@ -4,11 +4,11 @@ GET       /                                           @controllers.Default.redir
 
 GET       /check-eligibility-page                     @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
 
-POST      /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
+POST      /check-eligibility                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
 
-GET       /you-are-not-eligible                       @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreNotEligible()
+GET       /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligible()
 
-GET       /you-are-eligible                           @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.youAreEligible()
+GET       /not-eligible                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerNotEligible()
 
 GET       /customer-already-has-account               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 

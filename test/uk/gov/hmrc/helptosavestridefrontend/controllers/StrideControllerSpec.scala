@@ -129,7 +129,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(None))
         }
 
-        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
       }
@@ -140,7 +140,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
         }
 
-        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
         contentAsString(result) should include("Customer is eligible for a Help to Save account")
       }
@@ -151,9 +151,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
         }
 
-        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
 
       "redirect to the account-already-exists page if session is found in key-store and but user has an account already" in {
@@ -162,9 +162,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
         }
 
-        val result = controller.youAreEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
 
     }
@@ -177,7 +177,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(None))
         }
 
-        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some("/help-to-save-stride/check-eligibility-page")
       }
@@ -188,9 +188,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
         }
 
-        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
       "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
@@ -199,7 +199,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(inEligibleStrideUserInfo))))
         }
 
-        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
         contentAsString(result) should include("you are NOT eligible")
       }
@@ -210,9 +210,9 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
           mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo))))
         }
 
-        val result = controller.youAreNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/account-already-exists")
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
 
     }
@@ -238,7 +238,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
       "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
@@ -249,7 +249,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
 
       "show the account-already-exists page if session is found in key-store and but user has an account already" in {
@@ -291,7 +291,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = doRequest(nino)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/help-to-save-stride/you-are-not-eligible")
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
 
       "handle the case where user has already got account" in {
@@ -413,7 +413,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.getCreateAccountPage(FakeRequest())
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.youAreEligible().url)
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
     }
