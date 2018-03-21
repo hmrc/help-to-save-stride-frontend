@@ -103,7 +103,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                 case UserInfo.EligibleWithNSIUserInfo(_, details) ⇒
                   Ok(views.html.you_are_eligible(details))
                 case UserInfo.Ineligible(_) ⇒
-                  SeeOther(routes.StrideController.youAreNotEligible().url)
+                  SeeOther(routes.StrideController.customerNotEligible().url)
                 case UserInfo.AlreadyHasAccount ⇒
                   SeeOther(routes.StrideController.accountAlreadyExists().url)
               }
@@ -112,11 +112,11 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
-  def youAreNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def customerNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url), {
       _.userInfo match {
         case EligibleWithNSIUserInfo(_, _) ⇒
-          SeeOther(routes.StrideController.youAreEligible().url)
+          SeeOther(routes.StrideController.customerEligible().url)
 
         case Ineligible(_) ⇒
           Ok(views.html.you_are_not_eligible())
@@ -125,16 +125,16 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           SeeOther(routes.StrideController.accountAlreadyExists().url)
       }
     })
-  }(routes.StrideController.youAreNotEligible())
+  }(routes.StrideController.customerNotEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url), {
       _.userInfo match {
         case EligibleWithNSIUserInfo(_, _) ⇒
-          SeeOther(routes.StrideController.youAreEligible().url)
+          SeeOther(routes.StrideController.customerEligible().url)
 
         case Ineligible(_) ⇒
-          SeeOther(routes.StrideController.youAreNotEligible().url)
+          SeeOther(routes.StrideController.customerNotEligible().url)
 
         case AlreadyHasAccount ⇒
           Ok(views.html.account_already_exists())
@@ -142,9 +142,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     })
   }(routes.StrideController.accountAlreadyExists())
 
-  def youAreEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def customerEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url))
-  }(routes.StrideController.youAreEligible())
+  }(routes.StrideController.customerEligible())
 
   def handleDetailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
@@ -166,7 +166,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       SeeOther(routes.StrideController.getEligibilityPage().url),
       htsSession ⇒
         if (!htsSession.detailsConfirmed) {
-          SeeOther(routes.StrideController.youAreEligible().url)
+          SeeOther(routes.StrideController.customerEligible().url)
         } else {
           checkIsEligible(_ ⇒ Ok(views.html.create_account()))(htsSession)
         }
@@ -177,7 +177,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
       htsSession ⇒
         if (!htsSession.detailsConfirmed) {
-          SeeOther(routes.StrideController.youAreEligible().url)
+          SeeOther(routes.StrideController.customerEligible().url)
         } else {
           Ok(views.html.account_created())
         }
@@ -190,7 +190,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         ifEligible(e)
 
       case UserInfo.Ineligible(_) ⇒
-        SeeOther(routes.StrideController.youAreNotEligible().url)
+        SeeOther(routes.StrideController.customerNotEligible().url)
 
       case UserInfo.AlreadyHasAccount ⇒
         SeeOther(routes.StrideController.accountAlreadyExists().url)

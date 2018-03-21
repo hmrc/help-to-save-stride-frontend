@@ -56,7 +56,7 @@ trait SessionBehaviour {
           Ok(views.html.you_are_eligible(nSIUserInfo))
 
         case Ineligible(response) ⇒
-          SeeOther(routes.StrideController.youAreNotEligible().url)
+          SeeOther(routes.StrideController.customerNotEligible().url)
 
         case AlreadyHasAccount ⇒
           SeeOther(routes.StrideController.accountAlreadyExists().url)
