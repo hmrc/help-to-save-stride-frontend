@@ -260,7 +260,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("Account already exists")
+        contentAsString(result) should include("Customer already has an account")
       }
     }
 
@@ -295,8 +295,6 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
       }
 
       "handle the case where user has already got account" in {
-        val accountExistsResponse = EligibilityCheckResponse("account exists", 3, "account exists", 7)
-
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -306,6 +304,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = doRequest(nino)
         status(result) shouldBe OK
+        contentAsString(result) should include("Customer already has an account")
       }
 
       "handle the case where user is eligible and paye-details exist" in {
@@ -320,7 +319,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = doRequest(nino)
         status(result) shouldBe OK
-        contentAsString(result) should include("Help to Save - You are eligible")
+        contentAsString(result) should include("Customer is eligible for a Help to Save account")
       }
 
       "handle the errors during eligibility check" in {
@@ -395,7 +394,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "show the terms and conditions if the user is eligible and details are confirmed" in {
+      "show the create account page if the user is eligible and details are confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
@@ -403,10 +402,10 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
 
         val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("Websites you to link opens in prove")
+        contentAsString(result) should include("Ask customer if they understand - and accept the terms and conditions<")
       }
 
-      "show the terms and conditions if the user is eligible and details are NOT confirmed" in {
+      "redirect to the eligible page if the user is eligible and details are NOT confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo))))
