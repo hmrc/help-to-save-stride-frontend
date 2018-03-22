@@ -25,7 +25,6 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInf
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
-import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
