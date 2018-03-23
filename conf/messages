@@ -37,6 +37,16 @@ hts.create.account.h2-2=- and want to open an account.
 hts.account.exists.title=Customer already has an account
 hts.account.exists.h1=Customer already has an account
 
+hts.account.created.title=Customer''s account has been created
+hts.account.created.h1=Customer''s account has been created
+hts.account.created.p1=We''ll post the customer a:
+hts.account.created.ul1-li1=Welcome pack
+hts.account.created.ul1-li2=password
+
+hts.application.cancelled.title=Application cancelled
+hts.application.cancelled.h1=Application cancelled
+hts.application.cancelled.finish-call.button=Finish call
+
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
 

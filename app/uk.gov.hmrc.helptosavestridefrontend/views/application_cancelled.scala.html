@@ -20,17 +20,10 @@
 @()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-    title = messages("hts.account.created.title"),
-    bodyClasses = None) {
+  title = Messages("hts.application.cancelled.title"),
+  bodyClasses = None) {
 
-  <h1 class="heading-large">@messages("hts.account.created.h1")</h1>
+  <h1 class="heading-large">@messages("hts.application.cancelled.h1")</h1>
 
-  <p>@messages("hts.account.created.p1")</p>
-
-  <ul class="list list-bullet">
-    <li>@messages("hts.account.created.ul1-li1")</li>
-    <li>@messages("hts.account.created.ul1-li2")</li>
-  </ul>
-
-  <a role="button" class="button" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
+  <a role="button" class="button" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.application.cancelled.finish-call.button")</a>
 }
