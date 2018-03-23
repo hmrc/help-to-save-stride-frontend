@@ -464,7 +464,7 @@ class StrideControllerSpec extends TestSupport with AuthSupport with CSRFSupport
         mockAuthFail()
         val result = controller.handleDetailsConfirmed(FakeRequest())
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fdigitally-excluded%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
+        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save%2Fdigitally-excluded%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
       }
 
     }
