@@ -32,7 +32,7 @@
       <tbody>
         <tr>
           <td><strong class="bold">@messages("hts.you.are.eligible.user.details.name-label")</strong></td>
-          <td>@{details.surname} @{details.forename}</td>
+          <td>@{details.forename} @{details.surname}</td>
         </tr>
         <tr>
           <td><strong class="bold">@messages("hts.you.are.eligible.user.details.nino-label")</strong></td>
@@ -46,16 +46,10 @@
           <td class="align-top"><strong class="bold">@messages("hts.you.are.eligible.user.details.address-label")</strong></td>
           <td>
             @{details.contactDetails.address1}<br />
-            @{details.contactDetails.address2},<br />
-            @if(details.contactDetails.address3.isDefined) {
-              @{details.contactDetails.address3},<br />
-            }
-            @if(details.contactDetails.address4.isDefined) {
-              @{details.contactDetails.address4},<br />
-            }
-            @if(details.contactDetails.address5.isDefined) {
-              @{details.contactDetails.address5},<br />
-            }
+            @{details.contactDetails.address2}<br />
+            @details.contactDetails.address3.map(a => Html(s"""$a <br />"""))
+            @details.contactDetails.address4.map(a => Html(s"""$a <br />"""))
+            @details.contactDetails.address5.map(a => Html(s"""$a <br />"""))
             @{details.contactDetails.postcode}
           </td>
         </tr>
