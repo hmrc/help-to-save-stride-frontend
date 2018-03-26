@@ -75,6 +75,12 @@ hts.eligibility.not.eligible.no.benefits.ul2-li1=Explain eligibility criteria to
 hts.eligibility.not.eligible.no.benefits.ul2-li2=If they have just claimed Working Tax Credit or Universal Credit tell them how long they will need to wait before they can apply again.
 hts.eligibility.not.eligible.no.benefits.ul2-li3=Tell customer what they need to do if they still think they are eligible.
 
+hts.error.page.title=Something went wrong
+hts.error.page.h1=Something has gone wrong
+hts.error.page.p1=You''ll need to start again.
+hts.error.page.button.start-again=Start again
+
+
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create Account
 
