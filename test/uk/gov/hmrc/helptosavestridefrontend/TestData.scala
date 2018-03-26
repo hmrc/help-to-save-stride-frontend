@@ -75,7 +75,7 @@ trait TestData { // scalastyle:off magic.number
 
   val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
 
-  val ineligibleResponse = Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 3))
+  val ineligibleResponse = Ineligible(EligibilityCheckResponse("ineligible", 2, "Tax credits", 3))
 
   val accountExistsResponse = AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 7))
 
