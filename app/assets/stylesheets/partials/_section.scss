@@ -27,3 +27,11 @@ Styleguide Section.Sub Section
 .subsection {
   margin: 1.5em 0;
 }
+
+/*
+  Overwrite set width on the .content__body element
+*/
+.content__body {
+  float: none !important;
+  width: 100% !important;
+}
