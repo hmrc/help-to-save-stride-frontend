@@ -96,7 +96,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                 SeeOther(routes.StrideController.getErrorPage().url)
               }, {
                 case UserInfo.EligibleWithNSIUserInfo(_, details) ⇒
-                  Ok(views.html.you_are_eligible(details))
+                  SeeOther(routes.StrideController.customerEligible().url)
                 case UserInfo.Ineligible(_) ⇒
                   SeeOther(routes.StrideController.customerNotEligible().url)
                 case UserInfo.AlreadyHasAccount ⇒
