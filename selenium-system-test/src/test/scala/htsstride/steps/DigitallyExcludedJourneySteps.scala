@@ -35,7 +35,7 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
   }
 
   Then("^an account is successfully created$") {
-    AccountCreatedPage.verifyAccountCreated()
+    AccountCreatedPage.verifyPage()
   }
 
   When("^the internal operator is in the process of creating an account on behalf of the applicant$") {
@@ -85,7 +85,7 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
     IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
     CustomerEligiblePage.continue()
     CreateAccountPage.createAccount()
-    AccountCreatedPage.verifyAccountCreated()
+    AccountCreatedPage.verifyPage()
   }
 
   When("^an internal operator enters that NINO$") {

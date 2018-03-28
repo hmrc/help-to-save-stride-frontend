@@ -44,11 +44,9 @@ lazy val testDependencies = Seq(
   "org.seleniumhq.selenium" % "selenium-firefox-driver" % "2.53.1" % test
 )
 
-def seleniumTestFilter(name: String): Boolean = name.contains("suites") && !name.contains("Zap")
+def seleniumTestFilter(name: String): Boolean = name.contains("suites")
 
-def zapTestFilter(name: String): Boolean = name.contains("Zap") && !name.contains("suites")
-
-def unitTestFilter(name: String): Boolean = !seleniumTestFilter(name) && !zapTestFilter(name)
+def unitTestFilter(name: String): Boolean = !seleniumTestFilter(name)
 
 lazy val SeleniumTest = config("selenium") extend Test
 

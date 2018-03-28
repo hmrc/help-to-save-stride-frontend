@@ -22,7 +22,6 @@ import org.openqa.selenium.WebDriver
 
 object StrideSignInPage extends Page {
 
-  val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in"
   val successURL: String =
     if (Configuration.redirectWithAbsoluteUrls) {
       "http://localhost:7006/help-to-save/digitally-excluded/introduction-help-to-save"
@@ -30,18 +29,16 @@ object StrideSignInPage extends Page {
       "/help-to-save/digitally-excluded/introduction-help-to-save"
     }
 
+  val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"
+
   def authenticateOperator()(implicit driver: WebDriver): Unit = {
-    navigateToStrideSignInPage()
+    navigate()
     fillInStrideDetails()
     clickSubmit()
     Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
   }
 
-  private def navigateToStrideSignInPage()(implicit driver: WebDriver): Unit =
-    Browser.navigateTo(s"$expectedURL?successURL=$successURL&origin=help-to-save-stride-frontend")
-
   private def fillInStrideDetails()(implicit driver: WebDriver): Unit = {
-    //setFieldByName("RelayState", "successURL=/help-to-save/digitally-excluded/introduction-help-to-save&origin=help-to-save-stride-frontend")
     setFieldByName("pid", "random-pid")
     setFieldByName("usersGivenName", "test-given-name")
     setFieldByName("usersSurname", "test-surname")
@@ -49,6 +46,5 @@ object StrideSignInPage extends Page {
     setFieldByName("status", "true")
     setFieldByName("signature", "valid")
     setFieldByName("roles", "hts-test")
-
   }
 }

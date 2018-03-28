@@ -29,7 +29,6 @@ object IntroductionHelpToSavePage extends Page {
     clickSubmit()
   }
 
-  def verifyPage()(implicit driver: WebDriver): Unit = {
+  def verifyPage()(implicit driver: WebDriver): Unit =
     Browser.checkCurrentPageIs(this)
-  }
 }

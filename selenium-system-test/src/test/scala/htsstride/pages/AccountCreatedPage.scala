@@ -23,7 +23,6 @@ import org.openqa.selenium.WebDriver
 object AccountCreatedPage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/account-created"
 
-  def verifyAccountCreated()(implicit driver: WebDriver): Unit = {
-    Browser.currentUrl == expectedURL
-  }
+  def verifyPage()(implicit driver: WebDriver): Unit =
+    Browser.checkCurrentPageIs(this)
 }

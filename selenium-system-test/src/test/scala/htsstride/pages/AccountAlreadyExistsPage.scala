@@ -23,7 +23,6 @@ import org.openqa.selenium.WebDriver
 object AccountAlreadyExistsPage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/customer-already-has-account"
 
-  def verifyPage()(implicit driver: WebDriver): Unit = {
+  def verifyPage()(implicit driver: WebDriver): Unit =
     Browser.checkCurrentPageIs(this)
-  }
 }

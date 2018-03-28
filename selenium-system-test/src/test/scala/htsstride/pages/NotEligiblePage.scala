@@ -23,11 +23,9 @@ import org.openqa.selenium.WebDriver
 object NotEligiblePage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/not-eligible"
 
-  def verifyPage()(implicit driver: WebDriver): Unit = {
+  def verifyPage()(implicit driver: WebDriver): Unit =
     Browser.checkCurrentPageIs(this)
-  }
 
-  def finishCall()(implicit driver: WebDriver): Unit = {
+  def finishCall()(implicit driver: WebDriver): Unit =
     clickEndCall()
-  }
 }
