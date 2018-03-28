@@ -52,3 +52,11 @@ https://github.com/hmrc/assets-frontend
     }
   }
 }
+
+/**
+ * Prevent clicking on an anchor with the disabled attribute
+ */
+
+a[disabled], a[disabled]:hover {
+   pointer-events: none;
+}
