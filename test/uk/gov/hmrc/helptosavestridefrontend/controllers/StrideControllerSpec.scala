@@ -21,7 +21,7 @@ import cats.instances.future._
 import cats.syntax.either._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.i18n.MessagesApi
-import play.api.libs.json.{JsValue, Reads, Writes}
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -340,8 +340,8 @@ class StrideControllerSpec
         }
 
         val result = doRequest(nino)
-        status(result) shouldBe OK
-        contentAsString(result) should include("Customer is eligible for a Help to Save account")
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
       "handle the errors during eligibility check" in {
