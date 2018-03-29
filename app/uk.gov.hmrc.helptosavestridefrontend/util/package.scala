@@ -43,6 +43,6 @@ package object util {
 
   def base64Encode(input: String): String = new String(Base64.getEncoder.encode(input.getBytes))
 
-  val browserDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+  val browserDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
 
 }
