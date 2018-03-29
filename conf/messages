@@ -45,9 +45,8 @@ hts.account.created.ul1-li2=password
 
 hts.application.cancelled.title=Application cancelled
 hts.application.cancelled.h1=Application cancelled
-hts.application.cancelled.finish-call.button=Finish call
 
-hts.eligibility.not.eligible.title=You''re not eligible for a Help to Save account
+hts.eligibility.not.eligible.title=Not eligible for an account
 hts.eligibility.not.eligible.h1=Not eligible for an account
 hts.eligibility.not.eligible.p1=Customer is not eligible for a Help to Save account.
 hts.eligibility.not.eligible.end-call=End call
@@ -76,11 +75,11 @@ hts.eligibility.not.eligible.no.benefits.ul2-li2=If they have just claimed Worki
 hts.eligibility.not.eligible.no.benefits.ul2-li3=Tell customer what they need to do if they still think they are eligible.
 
 hts.error.page.title=Something went wrong
-hts.error.page.h1=Something has gone wrong
+hts.error.page.h1=Something went wrong
 hts.error.page.p1=You''ll need to start again.
 hts.error.page.button.start-again=Start again
 
 
 hts.restart.journey=Restart Journey
-hts.create-account.continue-button=Create Account
+hts.create-account.continue-button=Create account
 
