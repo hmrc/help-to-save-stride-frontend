@@ -31,14 +31,15 @@ class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenProp
 
       def genString(length: Int) = Gen.listOfN(length, Gen.alphaChar).map(_.mkString(""))
 
-      def test(value: String)(expectedResult: Either[Set[String], Unit], log: Boolean = false): Unit = {
+      def test(value: String)(expectedResult: Either[Set[String], String], log: Boolean = false): Unit = {
         val result: Either[Seq[FormError], String] = ninoFormatter.bind("key", Map("key" → value))
         if (log) Logger.error(value + ": " + result.toString)
-        result.leftMap(_.toSet) shouldBe expectedResult.bimap(_.map(s ⇒ FormError("key", s)), _ ⇒ value)
+        result.leftMap(_.toSet) shouldBe expectedResult.leftMap(_.map(s ⇒ FormError("key", s)))
       }
 
     "validate against valid ninos" in {
-      test("AE123456C")(Right(()))
+      test("AE123456C")(Right("AE123456C"))
+      test("AE 12 34 56 C")(Right("AE123456C"))
     }
 
     "validate against blank strings" in {
