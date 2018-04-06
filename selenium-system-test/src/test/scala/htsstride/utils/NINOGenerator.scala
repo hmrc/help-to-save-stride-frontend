@@ -65,6 +65,10 @@ trait NINOGenerator {
     HTTPErrorCodeNino
   }
 
+  def generateAccountCreatedNINO(): String = {
+    "AC" + generateNINO().drop(2)
+  }
+
   def currentNINO(): String = current
 
 }

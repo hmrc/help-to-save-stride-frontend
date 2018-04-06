@@ -35,6 +35,5 @@ Feature: Applicant goes through the create account journey
 
   Scenario: Account already exists
     Given the operator is logged in
-    And an account already exists for a particular NINO
-    When an internal operator enters that NINO
+    When the operator does an eligibility check for an existing account holder
     Then they see account already exists message
