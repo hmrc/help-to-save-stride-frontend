@@ -65,6 +65,12 @@ trait NINOGenerator {
     HTTPErrorCodeNino
   }
 
+  def generateAccountCreatedNINO(): String = {
+    val accountCreatedNino = "AC" + generateNINO().drop(2)
+    current = accountCreatedNino
+    accountCreatedNino
+  }
+
   def currentNINO(): String = current
 
 }

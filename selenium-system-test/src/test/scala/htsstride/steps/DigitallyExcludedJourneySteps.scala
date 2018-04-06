@@ -81,15 +81,8 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
     ErrorPage.clickGoBackButton()
   }
 
-  And("^an account already exists for a particular NINO$") {
-    IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
-    CustomerEligiblePage.continue()
-    CreateAccountPage.createAccount()
-    AccountCreatedPage.verifyPage()
-  }
-
-  When("^an internal operator enters that NINO$") {
-    IntroductionHelpToSavePage.checkEligibility(currentNINO())
+  When("^the operator does an eligibility check for an existing account holder$") {
+    IntroductionHelpToSavePage.checkEligibility(generateAccountCreatedNINO())
   }
 
   Then("^they see account already exists message$") {
