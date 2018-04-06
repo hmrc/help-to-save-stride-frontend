@@ -66,9 +66,7 @@ trait NINOGenerator {
   }
 
   def generateAccountCreatedNINO(): String = {
-    val accountCreatedNino = "AC" + generateNINO().drop(2)
-    current = accountCreatedNino
-    accountCreatedNino
+    "AC" + generateNINO().drop(2)
   }
 
   def currentNINO(): String = current
