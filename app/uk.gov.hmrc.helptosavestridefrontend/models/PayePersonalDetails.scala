@@ -65,7 +65,7 @@ object PayePersonalDetails {
                                                           ppd.address.postcode,
                                                           ppd.address.countryCode,
                                                           ppd.phoneNumber,
-                                                          "00")
+        "00")
 
       NSIUserInfo(ppd.name.firstForenameOrInitial, ppd.name.surname, ppd.dateOfBirth, nino, contactDetails, "callCentre")
     }
