@@ -30,7 +30,7 @@ trait TestData { // scalastyle:off magic.number
   val ppDetails = PayePersonalDetails(
     Name("A", "Smith"),
     LocalDate.parse("1980-01-01"),
-    Address("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("UK"), "AB12 3CD"))
+    Address("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("UK"), "AB12 3CD", Some("1")), Some("07841097845"))
 
   val payeDetailsJson: String =
     """{
@@ -45,11 +45,13 @@ trait TestData { // scalastyle:off magic.number
               "line3": "Sometown",
               "line4": "Anyshire",
               "line5": "County",
-              "postcode": "AB12 3CD"
-            }
+              "postcode": "AB12 3CD",
+              "countryCode": "1"
+            },
+            "phoneNumber": "07841097845"
      }""".stripMargin
 
-  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", None, None, "00")
+  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("1"), Some("07841097845"), "00")
 
   val nsiUserInfo = NSIUserInfo("A", "Smith", LocalDate.parse("1980-01-01"), "AE123456C", contactDetails, "callCentre")
 
@@ -65,8 +67,9 @@ trait TestData { // scalastyle:off magic.number
       |   "address3":"Sometown",
       |   "address4":"Anyshire",
       |   "address5":"County",
+      |   "countryCode": 1,
       |   "postcode":"AB12 3CD",
-      |   "phoneNUmber":"",
+      |   "phoneNUmber":"07841097845",
       |   "communicationPreference":"00"
       | },
       | "registrationChannel":"callCentre"
