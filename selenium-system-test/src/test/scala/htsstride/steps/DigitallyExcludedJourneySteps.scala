@@ -29,6 +29,10 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
     IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
   }
 
+  And("^an applicant with NINO (.*) is eligible") { (nino: String) ⇒
+    IntroductionHelpToSavePage.checkEligibility(nino)
+  }
+
   And("^the internal operator chooses to create an account on behalf of the applicant$") {
     CustomerEligiblePage.continue()
     CreateAccountPage.createAccount()

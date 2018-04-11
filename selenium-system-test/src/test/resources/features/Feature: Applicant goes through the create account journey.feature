@@ -1,9 +1,18 @@
 Feature: Applicant goes through the create account journey
-  Scenario: Internal operator creates an account for an eligible applicant
+  Scenario Outline: Internal operator creates an account for an eligible applicant
     Given the operator is logged in
-    And an applicant is eligible
+    And an applicant with NINO <nino> is eligible
     And the internal operator chooses to create an account on behalf of the applicant
     Then an account is successfully created
+
+    Examples:
+    | nino      |
+    | WP991122A |
+    | WP001122A |
+    | WP101122A |
+    | WP110022A |
+    | WP111022A |
+    | WP111122A |
 
   Scenario: Internal operator cancels out of creating an account for an eligible applicant on the create-account screen
     Given the operator is logged in
