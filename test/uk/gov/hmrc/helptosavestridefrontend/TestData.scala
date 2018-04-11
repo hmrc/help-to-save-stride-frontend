@@ -41,12 +41,12 @@ trait TestData { // scalastyle:off magic.number
               "line4": "Anyshire",
               "line5": "County",
               "postcode": "AB12 3CD",
-              "countryCode": "1"
+              "countryCode": "GB"
             },
             "phoneNumber": "07841097845"
      }""".stripMargin
 
-  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("1"), Some("07841097845"), "00")
+  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("GB"), Some("07841097845"), "00")
 
   val nsiUserInfo = NSIUserInfo("A", "Smith", LocalDate.parse("1980-01-01"), "AE123456C", contactDetails, "callCentre")
 
