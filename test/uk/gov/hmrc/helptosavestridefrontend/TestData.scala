@@ -20,17 +20,12 @@ import java.time.LocalDate
 import java.util.UUID
 
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo.ContactDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.models.{Address, NSIUserInfo, Name, PayePersonalDetails}
 
 trait TestData { // scalastyle:off magic.number
-
-  val ppDetails = PayePersonalDetails(
-    Name("A", "Smith"),
-    LocalDate.parse("1980-01-01"),
-    Address("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("UK"), "AB12 3CD"))
 
   val payeDetailsJson: String =
     """{
@@ -45,33 +40,15 @@ trait TestData { // scalastyle:off magic.number
               "line3": "Sometown",
               "line4": "Anyshire",
               "line5": "County",
-              "postcode": "AB12 3CD"
-            }
+              "postcode": "AB12 3CD",
+              "countryCode": "GB"
+            },
+            "phoneNumber": "07841097845"
      }""".stripMargin
 
-  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", None, None, "00")
+  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("GB"), Some("07841097845"), "00")
 
   val nsiUserInfo = NSIUserInfo("A", "Smith", LocalDate.parse("1980-01-01"), "AE123456C", contactDetails, "callCentre")
-
-  val nsiUserInfoJson: String =
-    """{
-      | "forename":"A",
-      | "surname":"Smith",
-      | "dateOfBirth":"1980-01-01",
-      | "nino":"AE123456C",
-      | "contactDetails": {
-      |   "address1":"1 Station Road",
-      |   "address2":"Town Centre",
-      |   "address3":"Sometown",
-      |   "address4":"Anyshire",
-      |   "address5":"County",
-      |   "postcode":"AB12 3CD",
-      |   "phoneNUmber":"",
-      |   "communicationPreference":"00"
-      | },
-      | "registrationChannel":"callCentre"
-      |
-    }""".stripMargin
 
   val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
 

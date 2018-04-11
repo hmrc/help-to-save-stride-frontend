@@ -26,18 +26,20 @@ import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo.ContactDetails
 
 case class PayePersonalDetails(name:        Name,
                                dateOfBirth: LocalDate,
-                               address:     Address)
+                               address:     Address,
+                               phoneNumber: Option[String])
 
 case class Name(firstForenameOrInitial: String,
                 surname:                String
 )
 
-case class Address(line1:    String,
-                   line2:    String,
-                   line3:    Option[String],
-                   line4:    Option[String],
-                   line5:    Option[String],
-                   postcode: String
+case class Address(line1:       String,
+                   line2:       String,
+                   line3:       Option[String],
+                   line4:       Option[String],
+                   line5:       Option[String],
+                   postcode:    String,
+                   countryCode: Option[String]
 )
 
 object PayePersonalDetails {
@@ -60,7 +62,10 @@ object PayePersonalDetails {
                                                           ppd.address.line3,
                                                           ppd.address.line4,
                                                           ppd.address.line5,
-                                                          ppd.address.postcode, None, None, "00")
+                                                          ppd.address.postcode,
+                                                          ppd.address.countryCode,
+                                                          ppd.phoneNumber,
+        "00")
 
       NSIUserInfo(ppd.name.firstForenameOrInitial, ppd.name.surname, ppd.dateOfBirth, nino, contactDetails, "callCentre")
     }
