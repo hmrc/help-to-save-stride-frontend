@@ -40,9 +40,9 @@ object StrideSignInPage extends Page {
 
   private def fillInStrideDetails()(implicit driver: WebDriver): Unit = {
     setFieldByName("pid", "random-pid")
-    //setFieldByName("usersGivenName", "test-given-name")
-    //setFieldByName("usersSurname", "test-surname")
-    //setFieldByName("emailAddress", "test@hmrc-hts.com")
+    setFieldByName("usersGivenName", "test-given-name")
+    setFieldByName("usersSurname", "test-surname")
+    setFieldByName("emailAddress", "test@hmrc-hts.com")
     setFieldByName("status", "true")
     setFieldByName("signature", "valid")
     setFieldByName("roles", "hts-test")
