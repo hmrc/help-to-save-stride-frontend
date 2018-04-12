@@ -50,7 +50,7 @@ trait NINOGenerator {
     prefixes.toVector(rnd.nextInt(prefixes.size))
   }
 
-  def generateHTTPErrorCodePrefix(code: Int): String =
+  def generateEligibilityHTTPErrorCodePrefix(code: Int): String =
     "ES" + code.toString
 
   def generateIneligibleNINO(): String = {
@@ -59,14 +59,18 @@ trait NINOGenerator {
     ineligibleNino
   }
 
-  def generateHTTPErrorCodeNINO(code: Int): String = {
-    val HTTPErrorCodeNino = generateHTTPErrorCodePrefix(code) + generateNINO().drop(5)
+  def generateEligibilityHTTPErrorCodeNINO(code: Int): String = {
+    val HTTPErrorCodeNino = generateEligibilityHTTPErrorCodePrefix(code) + generateNINO().drop(5)
     current = HTTPErrorCodeNino
     HTTPErrorCodeNino
   }
 
   def generateAccountCreatedNINO(): String = {
     "AC" + generateNINO().drop(2)
+  }
+  def generateAccountCreationErrorNINO(): String = {
+    current = "AS500123A"
+    current
   }
 
   def currentNINO(): String = current
