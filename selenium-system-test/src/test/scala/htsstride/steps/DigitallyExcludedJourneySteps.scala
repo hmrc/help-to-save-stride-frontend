@@ -29,6 +29,10 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
     IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
   }
 
+  And("^an applicant with NINO (.*) is eligible") { (nino: String) ⇒
+    IntroductionHelpToSavePage.checkEligibility(nino)
+  }
+
   And("^the internal operator chooses to create an account on behalf of the applicant$") {
     CustomerEligiblePage.continue()
     CreateAccountPage.createAccount()
@@ -70,7 +74,7 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
   }
 
   When("^the eligibility service is down and an operator chooses to pass an applicant through the eligibility check$") {
-    IntroductionHelpToSavePage.checkEligibility(generateHTTPErrorCodeNINO(500))
+    IntroductionHelpToSavePage.checkEligibility(generateEligibilityHTTPErrorCodeNINO(500))
   }
 
   Then("^they see a technical error$") {
@@ -88,4 +92,13 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
   Then("^they see account already exists message$") {
     AccountAlreadyExistsPage.verifyPage()
   }
+  Given("^the operator does an eligibility check when NS&I is down$") {
+    IntroductionHelpToSavePage.checkEligibility(generateAccountCreationErrorNINO())
+  }
+
+  When("^the internal operator attempts to create an account on behalf of the applicant$") {
+    CustomerEligiblePage.continue()
+    CreateAccountPage.createAccount()
+  }
+
 }

@@ -33,6 +33,13 @@ Feature: Applicant goes through the create account journey
     Then they see a technical error
     And there was a button to go back
 
+  Scenario: Account creation fails
+    Given the operator is logged in
+    Given the operator does an eligibility check when NS&I is down
+    When the internal operator attempts to create an account on behalf of the applicant
+    Then they see a technical error
+    And there was a button to go back
+
   Scenario: Account already exists
     Given the operator is logged in
     When the operator does an eligibility check for an existing account holder
