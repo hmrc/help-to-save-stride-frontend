@@ -115,7 +115,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           logger.warn(s"Could not parse ineligiblity reason: $ineligible")
           SeeOther(routes.StrideController.getErrorPage().url)
         }{ reason ⇒
-          Ok(views.html.you_are_not_eligible(reason))
+          Ok(views.html.customer_not_eligible(reason))
         }
       }
     )
@@ -131,7 +131,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def customerEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      (e, _) ⇒ Ok(views.html.you_are_eligible(e.nSIUserInfo))
+      (e, _) ⇒ Ok(views.html.customer_eligible(e.nSIUserInfo))
     )
   }(routes.StrideController.customerEligible())
 

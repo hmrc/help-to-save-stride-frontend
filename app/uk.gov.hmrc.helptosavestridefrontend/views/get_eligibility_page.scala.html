@@ -68,7 +68,8 @@
           containerClass = Some("push--bottom"),
           label = messages(""),
           labelClass = Some("oversize-label"),
-          errorMessage = errorMessage.map(e ⇒ Html(messages(e)))
+          errorMessage = errorMessage.map(e ⇒ Html(messages(e))),
+          inputClass = errorMessage.map(_ ⇒ "form-control-error")
         )
       </div>
 
