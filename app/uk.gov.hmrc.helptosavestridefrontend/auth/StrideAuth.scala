@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.auth
 
+import java.util.Base64
+
 import cats.instances.list._
 import cats.instances.option._
 import cats.syntax.traverse._
 import configs.syntax._
 import play.api.{Configuration, Environment}
 import play.api.mvc._
-import play.mvc.Http
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.allEnrolments
 import uk.gov.hmrc.auth.core.{AuthProviders, AuthorisedFunctions, Enrolment, NoActiveSession}
@@ -41,7 +42,10 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects { this: Frontend
 
   val env: Environment = frontendAppConfig.environment
 
-  private val requiredRoles: List[String] = config.underlying.get[List[String]]("stride.roles").value
+  private val requiredRoles: List[String] = {
+    val base64Values = config.underlying.get[List[String]]("stride.base64-encoded-roles").value
+    base64Values.map(x ⇒ new String(Base64.getDecoder.decode(x)))
+  }
 
   private val getRedirectUrl: (Request[AnyContent], Call) ⇒ String = if (config.underlying.get[Boolean]("stride.redirect-with-absolute-urls").value) {
     case (r, c) ⇒ c.absoluteURL()(r)
