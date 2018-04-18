@@ -17,10 +17,11 @@
 package uk.gov.hmrc.helptosavestridefrontend.auth
 
 import java.net.URLEncoder
+import java.util.Base64
 
 import play.api.Configuration
 import play.api.mvc.Results._
-import play.api.mvc.{AnyContentAsEmpty, Call}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
@@ -39,8 +40,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class StrideAuthSpec extends TestSupport {
 
   val roles = List("a", "b")
+  val base64EncodedRoles = roles.map(r ⇒ new String(Base64.getEncoder.encode(r.getBytes)))
 
-  override lazy val additionalConfig: Configuration = Configuration("stride.roles" → roles)
+  override lazy val additionalConfig: Configuration = Configuration("stride.base64-encoded-roles" → base64EncodedRoles)
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 

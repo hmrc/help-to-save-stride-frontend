@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
+import java.util.Base64
+
 import configs.syntax._
 import org.scalamock.handlers.CallHandler4
 import uk.gov.hmrc.auth.core._
@@ -29,7 +31,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthSupport { this: TestSupport ⇒
 
-  lazy val roles: List[String] = fakeApplication.configuration.underlying.get[List[String]]("stride.roles").value
+  lazy val roles: List[String] = {
+    val base64EncodedRoles = fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-roles").value
+    base64EncodedRoles.map(x ⇒ new String(Base64.getDecoder.decode(x)))
+  }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
