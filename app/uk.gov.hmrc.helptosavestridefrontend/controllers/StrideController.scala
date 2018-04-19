@@ -50,13 +50,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     keyStoreConnector.delete.fold(
       error ⇒ {
         logger.warn(error)
-        println("######################### SeeOther from getEligibilityPage")
         SeeOther(routes.StrideController.getErrorPage().url)
       },
-      _ ⇒ {
-        println("######################### Ok from getEligibilityPage")
-        Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
-      }
+      _ ⇒ Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
     )
   }(routes.StrideController.getEligibilityPage())
 
@@ -111,8 +107,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
-  def customerNotEligible: Action[AnyContent] = authorisedFromStride {
-    implicit request ⇒
+  def customerNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
       checkSession(
         SeeOther(routes.StrideController.getEligibilityPage().url),
         whenIneligible = { ineligible ⇒
