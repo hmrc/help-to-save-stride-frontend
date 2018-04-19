@@ -50,9 +50,13 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     keyStoreConnector.delete.fold(
       error ⇒ {
         logger.warn(error)
+        println("######################### SeeOther from getEligibilityPage")
         SeeOther(routes.StrideController.getErrorPage().url)
       },
-      _ ⇒ Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
+      _ ⇒ {
+        println("######################### Ok from getEligibilityPage")
+        Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
+      }
     )
   }(routes.StrideController.getEligibilityPage())
 
@@ -107,18 +111,19 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
-  def customerNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(
-      SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenIneligible = { ineligible ⇒
-        IneligibilityReason.fromIneligible(ineligible).fold{
-          logger.warn(s"Could not parse ineligiblity reason: $ineligible")
-          SeeOther(routes.StrideController.getErrorPage().url)
-        }{ reason ⇒
-          Ok(views.html.customer_not_eligible(reason))
+  def customerNotEligible: Action[AnyContent] = authorisedFromStride {
+    implicit request ⇒
+      checkSession(
+        SeeOther(routes.StrideController.getEligibilityPage().url),
+        whenIneligible = { ineligible ⇒
+          IneligibilityReason.fromIneligible(ineligible).fold{
+            logger.warn(s"Could not parse ineligiblity reason: $ineligible")
+            SeeOther(routes.StrideController.getErrorPage().url)
+          }{ reason ⇒
+            Ok(views.html.customer_not_eligible(reason))
+          }
         }
-      }
-    )
+      )
   }(routes.StrideController.customerNotEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒

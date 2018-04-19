@@ -53,7 +53,7 @@ trait SessionBehaviour {
                    whenEligible:          (EligibleWithNSIUserInfo, Boolean) ⇒ Future[Result] = (_, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
                    whenIneligible:        Ineligible ⇒ Future[Result]                         = _ ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
                    whenAlreadyHasAccount: () ⇒ Future[Result]                                 = () ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
-  )(implicit request: Request[_]): Future[Result] =
+  )(implicit request: Request[_]): Future[Result] = {
     checkSessionInternal(
       noSessionData,
 
@@ -64,6 +64,7 @@ trait SessionBehaviour {
           case AlreadyHasAccount          ⇒ whenAlreadyHasAccount()
         }
     )
+  }
 }
 
 object SessionBehaviour {
