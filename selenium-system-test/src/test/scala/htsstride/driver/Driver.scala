@@ -16,14 +16,20 @@
 
 package htsstride.driver
 
+import java.net.URL
 import java.util.concurrent.TimeUnit
 
 import cats.instances.string._
 import cats.syntax.either._
 import cats.syntax.eq._
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
-import org.openqa.selenium.remote.DesiredCapabilities
+import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
+
+import scala.io.Source
 
 object Driver extends Driver
 
@@ -34,10 +40,11 @@ class Driver {
   def newWebDriver(): Either[String, WebDriver] = {
     val selectedDriver: Either[String, WebDriver] =
       Option(systemProperties.getProperty("browser")).map(_.toLowerCase) match {
-        case Some("chrome")   ⇒ Right(createChromeDriver(false))
-        case Some("headless") ⇒ Right(createChromeDriver(true))
-        case Some(other)      ⇒ Left(s"Unrecognised browser: $other")
-        case None             ⇒ Left("No browser set")
+        case Some("chrome")       ⇒ Right(createChromeDriver(false))
+        case Some("headless")     ⇒ Right(createChromeDriver(true))
+        case Some("browserstack") ⇒ Right(createBrowserStackDriver)
+        case Some(other)          ⇒ Left(s"Unrecognised browser: $other")
+        case None                 ⇒ Left("No browser set")
       }
 
     selectedDriver.foreach { driver ⇒
@@ -87,5 +94,42 @@ class Driver {
     capabilities.setJavascriptEnabled(isJsEnabled)
     capabilities.setCapability(ChromeOptions.CAPABILITY, options)
     new ChromeDriver(capabilities)
+  }
+
+  private def createBrowserStackDriver: WebDriver = {
+    import scala.collection.JavaConverters._
+
+    val bsCaps = getBrowserStackCapabilities
+    val desiredCaps = new DesiredCapabilities(bsCaps.asJava)
+    desiredCaps.setCapability("browserstack.debug", "true")
+    desiredCaps.setCapability("browserstack.local", "true")
+    desiredCaps.setCapability("acceptSslCerts", "true")
+    desiredCaps.setCapability("project", "HTS Stride")
+    desiredCaps.setCapability("build", "Local")
+
+    List("browserstack.os",
+      "browserstack.os_version",
+      "browserstack.browser",
+      "browserstack.device",
+      "browserstack.browser_version",
+      "browserstack.real_mobile")
+      .map(k ⇒ (k, sys.props.get(k)))
+      .collect({ case (k, Some(v)) ⇒ (k, v) })
+      .foreach(x ⇒ desiredCaps.setCapability(x._1.replace("browserstack.", ""), x._2.replace("_", " ")))
+
+    val username = systemProperties.getProperty("username")
+    val automateKey = systemProperties.getProperty("key")
+    val url = s"http://$username:$automateKey@hub.browserstack.com/wd/hub"
+
+    new RemoteWebDriver(new URL(url), desiredCaps)
+  }
+
+  def getBrowserStackCapabilities: Map[String, Object] = {
+    val testDevice = System.getProperty("testDevice", "BS_Win10_Chrome_55")
+    val resourceUrl = s"/browserstackdata/$testDevice.json"
+    val cfgJsonString = Source.fromURL(getClass.getResource(resourceUrl)).mkString
+    val mapper = new ObjectMapper() with ScalaObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+    mapper.readValue[Map[String, Object]](cfgJsonString)
   }
 }

@@ -108,17 +108,17 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
   def customerNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(
-      SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenIneligible = { ineligible ⇒
-        IneligibilityReason.fromIneligible(ineligible).fold{
-          logger.warn(s"Could not parse ineligiblity reason: $ineligible")
-          SeeOther(routes.StrideController.getErrorPage().url)
-        }{ reason ⇒
-          Ok(views.html.customer_not_eligible(reason))
+      checkSession(
+        SeeOther(routes.StrideController.getEligibilityPage().url),
+        whenIneligible = { ineligible ⇒
+          IneligibilityReason.fromIneligible(ineligible).fold{
+            logger.warn(s"Could not parse ineligiblity reason: $ineligible")
+            SeeOther(routes.StrideController.getErrorPage().url)
+          }{ reason ⇒
+            Ok(views.html.customer_not_eligible(reason))
+          }
         }
-      }
-    )
+      )
   }(routes.StrideController.customerNotEligible())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
