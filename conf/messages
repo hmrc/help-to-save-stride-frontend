@@ -31,8 +31,7 @@ hts.create.account.p1=You need to:
 hts.create.account.ul1-li1=read the customer the terms and conditions
 hts.create.account.ul1-li2=tell them they only have until the end of each calendar month to pay in money - even if they opened their account towards the end of the month
 hts.create.account.ul1-li3=ask them if they want to open a Help to Save account
-hts.create.account.h2-1=Ask customer if they understand - and accept the terms and conditions
-hts.create.account.h2-2=- and want to open an account.
+hts.create.account.p2=Ask customer if they understand - and accept the terms and conditions - and want to open an account.
 
 hts.account.exists.title=Customer already has an account
 hts.account.exists.h1=Customer already has an account
