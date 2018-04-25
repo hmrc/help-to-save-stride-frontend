@@ -23,3 +23,6 @@ GET       /account-created                            @uk.gov.hmrc.helptosavestr
 GET       /error                                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getErrorPage()
 
 GET       /application-cancelled                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getApplicationCancelledPage()
+
+
+GET        /forbidden                                 @uk.gov.hmrc.helptosavestridefrontend.controllers.ForbiddenController.forbidden

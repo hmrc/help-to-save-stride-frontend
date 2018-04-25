@@ -24,6 +24,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Suite}
+import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration, Environment, Play}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
@@ -86,4 +87,6 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     Play.stop(fakeApplication)
     super.afterAll()
   }
+
+  implicit lazy val messagesApi: MessagesApi = fakeApplication.injector.instanceOf[MessagesApi]
 }
