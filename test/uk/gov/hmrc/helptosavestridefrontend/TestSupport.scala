@@ -85,5 +85,5 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     super.afterAll()
   }
 
-  implicit val messagesApi: MessagesApi = fakeApplication.injector.instanceOf[MessagesApi]
+  implicit lazy val messagesApi: MessagesApi = fakeApplication.injector.instanceOf[MessagesApi]
 }

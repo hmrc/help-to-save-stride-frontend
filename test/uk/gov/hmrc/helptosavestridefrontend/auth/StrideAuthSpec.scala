@@ -61,7 +61,7 @@ class StrideAuthSpec extends TestSupport {
 
   "StrideAuth" must {
 
-    lazy val test = new TestStrideAuth(roles, fakeApplication.injector.instanceOf[FrontendAppConfig])
+    lazy val test = new TestStrideAuth(roles, frontendAppConfig)
 
     lazy val action = test.authorisedFromStride { _ ⇒ Ok }(controllers.routes.Default.redirect())
 
