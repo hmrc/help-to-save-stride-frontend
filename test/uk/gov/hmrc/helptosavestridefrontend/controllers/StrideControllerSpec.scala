@@ -94,7 +94,8 @@ class StrideControllerSpec
                          helpToSaveConnector,
                          keystoreConnector,
                          fakeApplication.injector.instanceOf[FrontendAppConfig],
-                         fakeApplication.injector.instanceOf[MessagesApi])
+                         fakeApplication.injector.instanceOf[MessagesApi],
+                         mockMetrics)
 
   "The StrideController" when {
 
