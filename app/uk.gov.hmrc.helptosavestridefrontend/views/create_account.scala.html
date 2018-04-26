@@ -34,8 +34,8 @@
 
   @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
     <section class="subsection divider--top grid-row button-row">
-      <h2 class="heading-medium">@Messages("hts.create.account.h2-1")<br />@Messages("hts.create.account.h2-2")</h2>
-      @helpers.submit('_buttonClass -> "", 'id → "continue", '_modifierClass -> "column-one-half soft-half--left flush--top") { @messages("hts.create-account.continue-button") }
+      <p class="subsection">@Messages("hts.create.account.p2")</p>
+      @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "column-one-half soft-half--left flush--top") { @messages("hts.create-account.continue-button") }
       <div class="column-one-half soft-half--right">
         <a role="button" class="button button--secondary float--right flush--right" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
       </div>
