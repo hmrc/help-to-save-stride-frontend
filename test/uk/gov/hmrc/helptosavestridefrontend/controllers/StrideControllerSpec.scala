@@ -430,7 +430,7 @@ class StrideControllerSpec
 
         val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("Ask customer if they understand - and accept the terms and conditions<")
+        contentAsString(result) should include("Ask customer if they understand - and accept the terms and conditions")
       }
 
       "redirect to the eligible page if the user is eligible and details are NOT confirmed" in {
