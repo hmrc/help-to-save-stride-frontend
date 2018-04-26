@@ -45,6 +45,6 @@ object StrideSignInPage extends Page {
     setFieldByName("emailAddress", "test@hmrc-hts.com")
     setFieldByName("status", "true")
     setFieldByName("signature", "valid")
-    setFieldByName("roles", "hts-test")
+    setFieldByName("roles", "hts helpdesk advisor")
   }
 }
