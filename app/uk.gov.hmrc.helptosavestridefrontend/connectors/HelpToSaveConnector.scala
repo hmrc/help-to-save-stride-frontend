@@ -21,10 +21,8 @@ import cats.syntax.either._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.http.Status.OK
-import play.api.libs.json._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECResponseHolder
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
@@ -82,7 +80,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
           response.status match {
             case OK ⇒
               val result = {
-                response.parseJson[ECResponseHolder].flatMap(ecHolder ⇒ toEligibilityCheckResult(ecHolder.response))
+                response.parseJson[EligibilityCheckResponse].flatMap(toEligibilityCheckResult)
               }
               result.fold({
                 e ⇒
@@ -112,18 +110,13 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
     )
   }
 
-  private val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
-
   // scalastyle:off magic.number
-  private def toEligibilityCheckResult(response: Option[EligibilityCheckResponse]): Either[String, EligibilityCheckResult] =
-    response.fold[Either[String, EligibilityCheckResult]](Right(EligibilityCheckResult.Ineligible(emptyECResponse))) { r ⇒
-      r.resultCode match {
-        case 1     ⇒ Right(EligibilityCheckResult.Eligible(r))
-        case 2     ⇒ Right(EligibilityCheckResult.Ineligible(r))
-        case 3     ⇒ Right(EligibilityCheckResult.AlreadyHasAccount(r))
-        case 4     ⇒ Left(s"Error while checking eligibility. Received result code 4 (${r.result}) with reason code ${r.reasonCode} (${r.reason})")
-        case other ⇒ Left(s"Could not parse eligibility result code '$other'. Response was '$r'")
-      }
+  private def toEligibilityCheckResult(r: EligibilityCheckResponse): Either[String, EligibilityCheckResult] =
+    r.resultCode match {
+      case 1     ⇒ Right(EligibilityCheckResult.Eligible(r))
+      case 2     ⇒ Right(EligibilityCheckResult.Ineligible(r))
+      case 3     ⇒ Right(EligibilityCheckResult.AlreadyHasAccount(r))
+      case other ⇒ Left(s"Could not parse eligibility result code '$other'. Response was '$r'")
     }
 
   private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
@@ -219,32 +212,3 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
 }
 
-object HelpToSaveConnector {
-
-  private[connectors] case class ECResponseHolder(response: Option[EligibilityCheckResponse])
-
-  private[connectors] object ECResponseHolder {
-
-    implicit val format: Format[ECResponseHolder] = new Format[ECResponseHolder] {
-
-      private val writesInstance = Json.writes[ECResponseHolder]
-
-      override def writes(o: ECResponseHolder): JsValue = writesInstance.writes(o)
-
-      // fail if there is anything other than `response` in the JSON
-      override def reads(json: JsValue): JsResult[ECResponseHolder] = {
-        val map = json.as[JsObject].value
-        map.get("response").fold[JsResult[ECResponseHolder]] {
-          if (map.keySet.nonEmpty) {
-            JsError(s"Unexpected keys: ${map.keySet.mkString(",")}")
-          } else {
-            JsSuccess(ECResponseHolder(None))
-          }
-        } {
-          _.validate[EligibilityCheckResponse].map(r ⇒ ECResponseHolder(Some(r)))
-        }
-      }
-    }
-  }
-
-}

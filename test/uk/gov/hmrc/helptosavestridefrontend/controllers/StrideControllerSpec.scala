@@ -173,7 +173,7 @@ class StrideControllerSpec
     }
 
     "getting the you-are-not-eligible page" must {
-      val ineligibleReasonCodes = List(2, 3, 4, 5, 9, -1)
+      val ineligibleReasonCodes = List(3, 4, 5, 9)
 
         def ineligibleResponse(reasonCode: Int) = EligibilityCheckResponse("", 2, "", reasonCode)
 

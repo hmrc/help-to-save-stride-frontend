@@ -21,7 +21,6 @@ import cats.syntax.eq._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector.ECResponseHolder
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
@@ -50,29 +49,29 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
   "HelpToSaveConnector" when {
 
     "checking eligibility" must {
-        def ecHolder(resultCode: Int) = ECResponseHolder(Some(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1)))
+        def eligibilityCheckResponse(resultCode: Int) = EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1)
 
       "return a successful eligibility response for a valid NINO" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(1)))))) // scalastyle:ignore magic.number
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(1)))))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
       }
 
       "handles the case of success response but user is not eligible" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(2)))))) // scalastyle:ignore magic.number
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(2)))))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
       }
 
       "handles the case of success response but user has hot an account already" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(3)))))) // scalastyle:ignore magic.number
+        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(3)))))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
       }
 
       "handles the case of success response but invalid eligibility result code" in {
         (4 to 10).foreach{ resultCode ⇒
-          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(ecHolder(resultCode)))))) // scalastyle:ignore magic.number
+          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(resultCode)))))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
           await(connector.getEligibility(nino).value).isLeft shouldBe true
@@ -81,10 +80,12 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       }
 
       "handles the case of success response but no eligibility result json" in {
-        mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.parse("{}"))))) // scalastyle:ignore magic.number
+        inSequence{
+          mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(200, Some(Json.parse("{}"))))) // scalastyle:ignore magic.number
+          mockPagerDutyAlert("Could not parse JSON in eligibility check response")
+        }
 
-        await(connector.getEligibility(nino).value) shouldBe Right(
-          Ineligible(EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)))
+        await(connector.getEligibility(nino).value).isLeft shouldBe true
       }
 
       "handle responses when they contain invalid json" in {
@@ -109,7 +110,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
         "the call comes back with an unexpected http status" in {
           forAll { status: Int ⇒
-            whenever(status > 0 && status =!= 200 && status =!= 404) {
+            whenever(status > 0 && status =!= 200) {
               inSequence {
                 mockGet(connector.eligibilityUrl(nino))(Some(HttpResponse(status)))
                 // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
