@@ -30,51 +30,57 @@
 
     <p>@messages("hts.eligibility.not.eligible.p1")</p>
 
-    @if(ineligibilityReason === EntitledToWTCNoTCAndNoUC) {
-    <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p1")</p>
+    @ineligibilityReason match {
 
-    <ul class="list list-bullet">
-        <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li1")</li>
-        <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li2")</li>
-    </ul>
+        case EntitledToWTCNoTCAndNoUC => {
+            <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p1")</p>
 
-    <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.wtc.h2")</h2>
+            <ul class="list list-bullet">
+                <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li1")</li>
+                <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li2")</li>
+            </ul>
 
-    <ul class="list list-bullet">
-        <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul2-li1")</li>
-        <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul2-li2")</li>
-    </ul>
-    } else { @if(ineligibilityReason === NotEntitledToWTCAndUCInsufficient) {
+            <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.wtc.h2")</h2>
 
-      <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p1")</p>
-      <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p2")</p>
+            <ul class="list list-bullet">
+                <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul2-li1")</li>
+                <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul2-li2")</li>
+            </ul>
+        }
 
-      <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.uc.h2")</h2>
+        case NotEntitledToWTCAndUCInsufficient => {
+            <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p1")</p>
+            <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p2")</p>
 
-      <ul class="list list-bullet">
-        <li>@messages("hts.eligibility.not.eligible.not.entitled.uc.ul2-li1")</li>
-        <li>@messages("hts.eligibility.not.eligible.not.entitled.uc.ul2-li2")</li>
-      </ul>
-    } else {
-      <p>@messages("hts.eligibility.not.eligible.no.benefits.p1")</p>
+            <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.uc.h2")</h2>
 
-      <ul class="list list-bullet">
-        <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li1")</li>
-        <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li2")</li>
-      </ul>
+            <ul class="list list-bullet">
+                <li>@messages("hts.eligibility.not.eligible.not.entitled.uc.ul2-li1")</li>
+                <li>@messages("hts.eligibility.not.eligible.not.entitled.uc.ul2-li2")</li>
+            </ul>
+        }
 
-      <p>@messages("hts.eligibility.not.eligible.no.benefits.p2")</p>
+        case EntitledToWTCNoTCAndInsufficientUC | NotEntitledToWTCAndNoUC => {
+            <p>@messages("hts.eligibility.not.eligible.no.benefits.p1")</p>
 
-      <p>@messages("hts.eligibility.not.eligible.no.benefits.p3")</p>
+            <ul class="list list-bullet">
+                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li1")</li>
+                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li2")</li>
+            </ul>
 
-      <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.no.benefits.h2")</h2>
+            <p>@messages("hts.eligibility.not.eligible.no.benefits.p2")</p>
 
-      <ul class="list list-bullet">
-        <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul2-li1")</li>
-        <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul2-li2")</li>
-        <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul2-li3")</li>
-      </ul>
-    }}
+            <p>@messages("hts.eligibility.not.eligible.no.benefits.p3")</p>
+
+            <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.no.benefits.h2")</h2>
+
+            <ul class="list list-bullet">
+                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul2-li1")</li>
+                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul2-li2")</li>
+                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul2-li3")</li>
+            </ul>
+        }
+    }
 
     <a role="button" class="button subsection--wide push--bottom" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.eligibility.not.eligible.end-call")</a>
 }
