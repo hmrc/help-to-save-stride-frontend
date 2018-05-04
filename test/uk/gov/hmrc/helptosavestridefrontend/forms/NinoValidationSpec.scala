@@ -40,6 +40,7 @@ class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenProp
     "validate against valid ninos" in {
       test("AE123456C")(Right("AE123456C"))
       test("AE 12 34 56 C")(Right("AE123456C"))
+      test("ae12 34 56c")(Right("AE123456C"))
     }
 
     "validate against blank strings" in {
