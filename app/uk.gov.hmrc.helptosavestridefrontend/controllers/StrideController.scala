@@ -62,7 +62,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   private def checkIfAlreadyEnrolled(nino: String)(ifNotEnrolled: ⇒ Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier): Future[Result] = { // scalastyle:ignore
       def updateSessionIfEnrolled(enrolmentStatus: EnrolmentStatus)(implicit hc: HeaderCarrier): EitherT[Future, String, Unit] = enrolmentStatus match {
         case Enrolled    ⇒ keyStoreConnector.put(HtsSession(AlreadyHasAccount)).map(_ ⇒ ())
-        case NotEnrolled ⇒ EitherT.pure[Future, String, Unit](())
+        case NotEnrolled ⇒ EitherT.pure[Future, String](())
       }
 
     val result = for {
@@ -228,10 +228,10 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         helpToSaveConnector.getNSIUserInfo(ninoEncoded).map(UserInfo.EligibleWithNSIUserInfo(value, _))
 
       case EligibilityCheckResult.Ineligible(value) ⇒
-        EitherT.pure[Future, String, UserInfo](UserInfo.Ineligible(value))
+        EitherT.pure[Future, String](UserInfo.Ineligible(value))
 
       case EligibilityCheckResult.AlreadyHasAccount(value) ⇒
-        EitherT.pure[Future, String, UserInfo](UserInfo.AlreadyHasAccount)
+        EitherT.pure[Future, String](UserInfo.AlreadyHasAccount)
 
     }
 
