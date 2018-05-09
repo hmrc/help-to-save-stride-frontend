@@ -45,7 +45,7 @@ trait NINOGenerator {
 
   //Private Beta
   def generateIneligiblePrefix(): String = {
-    val prefixes = Set("NE02", "NE03")
+    val prefixes = Set("WP0000", "WP0010", "WP1000", "WP1010")
     val rnd = new Random
     prefixes.toVector(rnd.nextInt(prefixes.size))
   }
@@ -54,7 +54,7 @@ trait NINOGenerator {
     "ES" + code.toString
 
   def generateIneligibleNINO(): String = {
-    val ineligibleNino = generateIneligiblePrefix() + generateNINO().drop(4)
+    val ineligibleNino = generateIneligiblePrefix() + generateNINO().drop(6)
     current = ineligibleNino
     ineligibleNino
   }
