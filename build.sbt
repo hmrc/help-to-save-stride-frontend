@@ -23,7 +23,7 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "bootstrap-play-25" % "1.4.0",
   "uk.gov.hmrc" %% "auth-client" % "2.5.0",
   "uk.gov.hmrc" %% "domain" % "5.1.0",
-  "org.typelevel" %% "cats" % "0.9.0",
+  "org.typelevel" %% "cats-core" % "1.1.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
   "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.7.2",
   "uk.gov.hmrc" %% "play-whitelist-filter" % "2.0.0"
@@ -37,7 +37,7 @@ lazy val testDependencies = Seq(
   "com.github.tomakehurst" % "wiremock" % "2.5.1" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % test,
-  "uk.gov.hmrc" %% "stub-data-generator" % "0.4.0" % test,
+  "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   // below for selenium tests
   "info.cukes" % "cucumber-junit" % "1.2.4" % test,
   "info.cukes" % "cucumber-picocontainer" % "1.2.4" % test,
