@@ -51,6 +51,8 @@ class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenProp
       forAll(genString(5), genString(5)) { (l, d) ⇒
         test(s"$l@$d")(Left(Set(ErrorMessages.invalidNinoPattern)))
       }
+
+      test("JF677211D")(Left(Set(ErrorMessages.invalidNinoPattern)))
     }
   }
 
