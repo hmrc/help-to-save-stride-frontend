@@ -53,6 +53,7 @@ class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenProp
       }
 
       test("JF677211D")(Left(Set(ErrorMessages.invalidNinoPattern)))
+      test("jf677211d")(Left(Set(ErrorMessages.invalidNinoPattern)))
     }
   }
 
