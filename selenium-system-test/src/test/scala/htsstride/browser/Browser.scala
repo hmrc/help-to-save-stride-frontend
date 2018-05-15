@@ -17,7 +17,6 @@
 package htsstride.browser
 
 import htsstride.pages.Page
-import htsstride.utils.Configuration
 import org.openqa.selenium._
 import org.openqa.selenium.support.ui._
 import org.scalatest.Matchers
@@ -88,12 +87,13 @@ trait Retrievals { this: WebBrowser ⇒
 
 trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
 
-  def isTextOnPage(regex: String)(implicit driver: WebDriver): Boolean = {
+  def isTextOnPage(regex: String)(implicit driver: WebDriver): Either[String, Unit] = {
     val textPresent = regex.r.findAllIn(Browser.getPageContent).nonEmpty
     if (!textPresent) {
-      println("Text not found: " + regex)
+      Left(s"Text not found: $regex")
+    } else {
+      Right(())
     }
-    textPresent
   }
 
   def checkCurrentPageIs(page: Page)(implicit driver: WebDriver): Unit = {
@@ -111,7 +111,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
     val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
 
     result shouldBe Right(())
-    page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$t - Help to Save - GOV.UK")
+    page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$t - Help to Save - HMRC")
     page.expectedPageHeader.foreach(getPageHeading shouldBe _)
   }
 
@@ -142,5 +142,4 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
   def isElementByIdVisible(id: String)(implicit driver: WebDriver): Boolean = {
     driver.findElement(By.id(id)).isDisplayed
   }
-
 }

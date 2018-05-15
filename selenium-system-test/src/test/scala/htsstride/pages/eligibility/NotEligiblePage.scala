@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package htsstride.pages
+package htsstride.pages.eligibility
 
-import htsstride.browser.Browser
+import htsstride.pages.Page
 import htsstride.utils.Configuration
-import org.openqa.selenium.WebDriver
 
-object NotEligiblePage extends Page {
+trait NotEligiblePage extends Page {
+
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/not-eligible"
 
-  def verifyPage()(implicit driver: WebDriver): Unit =
-    Browser.checkCurrentPageIs(this)
+  override val expectedPageTitle: Option[String] = Some("Not eligible for an account")
+  override val expectedPageHeader: Option[String] = Some("Not eligible for an account")
 
-  def finishCall()(implicit driver: WebDriver): Unit =
-    clickEndCall()
+  val notEligibleText: List[String]
 }

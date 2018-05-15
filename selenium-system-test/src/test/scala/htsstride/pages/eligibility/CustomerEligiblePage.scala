@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package htsstride.pages
+package htsstride.pages.eligibility
 
 import htsstride.browser.Browser
+import htsstride.pages.{CreateAccountPage, IntroductionHelpToSavePage, Page}
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
 object CustomerEligiblePage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/customer-eligible"
+
+  override val expectedPageTitle: Option[String] = Some("Customer is eligible for a Help to Save account")
+  override val expectedPageHeader: Option[String] = Some("Customer is eligible for a Help to Save account")
 
   def continue()(implicit driver: WebDriver): Unit = {
     navigate()
