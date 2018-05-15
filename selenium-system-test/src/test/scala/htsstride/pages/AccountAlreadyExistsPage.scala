@@ -16,13 +16,12 @@
 
 package htsstride.pages
 
-import htsstride.browser.Browser
 import htsstride.utils.Configuration
-import org.openqa.selenium.WebDriver
 
 object AccountAlreadyExistsPage extends Page {
+
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/customer-already-has-account"
 
-  def verifyPage()(implicit driver: WebDriver): Unit =
-    Browser.checkCurrentPageIs(this)
+  override val expectedPageTitle: Option[String] = Some("Customer already has an account")
+  override val expectedPageHeader: Option[String] = Some("Customer already has an account")
 }

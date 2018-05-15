@@ -16,19 +16,18 @@
 
 package htsstride.pages
 
-import htsstride.browser.Browser
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
 object IntroductionHelpToSavePage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/introduction-help-to-save"
 
+  override val expectedPageTitle: Option[String] = Some("Introduction to Help to Save")
+  override val expectedPageHeader: Option[String] = Some("Introduction to Help to Save")
+
   def checkEligibility(nino: String)(implicit driver: WebDriver): Unit = {
     navigate()
     setFieldByName("nino", nino)
     clickSubmit()
   }
-
-  def verifyPage()(implicit driver: WebDriver): Unit =
-    Browser.checkCurrentPageIs(this)
 }

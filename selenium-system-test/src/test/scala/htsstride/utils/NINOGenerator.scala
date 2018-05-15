@@ -75,4 +75,7 @@ trait NINOGenerator {
 
   def currentNINO(): String = current
 
+  def defineNINO(nino: String): Unit = {
+    current = nino
+  }
 }

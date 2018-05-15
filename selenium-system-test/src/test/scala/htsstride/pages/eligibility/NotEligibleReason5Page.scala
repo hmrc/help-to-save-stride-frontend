@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package htsstride.pages
+package htsstride.pages.eligibility
 
-import htsstride.utils.Configuration
+object NotEligibleReason5Page extends NotEligiblePage {
 
-object AccountCreatedPage extends Page {
-  override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/account-created"
-
-  override val expectedPageTitle: Option[String] = Some("Customer's account has been created")
-  override val expectedPageHeader: Option[String] = Some("Customer's account has been created")
+  override val notEligibleText =
+    List("Customer is not eligible for a Help to Save account.",
+      "They are claiming Universal Credit, but their household earnings in their last monthly assessment period were too low.",
+      "Their Universal Credit payments are not considered to be income.")
 }

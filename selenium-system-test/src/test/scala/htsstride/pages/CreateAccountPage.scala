@@ -23,6 +23,9 @@ import org.openqa.selenium.WebDriver
 object CreateAccountPage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/create-account"
 
+  override val expectedPageTitle: Option[String] = Some("Create an account")
+  override val expectedPageHeader: Option[String] = Some("Create an account")
+
   def createAccount()(implicit driver: WebDriver): Unit = {
     navigate()
     clickSubmit()

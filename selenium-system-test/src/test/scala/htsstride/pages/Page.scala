@@ -24,7 +24,6 @@ trait Page {
   val expectedURL: String
 
   val expectedPageTitle: Option[String] = None
-
   val expectedPageHeader: Option[String] = None
 
   def navigate()(implicit driver: WebDriver): Unit = Browser.go to expectedURL
@@ -40,6 +39,4 @@ trait Page {
 
   def setFieldByName(name: String, value: String)(implicit driver: WebDriver): Unit =
     Browser.find(Browser.name(name)).foreach(_.underlying.sendKeys(value))
-
 }
-

@@ -23,8 +23,8 @@ import org.openqa.selenium.WebDriver
 object ErrorPage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/error"
 
-  def verifyPage()(implicit driver: WebDriver): Unit =
-    Browser.checkCurrentPageIs(this)
+  override val expectedPageTitle: Option[String] = Some("Something went wrong")
+  override val expectedPageHeader: Option[String] = Some("Something went wrong")
 
   def clickGoBackButton()(implicit driver: WebDriver): Unit = {
     clickSubmit()
