@@ -64,7 +64,7 @@
         @helpers.input_text(
           id = "nino",
           name = "nino",
-          hint = Some("Paste customer's NINO into field to check eligibility"),
+          hint = Some(messages("hts.eligibility.give-nino.hint")),
           containerClass = Some("push--bottom"),
           label = messages(""),
           labelClass = Some("oversize-label"),
@@ -74,7 +74,7 @@
       </div>
 
       <section class="subsection push--bottom">
-        @helpers.submit('_buttonClass -> "", 'id → "continue") { @messages("hts.global.continue-button") }
+        @helpers.submit('_buttonClass -> "", 'id → "continue") { @messages("hts.eligibility.check-availability.continue-button") }
       </section>
     }
   }
