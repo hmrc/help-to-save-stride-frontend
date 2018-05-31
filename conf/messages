@@ -20,12 +20,12 @@ hts.you.are.eligible.title=Customer is eligible for a Help to Save account
 hts.you.are.eligible.h1=Customer is eligible for a Help to Save account
 hts.you.are.eligible.h2=Ask the customer if these details are correct:
 hts.you.are.eligible.user.details.name-label=Name
-hts.you.are.eligible.user.details.nino-label=National Insurance number (NINO)
+hts.you.are.eligible.user.details.nino-label=National Insurance number
 hts.you.are.eligible.user.details.dob-label=Date of birth
 hts.you.are.eligible.user.details.address-label=Address
 hts.you.are.eligible.h3=Tell the customer that, by continuing, they are confirming they are eligible.
 hts.you.are.eligible.continue-button=Customer''s details are correct
-hts.you.are.eligible.end-call.button=Cancel application / End call
+hts.you.are.eligible.end-call.button=Cancel application and end call
 
 hts.create.account.title=Create an account
 hts.create.account.h1=Create an account
