@@ -57,11 +57,7 @@
     <p class="subsection flush--bottom">@messages("hts.you.are.eligible.h3")</p>
 
     @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.handleDetailsConfirmed()) {
-    <section class="subsection grid-row button-row">
-        @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "column-one-half soft-half--left flush--top") { @messages("hts.you.are.eligible.continue-button") }
-        <div class="column-one-half soft-half--right">
-          <a role="button" class="button button--secondary float--right flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
-        </div>
-    </section>
+      @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "soft-half--left") { @messages("hts.you.are.eligible.continue-button") }
+      <a role="button" class="flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
     }
 }
