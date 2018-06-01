@@ -46,33 +46,33 @@ hts.account.created.ul1-li2=password
 hts.application.cancelled.title=Application cancelled
 hts.application.cancelled.h1=Application cancelled
 
-hts.eligibility.not.eligible.title=Not eligible for an account
-hts.eligibility.not.eligible.h1=Not eligible for an account
+hts.eligibility.not.eligible.title=Customer is not eligible for an account
+hts.eligibility.not.eligible.h1=Customer is not eligible for an account
 hts.eligibility.not.eligible.p1=Customer is not eligible for a Help to Save account.
 hts.eligibility.not.eligible.end-call=End call
 
 hts.eligibility.not.eligible.not.entitled.uc.p1=They are claiming Universal Credit, but their household earnings in their last monthly assessment period were too low.
 hts.eligibility.not.eligible.not.entitled.uc.p2=Their Universal Credit payments are not considered to be income.
 hts.eligibility.not.eligible.not.entitled.uc.h2=Next steps
-hts.eligibility.not.eligible.not.entitled.uc.ul2-li1=Explain eligibility criteria to customer.
-hts.eligibility.not.eligible.not.entitled.uc.ul2-li2=Tell customer what they need to do if they still think they are eligible.
+hts.eligibility.not.eligible.not.entitled.uc.p3=Explain eligibility criteria to customer.
+hts.eligibility.not.eligible.not.entitled.uc.p4=Tell customer what they need to do if they still think they are eligible.
 
 hts.eligibility.not.eligible.not.entitled.wtc.p1=They are eligible for Working Tax Credit but they are not getting payments for either:
 hts.eligibility.not.eligible.not.entitled.wtc.ul1-li1=Working Tax Credit
 hts.eligibility.not.eligible.not.entitled.wtc.ul1-li2=Child Tax Credit
 hts.eligibility.not.eligible.not.entitled.wtc.h2=Next steps
-hts.eligibility.not.eligible.not.entitled.wtc.ul2-li1=Explain eligibility criteria to the customer.
-hts.eligibility.not.eligible.not.entitled.wtc.ul2-li2=Tell customer what they need to do if they think they are eligible.
+hts.eligibility.not.eligible.not.entitled.wtc.p2=Explain eligibility criteria to the customer.
+hts.eligibility.not.eligible.not.entitled.wtc.p3=Tell customer what they need to do if they think they are eligible.
 
 hts.eligibility.not.eligible.no.benefits.p1=To be eligible for an account one of these must apply. The customer must be:
 hts.eligibility.not.eligible.no.benefits.ul1-li1=entitled to Working Tax Credit and also receiving payments for Working Tax Credit or Child Tax Credit
-hts.eligibility.not.eligible.no.benefits.ul1-li2=claiming Universal Credit and their household income must have met or exceeded the threshold in their last monthly assessment period
+hts.eligibility.not.eligible.no.benefits.ul1-li2=claiming Universal Credit and have met the earnings criteria in their last monthly assessment period
 hts.eligibility.not.eligible.no.benefits.p2=Payments from Universal Credit are not considered to be income.
 hts.eligibility.not.eligible.no.benefits.p3=If they have recently applied for Working Tax Credit or Universal Credit they may be eligible for an account, but will need to wait and apply again later.
 hts.eligibility.not.eligible.no.benefits.h2=Next steps
-hts.eligibility.not.eligible.no.benefits.ul2-li1=Explain eligibility criteria to customer.
-hts.eligibility.not.eligible.no.benefits.ul2-li2=If they have just claimed Working Tax Credit or Universal Credit tell them how long they will need to wait before they can apply again.
-hts.eligibility.not.eligible.no.benefits.ul2-li3=Tell customer what they need to do if they still think they are eligible.
+hts.eligibility.not.eligible.no.benefits.p4=Explain eligibility criteria to customer.
+hts.eligibility.not.eligible.no.benefits.p5=If they have just claimed Working Tax Credit or Universal Credit tell them how long they will need to wait before they can apply again.
+hts.eligibility.not.eligible.no.benefits.p6=Tell customer what they need to do if they still think they are eligible.
 
 hts.error.page.title=Something went wrong
 hts.error.page.h1=Something went wrong
