@@ -39,7 +39,7 @@ hts.account.exists.h1=Customer already has an account
 
 hts.account.created.title=Customer''s account has been created
 hts.account.created.h1=Customer''s account has been created
-hts.account.created.p1=We''ll post the customer a:
+hts.account.created.p1=You need to tell the customer, we''ll post them a:
 hts.account.created.ul1-li1=Welcome pack
 hts.account.created.ul1-li2=password
 
