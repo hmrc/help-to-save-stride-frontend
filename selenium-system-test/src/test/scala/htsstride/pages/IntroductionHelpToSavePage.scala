@@ -20,10 +20,10 @@ import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
 object IntroductionHelpToSavePage extends Page {
-  override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/introduction-help-to-save"
+  override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/check-eligibility"
 
-  override val expectedPageTitle: Option[String] = Some("Introduction to Help to Save")
-  override val expectedPageHeader: Option[String] = Some("Introduction to Help to Save")
+  override val expectedPageTitle: Option[String] = Some("Check the customer's eligibility")
+  override val expectedPageHeader: Option[String] = Some("Check the customer's eligibility")
 
   def checkEligibility(nino: String)(implicit driver: WebDriver): Unit = {
     navigate()

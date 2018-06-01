@@ -20,7 +20,7 @@ import htsstride.utils.Configuration
 
 object ApplicationCancelledPage extends Page {
 
-  override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/application-cancelled"
+  override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/application-cancelled"
 
   override val expectedPageTitle: Option[String] = Some("Application cancelled")
   override val expectedPageHeader: Option[String] = Some("Application cancelled")
