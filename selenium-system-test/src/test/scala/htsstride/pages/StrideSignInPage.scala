@@ -24,9 +24,9 @@ object StrideSignInPage extends Page {
 
   val successURL: String =
     if (Configuration.redirectWithAbsoluteUrls) {
-      "http://localhost:7006/help-to-save/digitally-excluded/introduction-help-to-save"
+      "http://localhost:7006/help-to-save/hmrc-internal/check-eligibility"
     } else {
-      "/help-to-save/digitally-excluded/introduction-help-to-save"
+      "/help-to-save/hmrc-internal/check-eligibility"
     }
 
   val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"

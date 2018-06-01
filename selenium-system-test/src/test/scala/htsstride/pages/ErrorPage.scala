@@ -21,7 +21,7 @@ import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
 object ErrorPage extends Page {
-  override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/error"
+  override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/error"
 
   override val expectedPageTitle: Option[String] = Some("Something went wrong")
   override val expectedPageHeader: Option[String] = Some("Something went wrong")

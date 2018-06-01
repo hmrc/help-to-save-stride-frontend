@@ -32,7 +32,7 @@ trait Page {
     Browser.find(Browser.className("button")).foreach(_.underlying.click())
 
   def clickCancel()(implicit driver: WebDriver): Unit =
-    driver.findElement(By.linkText("Cancel application / End call")).click()
+    driver.findElement(By.linkText("Cancel application and end call")).click()
 
   def clickEndCall()(implicit driver: WebDriver): Unit =
     driver.findElement(By.linkText("End call")).click()

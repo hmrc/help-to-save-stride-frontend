@@ -20,7 +20,7 @@ import htsstride.utils.Configuration
 
 object AccountAlreadyExistsPage extends Page {
 
-  override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/customer-already-has-account"
+  override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/customer-already-has-account"
 
   override val expectedPageTitle: Option[String] = Some("Customer already has an account")
   override val expectedPageHeader: Option[String] = Some("Customer already has an account")

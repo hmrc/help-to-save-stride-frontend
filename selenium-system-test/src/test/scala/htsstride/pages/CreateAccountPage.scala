@@ -21,7 +21,7 @@ import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
 object CreateAccountPage extends Page {
-  override val expectedURL = s"${Configuration.host}/help-to-save/digitally-excluded/create-account"
+  override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/create-account"
 
   override val expectedPageTitle: Option[String] = Some("Create an account")
   override val expectedPageHeader: Option[String] = Some("Create an account")
