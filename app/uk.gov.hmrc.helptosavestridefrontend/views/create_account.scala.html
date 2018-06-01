@@ -29,16 +29,13 @@
   <ul class="list list-bullet">
    <li>@Messages("hts.create.account.ul1-li1")</li>
    <li>@Messages("hts.create.account.ul1-li2")</li>
-   <li>@Messages("hts.create.account.ul1-li3")</li>
   </ul>
 
   @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
-    <section class="subsection divider--top grid-row button-row">
+    <section class="subsection divider--top">
       <p class="subsection">@Messages("hts.create.account.p2")</p>
-      @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "column-one-half soft-half--left flush--top") { @messages("hts.create-account.continue-button") }
-      <div class="column-one-half soft-half--right">
-        <a role="button" class="button button--secondary float--right flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
-      </div>
+      @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "soft-half--left") { @messages("hts.create-account.continue-button") }
+      <a role="button" class="flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
     </section>
-   }
+  }
 }
