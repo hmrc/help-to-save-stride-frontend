@@ -1,7 +1,8 @@
 # Add all the application routes to the app.routes file
-->         /help-to-save/digitally-excluded  app.Routes
-->         /help-to-save/hmrc-internal       app.Routes
-->         /                                 health.Routes
-->         /template                         template.Routes
+
+->         /help-to-save/hmrc-internal              app.Routes
+GET        /help-to-save/digitally-excluded/*name   @uk.gov.hmrc.helptosavestridefrontend.controllers.TemporaryRedirectController.handle(name)
+->         /                                        health.Routes
+->         /template                                template.Routes
 
 GET        /admin/metrics                    @com.kenshoo.play.metrics.MetricsController.metrics
