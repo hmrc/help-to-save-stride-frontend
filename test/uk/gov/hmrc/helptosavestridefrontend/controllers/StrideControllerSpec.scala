@@ -124,9 +124,9 @@ class StrideControllerSpec
       }
     }
 
-    "the introduction-help-to-save page" must {
+    "the check-eligibility page" must {
 
-      "show the /introduction-help-to-save when there is no session in key-store" in {
+      "show the /check-eligibility when there is no session in key-store" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -177,7 +177,7 @@ class StrideControllerSpec
 
         def ineligibleResponse(reasonCode: Int) = EligibilityCheckResponse("", 2, "", reasonCode)
 
-      "show the /introduction-help-to-save when there is no session in key-store" in {
+      "show the /check-eligibility when there is no session in key-store" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))
@@ -242,7 +242,7 @@ class StrideControllerSpec
 
     "getting the account-already-exists page" must {
 
-      "show the /introduction-help-to-save when there is no session in key-store" in {
+      "show the /check-eligibility when there is no session in key-store" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(None))

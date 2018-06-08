@@ -2,13 +2,13 @@ GET       /assets/*file                               controllers.Assets.version
 
 GET       /                                           @controllers.Default.redirect(to = "/help-to-save/hmrc-internal/check-eligibility")
 
-GET       /introduction-help-to-save                  @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
-
-POST      /introduction-help-to-save                  @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
-
 GET       /check-eligibility                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
 
 POST      /check-eligibility                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
+
+GET       /introduction-help-to-save                  @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
+
+POST      /introduction-help-to-save                  @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
 
 GET       /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligible()
 
