@@ -178,15 +178,17 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
     "createAccount" must {
 
+      val url = "http://localhost:7001/help-to-save/create-account"
+
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(Some(HttpResponse(CREATED)))
+        mockHttpPost(url, nsiUserInfo)(Some(HttpResponse(CREATED)))
 
         val result = await(connector.createAccount(nsiUserInfo).value)
         result shouldBe Right(AccountCreated)
       }
 
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
-        mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(Some(HttpResponse(CONFLICT)))
+        mockHttpPost(url, nsiUserInfo)(Some(HttpResponse(CONFLICT)))
 
         val result = await(connector.createAccount(nsiUserInfo).value)
         result shouldBe Right(AccountAlreadyExists)
@@ -194,7 +196,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
         inSequence {
-          mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(Some(HttpResponse(BAD_REQUEST)))
+          mockHttpPost(url, nsiUserInfo)(Some(HttpResponse(BAD_REQUEST)))
           mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         }
         val result = await(connector.createAccount(nsiUserInfo).value)
@@ -203,7 +205,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       "return a Left when the future fails" in {
         inSequence {
-          mockHttpPost("http://localhost:7001/help-to-save/create-de-account", nsiUserInfo)(None)
+          mockHttpPost(url, nsiUserInfo)(None)
           mockPagerDutyAlert("Failed to make call to the back end create account url")
         }
         val result = await(connector.createAccount(nsiUserInfo).value)
