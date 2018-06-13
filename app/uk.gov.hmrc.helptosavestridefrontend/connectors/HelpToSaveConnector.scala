@@ -63,7 +63,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   def payePersonalDetailsUrl(nino: String): String = s"$htsUrl/help-to-save/stride/paye-personal-details?nino=$nino"
 
-  val createAccountUrl: String = s"$htsUrl/help-to-save/create-de-account"
+  val createAccountUrl: String = s"$htsUrl/help-to-save/create-account"
 
   def enrolmentStatusUrl(nino: String): String = s"$htsUrl/help-to-save/stride/enrolment-status?nino=$nino"
 
