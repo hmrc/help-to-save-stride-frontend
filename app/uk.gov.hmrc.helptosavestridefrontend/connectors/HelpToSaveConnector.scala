@@ -28,6 +28,7 @@ import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
+import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
@@ -43,7 +44,7 @@ trait HelpToSaveConnector {
 
   def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIUserInfo]
 
-  def createAccount(nSIUserInfo: NSIUserInfo)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
+  def createAccount(createAccountRequest: CreateAccountRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
 
   def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus]
 
@@ -157,9 +158,11 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
           }
       })
 
-  override def createAccount(nSIUserInfo: NSIUserInfo)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
+  override def createAccount(createAccountRequest: CreateAccountRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
 
-    EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, nSIUserInfo).map[Either[String, CreateAccountResult]] { response ⇒
+    val nSIUserInfo = createAccountRequest.userInfo
+
+    EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, createAccountRequest).map[Either[String, CreateAccountResult]] { response ⇒
       response.status match {
         case Status.CREATED ⇒
           logger.debug("createAccount returned 201 (Created)", nSIUserInfo.nino)

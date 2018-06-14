@@ -21,7 +21,7 @@ import cats.instances.future._
 import cats.syntax.either._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.i18n.MessagesApi
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsValue, Reads, Writes}
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,6 +32,7 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInf
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
+import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo}
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
@@ -79,9 +80,9 @@ class StrideControllerSpec
       .expects(*, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockBEConnectorCreateAccount(nSIUserInfo: NSIUserInfo)(result: Either[String, CreateAccountResult]) =
-    (helpToSaveConnector.createAccount(_: NSIUserInfo)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nSIUserInfo, *, *)
+  def mockCreateAccount(createAccountRequest: CreateAccountRequest)(result: Either[String, CreateAccountResult]) =
+    (helpToSaveConnector.createAccount(_: CreateAccountRequest)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(createAccountRequest, *, *)
       .returning(EitherT.fromEither[Future](result))
 
   def mockGetEnrolmentStatus(nino: String)(result: Either[String, EnrolmentStatus]) =
@@ -520,7 +521,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
-          mockBEConnectorCreateAccount(nsiUserInfo)(Right(AccountCreated))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, Some(eligibleStrideUserInfo.response.reasonCode)))(Right(AccountCreated))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -542,7 +543,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
-          mockBEConnectorCreateAccount(nsiUserInfo)(Left("error occured creating an account"))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, Some(eligibleStrideUserInfo.response.reasonCode)))(Left("error occured creating an account"))
         }
 
         val result = controller.createAccount(FakeRequest())
