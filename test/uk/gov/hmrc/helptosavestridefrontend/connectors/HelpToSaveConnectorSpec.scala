@@ -26,6 +26,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -41,9 +42,9 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       .expects(url, *, *)
       .returning(response.fold(Future.failed[HttpResponse](new Exception("")))(Future.successful))
 
-  def mockHttpPost[A](url: String, nSIUserInfo: A)(response: Option[HttpResponse]) =
+  def mockHttpPost[A](url: String, createAccountRequest: A)(response: Option[HttpResponse]) =
     (mockHttp.post(_: String, _: A, _: Seq[(String, String)])(_: Writes[A], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, nSIUserInfo, Seq.empty[(String, String)], *, *, *)
+      .expects(url, createAccountRequest, Seq.empty[(String, String)], *, *, *)
       .returning(response.fold(Future.failed[HttpResponse](new Exception("")))(Future.successful))
 
   "HelpToSaveConnector" when {
@@ -180,35 +181,37 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
       val url = "http://localhost:7001/help-to-save/create-account"
 
-      "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        mockHttpPost(url, nsiUserInfo)(Some(HttpResponse(CREATED)))
+      val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7)
 
-        val result = await(connector.createAccount(nsiUserInfo).value)
+      "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
+        mockHttpPost(url, createAccountRequest)(Some(HttpResponse(CREATED)))
+
+        val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Right(AccountCreated)
       }
 
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
-        mockHttpPost(url, nsiUserInfo)(Some(HttpResponse(CONFLICT)))
+        mockHttpPost(url, createAccountRequest)(Some(HttpResponse(CONFLICT)))
 
-        val result = await(connector.createAccount(nsiUserInfo).value)
+        val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Right(AccountAlreadyExists)
       }
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
         inSequence {
-          mockHttpPost(url, nsiUserInfo)(Some(HttpResponse(BAD_REQUEST)))
+          mockHttpPost(url, createAccountRequest)(Some(HttpResponse(BAD_REQUEST)))
           mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         }
-        val result = await(connector.createAccount(nsiUserInfo).value)
+        val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400 with response body: null")
       }
 
       "return a Left when the future fails" in {
         inSequence {
-          mockHttpPost(url, nsiUserInfo)(None)
+          mockHttpPost(url, createAccountRequest)(None)
           mockPagerDutyAlert("Failed to make call to the back end create account url")
         }
-        val result = await(connector.createAccount(nsiUserInfo).value)
+        val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Left("Encountered error while trying to make createAccount call, with message: ")
       }
     }
