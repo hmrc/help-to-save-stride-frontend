@@ -25,18 +25,16 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.AlreadyHasAccount
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, UserInfo}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
-import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
-import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -46,8 +44,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
                                   val keyStoreConnector:   KeyStoreConnector,
                                   val frontendAppConfig:   FrontendAppConfig,
-                                  messageApi:              MessagesApi,
-                                  metrics:                 Metrics)(implicit val transformer: NINOLogMessageTransformer)
+                                  messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
@@ -179,12 +176,6 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               SeeOther(routes.StrideController.getErrorPage().url)
             }, {
               case AccountCreated ⇒
-                val eligibilityCheckResult = eligible.response
-                logger.info(s"Successfully created account - eligibility reason was ${eligibilityCheckResult.reasonCode}: " +
-                  s"${eligibilityCheckResult.reason}", eligible.nSIUserInfo.nino)
-
-                metrics.accountsCreatedEligibilityReasonHistogram.update(eligibilityCheckResult.reasonCode)
-
                 SeeOther(routes.StrideController.getAccountCreatedPage().url)
               case AccountAlreadyExists ⇒
                 Ok(views.html.account_already_exists())
