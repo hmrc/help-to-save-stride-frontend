@@ -173,7 +173,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          helpToSaveConnector.createAccount(CreateAccountRequest(eligible.nSIUserInfo, Some(eligible.response.reasonCode))).fold(
+          helpToSaveConnector.createAccount(CreateAccountRequest(eligible.nSIUserInfo, eligible.response.reasonCode)).fold(
             error ⇒ {
               logger.warn(s"error during create account call, error: $error")
               SeeOther(routes.StrideController.getErrorPage().url)

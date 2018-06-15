@@ -521,7 +521,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, Some(eligibleStrideUserInfo.response.reasonCode)))(Right(AccountCreated))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode))(Right(AccountCreated))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -543,7 +543,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, Some(eligibleStrideUserInfo.response.reasonCode)))(Left("error occured creating an account"))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode))(Left("error occured creating an account"))
         }
 
         val result = controller.createAccount(FakeRequest())
