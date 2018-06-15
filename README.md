@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/hmrc/help-to-save-stride-frontend.svg)](https://travis-ci.org/hmrc/help-to-save-stride-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/help-to-save-stride-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/help-to-save-stride-frontend/_latestVersion)
 
-# Help To Save Stride Frontend 
+# Help To Save Stride Frontend
 
 Stride Frontend application process for Help To Save
 
