@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.metrics
 
 import cats.instances.long._
 import cats.syntax.eq._
-import com.codahale.metrics.{Counter, Histogram, Timer}
+import com.codahale.metrics.{Counter, Timer}
 import com.google.inject.{Inject, Singleton}
 
 import scala.annotation.tailrec
@@ -29,8 +29,6 @@ class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
   protected def timer(name: String): Timer = metrics.defaultRegistry.timer(name)
 
   protected def counter(name: String): Counter = metrics.defaultRegistry.counter(name)
-
-  protected def histogram(name: String): Histogram = metrics.defaultRegistry.histogram(name)
 
   val eligibilityCheckTimer: Timer = timer("stride.frontend.eligibility-check-time")
 
@@ -51,8 +49,6 @@ class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
   val keystoreDeleteTimer: Timer = timer("stride.frontend.keystore-delete-time")
 
   val keystoreDeleteErrorCounter: Counter = counter("stride.frontend.keystore-delete-error.count")
-
-  val accountsCreatedEligibilityReasonHistogram: Histogram = histogram("stride.frontend.account-created.eligibility-reason")
 }
 
 object Metrics {
