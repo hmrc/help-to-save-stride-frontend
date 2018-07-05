@@ -1,8 +1,6 @@
 # Add all the application routes to the app.routes file
 
 ->         /help-to-save/hmrc-internal              app.Routes
-GET        /help-to-save/digitally-excluded         @controllers.Default.redirect(to = "/help-to-save/hmrc-internal/check-eligibility")
-GET        /help-to-save/digitally-excluded/*name   @uk.gov.hmrc.helptosavestridefrontend.controllers.TemporaryRedirectController.handle(name)
 ->         /                                        health.Routes
 ->         /template                                template.Routes
 
