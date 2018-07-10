@@ -17,6 +17,7 @@
 package htsstride.steps
 
 import java.util.concurrent.TimeUnit
+import java.util.function.Function
 
 import cats.syntax.either._
 import cucumber.api.Scenario
@@ -68,8 +69,15 @@ private[steps] trait Steps extends ScalaDsl with EN with Matchers {
 
       // Try to take screen shot of previous page
       driver.navigate().back()
-      val wait = new WebDriverWait(driver, 2)
-      wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(failurePageUrl)))
+      val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
+      val expectedCondition = new Function[WebDriver, Boolean]() {
+        override def apply(t: WebDriver): Boolean = {
+          ExpectedConditions.not(ExpectedConditions.urlToBe(failurePageUrl)).apply(driver)
+        }
+      }
+
+      wait.until(expectedCondition)
+
       val screenshotPreviousPage = driver.getScreenshotAs(OutputType.BYTES)
       scenario.embed(screenshotPreviousPage, "image/png")
 

@@ -17,33 +17,32 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.18.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.22.0",
   "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",
-  "uk.gov.hmrc" %% "play-ui" % "7.13.0",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.4.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.5.0",
+  "uk.gov.hmrc" %% "play-ui" % "7.17.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.7.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.6.0",
   "uk.gov.hmrc" %% "domain" % "5.1.0",
   "org.typelevel" %% "cats-core" % "1.1.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
-  "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.7.2",
+  "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.9.6",
   "uk.gov.hmrc" %% "play-whitelist-filter" % "2.0.0"
 )
 
 lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % test,
-  "org.scalatest" %% "scalatest" % "3.0.4" % test,
+  "org.scalatest" %% "scalatest" % "3.0.5" % test,
   "org.pegdown" % "pegdown" % "1.6.0" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
-  "com.github.tomakehurst" % "wiremock" % "2.5.1" % test,
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % test,
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   // below for selenium tests
-  "info.cukes" % "cucumber-junit" % "1.2.4" % test,
-  "info.cukes" % "cucumber-picocontainer" % "1.2.4" % test,
-  "info.cukes" %% "cucumber-scala" % "1.2.4" % test,
-  "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" % test,
-  "org.seleniumhq.selenium" % "selenium-firefox-driver" % "2.53.1" % test
+  "info.cukes" % "cucumber-junit" % "1.2.5" % test,
+  "info.cukes" % "cucumber-picocontainer" % "1.2.5" % test,
+  "info.cukes" %% "cucumber-scala" % "1.2.5" % test,
+  "org.seleniumhq.selenium" % "selenium-java" % "3.13.0" % test,
+  "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0" % test,
+  "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test
 )
 
 def seleniumTestFilter(name: String): Boolean = name.contains("suites")
