@@ -42,7 +42,8 @@ lazy val testDependencies = Seq(
   "info.cukes" %% "cucumber-scala" % "1.2.5" % test,
   "org.seleniumhq.selenium" % "selenium-java" % "3.13.0" % test,
   "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0" % test,
-  "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test
+  "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test,
+  "com.google.guava" % "guava" % "25.1-jre" % test
 )
 
 def seleniumTestFilter(name: String): Boolean = name.contains("suites")
