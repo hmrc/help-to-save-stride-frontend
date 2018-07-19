@@ -26,7 +26,10 @@ trait Page {
   val expectedPageTitle: Option[String] = None
   val expectedPageHeader: Option[String] = None
 
-  def navigate()(implicit driver: WebDriver): Unit = Browser.go to expectedURL
+  def navigate(checkNavigationSuccessful: Boolean = true)(implicit driver: WebDriver): Unit = {
+    Browser.go to expectedURL
+    if (checkNavigationSuccessful) { Browser.checkCurrentPageIs(this) }
+  }
 
   def clickSubmit()(implicit driver: WebDriver): Unit =
     Browser.find(Browser.className("button")).foreach(_.underlying.click())

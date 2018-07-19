@@ -27,6 +27,7 @@ object ErrorPage extends Page {
   override val expectedPageHeader: Option[String] = Some("Something went wrong")
 
   def clickGoBackButton()(implicit driver: WebDriver): Unit = {
+    Browser.checkCurrentPageIs(this)
     clickSubmit()
     Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
   }

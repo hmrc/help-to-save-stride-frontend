@@ -95,12 +95,12 @@ trait Retrievals { this: WebBrowser ⇒
 
 trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
 
-  def isTextOnPage(regex: String)(implicit driver: WebDriver): Either[String, Unit] = {
-    val textPresent = regex.r.findAllIn(Browser.getPageContent).nonEmpty
-    if (!textPresent) {
+  def isTextOnPage(regex: String)(implicit driver: WebDriver): Either[String, Set[String]] = {
+    val textPresent = regex.r.findAllIn(Browser.getPageContent)
+    if (textPresent.isEmpty) {
       Left(s"Text not found: $regex")
     } else {
-      Right(())
+      Right(textPresent.toSet)
     }
   }
 
@@ -120,13 +120,21 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
           case NonFatal(_) ⇒ false
         }
       }
+    val urlMatches =
+      Either.cond(isActualUrlExpectedUrl(page.expectedURL),
+        (),
+        s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl()
+      )
 
-    val urlMatches = isActualUrlExpectedUrl(page.expectedURL)
-    val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
-
-    result shouldBe Right(())
+    urlMatches shouldBe Right(())
     page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$t - Help to Save - HMRC")
     page.expectedPageHeader.foreach(getPageHeading shouldBe _)
+
+    // check that there are no unmapped message keys on the page
+    isTextOnPage("hts(\\..+)+").fold(
+      _ ⇒ (),
+      s ⇒ fail(s"Found unescaped message keys on page: [${s.mkString("; ")}]")
+    )
   }
 
   def scrollDown()(implicit driver: WebDriver): AnyRef = driver match {

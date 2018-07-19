@@ -16,6 +16,7 @@
 
 package htsstride.pages.eligibility
 
+import htsstride.browser.Browser
 import org.openqa.selenium.WebDriver
 
 object NotEligibleReason3Page extends NotEligiblePage {
@@ -26,6 +27,8 @@ object NotEligibleReason3Page extends NotEligiblePage {
       "Working Tax Credit",
       "Child Tax Credit")
 
-  def finishCall()(implicit driver: WebDriver): Unit =
+  def finishCall()(implicit driver: WebDriver): Unit = {
+    Browser.checkCurrentPageIs(this)
     clickEndCall()
+  }
 }
