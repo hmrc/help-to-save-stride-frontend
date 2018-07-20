@@ -17,7 +17,7 @@
 package htsstride.pages.eligibility
 
 import htsstride.browser.Browser
-import htsstride.pages.{CreateAccountPage, IntroductionHelpToSavePage, Page}
+import htsstride.pages.{ApplicationCancelledPage, CreateAccountPage, Page}
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
@@ -36,7 +36,7 @@ object CustomerEligiblePage extends Page {
   def cancelApplication()(implicit driver: WebDriver): Unit = {
     navigate()
     clickCancel()
-    Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
+    Browser.checkCurrentPageIs(ApplicationCancelledPage)
   }
 
 }

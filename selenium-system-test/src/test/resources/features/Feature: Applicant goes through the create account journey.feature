@@ -17,7 +17,7 @@ Feature: Applicant goes through the create account journey
     And an applicant is eligible
     When the internal operator is in the process of creating an account on behalf of the applicant
     And they cancel out of creating an account when asked to confirm the applicant's details and choose to finish the call
-    Then they have the option to enter a new applicant's NINO on the opening screen
+    Then they see the application has been cancelled
 
   Scenario: Eligibility check fails
     Given the operator is logged in
