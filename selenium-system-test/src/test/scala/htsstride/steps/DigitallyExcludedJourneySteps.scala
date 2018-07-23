@@ -56,6 +56,10 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
     Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
   }
 
+  Then("they see the application has been cancelled$") {
+    Browser.checkCurrentPageIs(ApplicationCancelledPage)
+  }
+
   Then("^they see a technical error$") {
     Browser.checkCurrentPageIs(ErrorPage)
   }
