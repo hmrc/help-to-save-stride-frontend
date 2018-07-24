@@ -25,8 +25,7 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "domain" % "5.1.0",
   "org.typelevel" %% "cats-core" % "1.1.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
-  "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.9.6",
-  "uk.gov.hmrc" %% "play-whitelist-filter" % "2.0.0"
+  "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.9.6"
 )
 
 lazy val testDependencies = Seq(
