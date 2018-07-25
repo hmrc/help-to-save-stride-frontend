@@ -32,7 +32,7 @@ object StrideSignInPage extends Page {
   val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"
 
   def authenticateOperator()(implicit driver: WebDriver): Unit = {
-    navigate()
+    navigate(checkNavigationSuccessful = false)
     fillInStrideDetails()
     clickSubmit()
     Browser.checkCurrentPageIs(IntroductionHelpToSavePage)

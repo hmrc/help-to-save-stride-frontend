@@ -53,17 +53,17 @@ class EligibilitySteps extends Steps with NINOGenerator {
       case 3 ⇒
         Browser.checkCurrentPageIs(NotEligibleReason3Page)
         val notEligibleTextItems = NotEligibleReason3Page.notEligibleText
-        notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(())
+        notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(Set(text))
         )
       case 5 ⇒
         Browser.checkCurrentPageIs(NotEligibleReason5Page)
         val notEligibleTextItems = NotEligibleReason5Page.notEligibleText
-        notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(())
+        notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(Set(text))
         )
       case 4 | 9 ⇒
         Browser.checkCurrentPageIs(NotEligibleReason4And9Page)
         val notEligibleTextItems = NotEligibleReason4And9Page.notEligibleText
-        notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(())
+        notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(Set(text))
         )
     }
   }
