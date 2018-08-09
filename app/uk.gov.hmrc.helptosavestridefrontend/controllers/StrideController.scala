@@ -25,14 +25,14 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.AlreadyHasAccount
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.UserInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, UserInfo}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
+import uk.gov.hmrc.helptosavestridefrontend.models.{EnrolmentStatus, NSIUserInfo}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.Eligible
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
@@ -98,7 +98,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               }, {
                 case UserInfo.EligibleWithNSIUserInfo(_, details) ⇒
                   SeeOther(routes.StrideController.customerEligible().url)
-                case UserInfo.Ineligible(_) ⇒
+                case UserInfo.Ineligible(_, details, manualCreationAllowed) ⇒
                   SeeOther(routes.StrideController.customerNotEligible().url)
                 case UserInfo.AlreadyHasAccount ⇒
                   SeeOther(routes.StrideController.accountAlreadyExists().url)
@@ -164,26 +164,58 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.getCreateAccountPage())
 
+  private def createAccount(nsiUserInfo: NSIUserInfo, reasonCode: Int)(implicit hc: HeaderCarrier,
+                                                                       request: Request[_]): Future[Result] =
+    helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode)).fold(
+      error ⇒ {
+        logger.warn(s"error during create account call, error: $error")
+        SeeOther(routes.StrideController.getErrorPage().url)
+      }, {
+        case AccountCreated ⇒
+          SeeOther(routes.StrideController.getAccountCreatedPage().url)
+        case AccountAlreadyExists ⇒
+          Ok(views.html.account_already_exists())
+      })
+
   def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
                  whenEligible = { (eligible, detailsConfirmed) ⇒
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          helpToSaveConnector.createAccount(CreateAccountRequest(eligible.nSIUserInfo, eligible.response.reasonCode)).fold(
-            error ⇒ {
-              logger.warn(s"error during create account call, error: $error")
-              SeeOther(routes.StrideController.getErrorPage().url)
-            }, {
-              case AccountCreated ⇒
-                SeeOther(routes.StrideController.getAccountCreatedPage().url)
-              case AccountAlreadyExists ⇒
-                Ok(views.html.account_already_exists())
-            })
+          createAccount(eligible.nSIUserInfo, eligible.response.reasonCode)
         }
       }
     )
   }(routes.StrideController.createAccount())
+
+  //  private def manipulateSession(nino: String)(implicit hc: HeaderCarrier,
+  //                                              request: Request[_]): Future[Result] = {
+  //    val eligibleCheckResponse = EligibilityCheckResponse("manual account creation", 1, "manual account creation", 0)
+  //    val result = for {
+  //      sessionUserInfo ← getPersonalDetails(EligibilityCheckResult(eligibleCheckResponse), nino)
+  //      _ ← keyStoreConnector.put(HtsSession(sessionUserInfo))
+  //
+  //    }
+  //
+  //
+  ////    match {
+  ////      case Right(s) ⇒ keyStoreConnector.put(HtsSession(s))
+  ////      case Left(error) ⇒ logger.warn(s"an error occurred during personal details retrieval, error: $error")
+  ////    }
+  //  }
+
+  def createManualAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+    setSessionManualCreation(SeeOther(routes.StrideController.getEligibilityPage().url),
+                             whenIneligible = { (response, manualCreationAllowed) ⇒
+        if (!manualCreationAllowed) {
+          Future.successful(SeeOther(routes.StrideController.customerEligible().url))
+        } else {
+          createAccount(response.nSIUserInfo, 0)
+        }
+      }
+    )
+  }(routes.StrideController.createManualAccount())
 
   def getAccountCreatedPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),

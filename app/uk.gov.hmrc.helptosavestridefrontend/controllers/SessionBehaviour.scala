@@ -64,6 +64,23 @@ trait SessionBehaviour {
           case AlreadyHasAccount          ⇒ whenAlreadyHasAccount()
         }
     )
+
+  def setSessionManualCreation(noSessionData:  ⇒ Future[Result],
+                               whenIneligible: (Ineligible, Boolean) ⇒ Future[Result] = (_, _) ⇒ SeeOther(routes.StrideController.customerEligible().url)
+  )(implicit request: Request[_]): Future[Result] = {
+    //val eligibleCheckResponse = EligibilityCheckResponse("manual account creation", 1, "manual account creation", 0)
+
+    checkSessionInternal(
+      noSessionData,
+
+      htsSession ⇒
+        htsSession.userInfo match {
+          case i: Ineligible ⇒ whenIneligible(i, true) //still need to set reason to 0
+          //case _ ⇒ logger.warn(s"error occurred during manual account creation")
+        }
+    )
+  }
+
 }
 
 object SessionBehaviour {
@@ -74,7 +91,7 @@ object SessionBehaviour {
 
     case class EligibleWithNSIUserInfo(response: EligibilityCheckResponse, nSIUserInfo: NSIUserInfo) extends UserInfo
 
-    case class Ineligible(response: EligibilityCheckResponse) extends UserInfo
+    case class Ineligible(response: EligibilityCheckResponse, nSIUserInfo: NSIUserInfo, manualCreationAllowed: Boolean = false) extends UserInfo
 
     case object AlreadyHasAccount extends UserInfo
 
@@ -82,16 +99,17 @@ object SessionBehaviour {
 
   implicit val format: Format[UserInfo] = new Format[UserInfo] {
     override def writes(u: UserInfo): JsValue = {
-      val (code, result, details) = u match {
-        case EligibleWithNSIUserInfo(value, details) ⇒ (1, Some(value), Some(details))
-        case Ineligible(value)                       ⇒ (2, Some(value), None)
-        case AlreadyHasAccount                       ⇒ (3, None, None)
+      val (code, result, details, manualCreationAllowed) = u match {
+        case EligibleWithNSIUserInfo(value, details)           ⇒ (1, Some(value), Some(details), None)
+        case Ineligible(value, details, manualCreationAllowed) ⇒ (2, Some(value), Some(details), Some(manualCreationAllowed))
+        case AlreadyHasAccount                                 ⇒ (3, None, None, None)
       }
 
       val fields: List[(String, JsValue)] =
         List("code" → Some(JsNumber(code)),
           "result" → result.map(Json.toJson(_)),
-          "details" → details.map(Json.toJson(_))
+          "details" → details.map(Json.toJson(_)),
+          "manualCreationAllowed" → manualCreationAllowed.map(JsBoolean(_))
         ).collect { case (key, Some(value)) ⇒ key → value }
 
       JsObject(fields)
@@ -100,10 +118,11 @@ object SessionBehaviour {
     override def reads(json: JsValue): JsResult[UserInfo] = {
       ((json \ "code").validate[Int],
         (json \ "result").validateOpt[EligibilityCheckResponse],
-        (json \ "details").validateOpt[NSIUserInfo]) match {
-          case (JsSuccess(1, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
-          case (JsSuccess(2, _), JsSuccess(Some(value), _), _) ⇒ JsSuccess(Ineligible(value))
-          case (JsSuccess(3, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
+        (json \ "details").validateOpt[NSIUserInfo],
+        (json \ "manualCreationAllowed").validate[Boolean]) match {
+          case (JsSuccess(1, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _), _) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
+          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _), JsSuccess(manualCreationAllowed, _), _) ⇒ JsSuccess(Ineligible(value, details, manualCreationAllowed))
+          case (JsSuccess(3, _), JsSuccess(None, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")
         }
     }
