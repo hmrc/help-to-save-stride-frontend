@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.models.eligibility
 
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
+
 sealed trait EligibilityCheckResult {
   val value: EligibilityCheckResponse
 }
