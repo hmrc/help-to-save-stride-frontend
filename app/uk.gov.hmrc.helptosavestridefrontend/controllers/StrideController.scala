@@ -116,7 +116,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           logger.warn(s"Could not parse ineligiblity reason: $ineligible")
           SeeOther(routes.StrideController.getErrorPage().url)
         }{ reason ⇒
-          Ok(views.html.customer_not_eligible(reason))
+          Ok(views.html.customer_not_eligible(reason, ineligible.nSIUserInfo.fold("")(nsiUserInfo ⇒ nsiUserInfo.nino)))
         }
       }
     )

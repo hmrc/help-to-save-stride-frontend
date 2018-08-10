@@ -554,7 +554,7 @@ class StrideControllerSpec
       "handle manual account creation requests when there is userInfo passed in" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
+          mockKeyStoreGet(Right(Some(HtsSession(ineligibleButEligibleStrideUserInfo, detailsConfirmed = true))))
           mockCreateAccount(CreateAccountRequest(nsiUserInfo, 0))(Right(AccountCreated))
         }
 

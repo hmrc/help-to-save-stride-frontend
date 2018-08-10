@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
 @import cats.syntax.eq._
 
-@(ineligibilityReason: IneligibilityReason)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(ineligibilityReason: IneligibilityReason, nino: String)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
     title = messages("hts.eligibility.not.eligible.title"),
@@ -102,7 +102,7 @@
                 </fieldset>
             </div>
 
-            <button class="button checkbox-disable-binding" type="submit" disabled="disabled" aria-disabled="true">@Messages("hts.global.continue-button")</button>
+            <button class="button checkbox-disable-binding" href=@routes.StrideController.allowManualAccountCreation(nino).url type="submit" disabled="disabled" aria-disabled="true">@Messages("hts.global.continue-button")</button>
         </form>
     </div>
 }
