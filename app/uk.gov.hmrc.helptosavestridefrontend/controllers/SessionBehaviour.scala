@@ -85,7 +85,7 @@ object SessionBehaviour {
     override def writes(u: UserInfo): JsValue = {
       val (code, result, details) = u match {
         case EligibleWithNSIUserInfo(value, details) ⇒ (1, Some(value), Some(details))
-        case Ineligible(value, details)              ⇒ (2, Some(value), Some(details))
+        case Ineligible(value, Some(details))        ⇒ (2, Some(value), Some(details))
         case AlreadyHasAccount                       ⇒ (3, None, None)
       }
 

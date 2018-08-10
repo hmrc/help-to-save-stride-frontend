@@ -309,7 +309,7 @@ class StrideControllerSpec
           mockKeyStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
-          mockKeyStorePut(HtsSession(Ineligible(emptyECResponse)))(Right(()))
+          mockKeyStorePut(HtsSession(Ineligible(emptyECResponse, None)))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -548,6 +548,19 @@ class StrideControllerSpec
         val result = controller.createAccount(FakeRequest())
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+      }
+      //////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////
+      "handle manual account creation requests when there is userInfo passed in" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, detailsConfirmed = true))))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, 0))(Right(AccountCreated))
+        }
+
+        val result = controller.createAccount(FakeRequest())
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
       }
     }
 

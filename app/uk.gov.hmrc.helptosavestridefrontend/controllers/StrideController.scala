@@ -195,8 +195,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                   SeeOther(routes.StrideController.getAccountCreatedPage().url)
                 case AccountAlreadyExists ⇒
                   Ok(views.html.account_already_exists())
-              }
-            )
+              })
           }
 
           case None ⇒ SeeOther(routes.StrideController.customerNotEligible().url)
@@ -207,17 +206,21 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
   def allowManualAccountCreation(nino: String): Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-                 whenIneligible = { (response) ⇒
+                 whenIneligible = { (ineligible) ⇒
         {
-          helpToSaveConnector.getNSIUserInfo(nino).fold(
-            e ⇒ {
-              logger.warn(s"an error occurred during get user info retrieval, error: $e")
+          val r = for {
+            userInfo ← helpToSaveConnector.getNSIUserInfo(nino)
+            _ ← keyStoreConnector.put(HtsSession(ineligible.copy(nSIUserInfo = Some(userInfo))))
+          } yield userInfo
+
+          r.fold(
+            error ⇒ {
+              logger.warn(s"error during retrieving paye-personal-info, error: $error")
               SeeOther(routes.StrideController.getErrorPage().url)
-            }, { userInfo ⇒
-              response.copy(nSIUserInfo = Some(userInfo))
-              Ok(views.html.create_account())
-            }
-          )
+            }, {
+              _ ⇒
+                Ok(views.html.create_account())
+            })
         }
       }
     )
