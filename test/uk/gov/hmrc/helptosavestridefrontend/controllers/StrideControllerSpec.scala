@@ -549,8 +549,8 @@ class StrideControllerSpec
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
-      //////////////////////////////////////////////////////////////////////////////
-      ////////////////////////////////////////////////////////////////
+
+      /////////////////////////////////////// not sure if this should pass???
       "handle manual account creation requests when there is userInfo passed in" in {
         inSequence {
           mockSuccessfulAuthorisation()
@@ -561,6 +561,33 @@ class StrideControllerSpec
         val result = controller.createAccount(FakeRequest())
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
+      }
+    }
+
+    "handling allowManualAccountCreation" must {
+
+      "return 200 and redirect to the create account page if retrieval of user info is successful" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(Some(HtsSession(ineligibleButEligibleStrideUserInfo, detailsConfirmed = true))))
+          mockPayeDetails(nsiUserInfo.nino)(Right(nsiUserInfo))
+          mockKeyStorePut(HtsSession(ineligibleButEligibleStrideUserInfo, detailsConfirmed = true))(Right(()))
+        }
+
+        val result = controller.allowManualAccountCreation(nsiUserInfo.nino)(FakeRequest())
+        status(result) shouldBe ACCEPTED
+        contentAsString(result) should include("Create an account")
+      }
+
+      "redirect to the error page when retrieval of user info fails" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockKeyStoreGet(Right(None))
+        }
+
+        val result = controller.allowManualAccountCreation(nsiUserInfo.nino)(FakeRequest())
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
     }
 
