@@ -78,4 +78,31 @@
     }
 
     <a role="button" class="button subsection--wide push--bottom" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.eligibility.not.eligible.end-call")</a>
+
+    <div class="divider--top subsection--wide push--bottom">
+        <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.manually.create.title")</h2>
+        <p>@Messages("hts.eligibility.not.eligible.manually.create.p1")</p>
+
+        <ul class="list list-bullet">
+            <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li1")</li>
+            <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li2")</li>
+        </ul>
+
+        <form>
+            <div class="form-group">
+                <fieldset>
+                    <legend>
+                        <h3 class="heading-small">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.legend")</h3>
+                    </legend>
+
+                    <div class="multiple-choice">
+                        <input id="confirm_eligible" name="confirm_eligible" type="checkbox" value="yes" class="button-disable-binding" />
+                        <label for="confirm_eligible">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")</label>
+                    </div>
+                </fieldset>
+            </div>
+
+            <button class="button checkbox-disable-binding" type="submit" disabled="disabled" aria-disabled="true">@Messages("hts.global.continue-button")</button>
+        </form>
+    </div>
 }
