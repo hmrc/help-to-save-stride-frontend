@@ -22,7 +22,7 @@ GET       /create-account                             @uk.gov.hmrc.helptosavestr
 
 POST      /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
 
-GET       /allow-manual-account-creation              @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.allowManualAccountCreation(nino: String)
+POST       /allow-manual-account-creation              @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.allowManualAccountCreation()
 
 GET       /account-created                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()
 

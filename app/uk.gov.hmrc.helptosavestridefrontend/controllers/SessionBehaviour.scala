@@ -86,6 +86,7 @@ object SessionBehaviour {
       val (code, result, details) = u match {
         case EligibleWithNSIUserInfo(value, details) ⇒ (1, Some(value), Some(details))
         case Ineligible(value, Some(details))        ⇒ (2, Some(value), Some(details))
+        case Ineligible(value, None)                 ⇒ (2, Some(value), None)
         case AlreadyHasAccount                       ⇒ (3, None, None)
       }
 
@@ -104,13 +105,14 @@ object SessionBehaviour {
         (json \ "details").validateOpt[NSIUserInfo]) match {
           case (JsSuccess(1, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _)) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
           case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _)) ⇒ JsSuccess(Ineligible(value, Some(details)))
+          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(None, _)) ⇒ JsSuccess(Ineligible(value, None))
           case (JsSuccess(3, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")
         }
     }
   }
 
-  case class HtsSession(userInfo: UserInfo, detailsConfirmed: Boolean = false)
+  case class HtsSession(userInfo: UserInfo, nino: String, detailsConfirmed: Boolean = false)
 
   object HtsSession {
     implicit val format: Format[HtsSession] = Json.format[HtsSession]

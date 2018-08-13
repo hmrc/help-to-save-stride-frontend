@@ -68,14 +68,17 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
     EitherT[Future, String, CacheMap] {
       val timerContext = metrics.keystoreWriteTimer.time()
 
+      println(s"########################## inside put: $body")
+
       cache[HtsSession](sessionKey, body).map { cacheMap ⇒
         val _ = timerContext.stop()
         Right(cacheMap)
       }.recover {
         case NonFatal(e) ⇒
+          logger.info("################# are we in recover?") //yes
           val _ = timerContext.stop()
           metrics.keystoreWriteErrorCounter.inc()
-          logger.warn(s"unexpected error when writing UserSessionInfo to keystore, error=${e.getMessage}")
+          logger.warn(s"unexpected error when writing UserSessionInfo to keystore", e)
           pagerDutyAlerting.alert("unexpected error when storing UserSessionInfo to keystore")
           Left(e.getMessage)
       }

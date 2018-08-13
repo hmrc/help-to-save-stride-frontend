@@ -52,7 +52,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
     def cacheMap(htsSession: HtsSession) = CacheMap("1", Map("htsSession" -> Json.toJson(htsSession)))
 
-    val body = HtsSession(UserInfo.EligibleWithNSIUserInfo(eligibleResponse.value, nsiUserInfo))
+    val body = HtsSession(UserInfo.EligibleWithNSIUserInfo(eligibleResponse.value, nsiUserInfo), "AE123456A")
 
     val response = cacheMap(body)
 
