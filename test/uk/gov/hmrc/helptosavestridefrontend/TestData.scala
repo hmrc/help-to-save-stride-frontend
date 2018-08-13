@@ -62,7 +62,7 @@ trait TestData { // scalastyle:off magic.number
 
   val ineligibleStrideUserInfo = UserInfo.Ineligible(ineligibleResponse.value, None)
 
-  val ineligibleButEligibleStrideUserInfo = UserInfo.Ineligible(ineligibleResponse.value, Some(nsiUserInfo))
+  val ineligibleManualOverrideStrideUserInfo = UserInfo.Ineligible(ineligibleResponse.value, Some(nsiUserInfo))
 
   val accountExistsStrideUserInfo = UserInfo.AlreadyHasAccount
 }

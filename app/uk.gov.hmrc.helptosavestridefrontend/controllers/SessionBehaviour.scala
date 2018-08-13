@@ -50,18 +50,18 @@ trait SessionBehaviour {
       ).flatMap(identity)
 
   def checkSession(noSessionData:         ⇒ Future[Result],
-                   whenEligible:          (EligibleWithNSIUserInfo, Boolean) ⇒ Future[Result] = (_, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
-                   whenIneligible:        Ineligible ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
-                   whenAlreadyHasAccount: () ⇒ Future[Result]                                 = () ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
+                   whenEligible:          (EligibleWithNSIUserInfo, Boolean, String) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                   whenIneligible:        (Ineligible, String) ⇒ Future[Result]                       = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                   whenAlreadyHasAccount: (String) ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
       noSessionData,
 
       htsSession ⇒
         htsSession.userInfo match {
-          case e: EligibleWithNSIUserInfo ⇒ whenEligible(e, htsSession.detailsConfirmed)
-          case i: Ineligible              ⇒ whenIneligible(i)
-          case AlreadyHasAccount          ⇒ whenAlreadyHasAccount()
+          case e: EligibleWithNSIUserInfo ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nino)
+          case i: Ineligible              ⇒ whenIneligible(i, htsSession.nino)
+          case AlreadyHasAccount          ⇒ whenAlreadyHasAccount(htsSession.nino)
         }
     )
 
