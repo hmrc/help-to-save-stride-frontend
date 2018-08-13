@@ -88,6 +88,7 @@
             <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li2")</li>
         </ul>
 
+        @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.allowManualAccountCreation()) {
         <form>
             <div class="form-group">
                 <fieldset>
@@ -101,8 +102,7 @@
                     </div>
                 </fieldset>
             </div>
-
-            <button class="button checkbox-disable-binding" href=@routes.StrideController.allowManualAccountCreation().url type="submit" disabled="disabled" aria-disabled="true">@Messages("hts.global.continue-button")</button>
-        </form>
+            @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") { @messages("hts.global.continue-button") }
+        }
     </div>
 }
