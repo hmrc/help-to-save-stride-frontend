@@ -18,9 +18,10 @@
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
+@import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
 @import cats.syntax.eq._
 
-@(ineligibilityReason: IneligibilityReason)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(ineligibilityReason: IneligibilityReason, nsiUserInfo: NSIUserInfo)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
     title = messages("hts.eligibility.not.eligible.title"),
