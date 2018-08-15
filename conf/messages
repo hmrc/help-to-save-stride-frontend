@@ -49,6 +49,8 @@ hts.application.cancelled.h1=Application cancelled
 hts.eligibility.not.eligible.title=Customer is not eligible for an account
 hts.eligibility.not.eligible.h1=Customer is not eligible for an account
 hts.eligibility.not.eligible.p1=Customer is not eligible for a Help to Save account.
+hts.eligibility.not.eligible.name=Name:
+hts.eligibility.not.eligible.nino=National Insurance number:
 hts.eligibility.not.eligible.end-call=End call
 
 hts.eligibility.not.eligible.not.entitled.uc.p1=They are claiming Universal Credit, but their household earnings in their last monthly assessment period were too low.
@@ -78,8 +80,7 @@ hts.eligibility.not.eligible.manually.create.title=Create account manually
 hts.eligibility.not.eligible.manually.create.p1=You can create a Help to Save account for a customer if there has been a problem with our system and:
 hts.eligibility.not.eligible.manually.create.ul1.li1=you have evidence they are eligible for an account
 hts.eligibility.not.eligible.manually.create.ul1.li2=they want to open an account
-hts.eligibility.not.eligible.manually.create.confirm.eligible.legend=Do you have evidence the customer is eligible for a Help to Save account?
-hts.eligibility.not.eligible.manually.create.confirm.eligible.label=Yes
+hts.eligibility.not.eligible.manually.create.confirm.eligible.label=I confirm I have evidence the customer is eligible for a Help to Save account
 
 hts.error.page.title=Something went wrong
 hts.error.page.h1=Something went wrong

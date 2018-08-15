@@ -52,7 +52,7 @@ trait SessionBehaviour {
   def checkSession(noSessionData:         ⇒ Future[Result],
                    whenEligible:          (EligibleWithNSIUserInfo, Boolean, NSIUserInfo) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
                    whenIneligible:        (Ineligible, NSIUserInfo) ⇒ Future[Result]                       = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
-                   whenAlreadyHasAccount: (NSIUserInfo) ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
+                   whenAlreadyHasAccount: NSIUserInfo ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
       noSessionData,

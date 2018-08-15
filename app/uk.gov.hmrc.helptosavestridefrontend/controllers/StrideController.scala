@@ -59,12 +59,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
   private def checkIfAlreadyEnrolled(nino: String)(ifNotEnrolled: ⇒ Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier): Future[Result] = { // scalastyle:ignore
       def updateSessionIfEnrolled(enrolmentStatus: EnrolmentStatus)(implicit hc: HeaderCarrier): EitherT[Future, String, Unit] = enrolmentStatus match {
-        case Enrolled ⇒ {
-          helpToSaveConnector.getNSIUserInfo(nino).map { nsiUserInfo ⇒
-            val x = keyStoreConnector.put(HtsSession(AlreadyHasAccount, nsiUserInfo))
-            ()
-          }
-        }
+        case Enrolled ⇒
+          for {
+            nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
+            _ ← keyStoreConnector.put(HtsSession(AlreadyHasAccount, nsiUserInfo))
+          } yield ()
+
         case NotEnrolled ⇒ EitherT.pure[Future, String](())
       }
 
@@ -189,22 +189,20 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         }
       },
                  whenIneligible = { (ineligible, nSIUserInfo) ⇒
-        ineligible.manualCreationAllowed match {
-          case true ⇒ {
-            //send a reasonCode of 0 to the BE for manual account creation
-            helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, 0)).fold(
-              error ⇒ {
-                logger.warn(s"error during create account call, error: $error")
-                SeeOther(routes.StrideController.getErrorPage().url)
-              }, {
-                case AccountCreated ⇒
-                  SeeOther(routes.StrideController.getAccountCreatedPage().url)
-                case AccountAlreadyExists ⇒
-                  Ok(views.html.account_already_exists())
-              })
-          }
-
-          case false ⇒ SeeOther(routes.StrideController.customerNotEligible().url)
+        if (ineligible.manualCreationAllowed) {
+          //send a reasonCode of 0 to the BE for manual account creation
+          helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, 0)).fold(
+            error ⇒ {
+              logger.warn(s"error during create account call, error: $error")
+              SeeOther(routes.StrideController.getErrorPage().url)
+            }, {
+              case AccountCreated ⇒
+                SeeOther(routes.StrideController.getAccountCreatedPage().url)
+              case AccountAlreadyExists ⇒
+                Ok(views.html.account_already_exists())
+            })
+        } else {
+          SeeOther(routes.StrideController.customerNotEligible().url)
         }
       }
     )
