@@ -28,7 +28,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.EligibilityCheckResultWithInfo._
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligiblityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
@@ -339,7 +339,7 @@ class StrideControllerSpec
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(EligibleWithNSIUserWithInfo(eligibleECResponse, nsiUserInfo), nsiUserInfo))(Right(()))
+          mockKeyStorePut(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -403,7 +403,7 @@ class StrideControllerSpec
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(EligibleWithNSIUserWithInfo(eligibleECResponse, nsiUserInfo), nsiUserInfo))(Left("Error occurred"))
+          mockKeyStorePut(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Left("Error occurred"))
         }
         val result = doRequest(nino)
         status(result) shouldBe SEE_OTHER

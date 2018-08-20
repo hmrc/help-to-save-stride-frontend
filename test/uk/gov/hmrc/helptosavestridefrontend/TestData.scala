@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestridefrontend
 import java.time.LocalDate
 import java.util.UUID
 
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.EligibilityCheckResultWithInfo
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligiblityCheckResult
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo.ContactDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
@@ -58,11 +58,11 @@ trait TestData { // scalastyle:off magic.number
 
   val cacheKey = UUID.randomUUID().toString
 
-  val eligibleStrideUserInfo = EligibilityCheckResultWithInfo.EligibleWithNSIUserWithInfo(eligibleResponse.value, nsiUserInfo)
+  val eligibleStrideUserInfo = SessionEligiblityCheckResult.Eligible(eligibleResponse.value)
 
-  val ineligibleStrideUserInfo = EligibilityCheckResultWithInfo.Ineligible(ineligibleResponse.value, false)
+  val ineligibleStrideUserInfo = SessionEligiblityCheckResult.Ineligible(ineligibleResponse.value, false)
 
-  val ineligibleManualOverrideStrideUserInfo = EligibilityCheckResultWithInfo.Ineligible(ineligibleResponse.value, true)
+  val ineligibleManualOverrideStrideUserInfo = SessionEligiblityCheckResult.Ineligible(ineligibleResponse.value, true)
 
-  val accountExistsStrideUserInfo = EligibilityCheckResultWithInfo.AlreadyHasAccount
+  val accountExistsStrideUserInfo = SessionEligiblityCheckResult.AlreadyHasAccount
 }

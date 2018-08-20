@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import org.scalamock.handlers.{CallHandler4, CallHandler6}
 import play.api.libs.json.{Json, Writes}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, EligibilityCheckResultWithInfo}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, SessionEligiblityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.cache.client.CacheMap
@@ -52,7 +52,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
     def cacheMap(htsSession: HtsSession) = CacheMap("1", Map("htsSession" -> Json.toJson(htsSession)))
 
-    val body = HtsSession(EligibilityCheckResultWithInfo.EligibleWithNSIUserWithInfo(eligibleResponse.value, nsiUserInfo), nsiUserInfo)
+    val body = HtsSession(SessionEligiblityCheckResult.Eligible(eligibleResponse.value), nsiUserInfo)
 
     val response = cacheMap(body)
 
