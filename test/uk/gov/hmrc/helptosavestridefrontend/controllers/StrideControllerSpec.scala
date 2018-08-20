@@ -28,7 +28,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.EligibilityCheckResultInfo._
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
@@ -339,8 +339,7 @@ class StrideControllerSpec
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo), nsiUserInfo))(Right(()))
+          mockKeyStorePut(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -404,8 +403,7 @@ class StrideControllerSpec
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(EligibleWithNSIUserInfo(eligibleECResponse, nsiUserInfo), nsiUserInfo))(Left("Error occurred"))
+          mockKeyStorePut(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Left("Error occurred"))
         }
         val result = doRequest(nino)
         status(result) shouldBe SEE_OTHER
@@ -524,7 +522,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode))(Right(AccountCreated))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -546,7 +544,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode))(Left("error occured creating an account"))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Left("error occured creating an account"))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -558,7 +556,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, 0))(Right(AccountCreated))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, 0, "Stride-Manual"))(Right(AccountCreated))
         }
 
         val result = controller.createAccount(FakeRequest())

@@ -21,9 +21,9 @@ import play.api.libs.json._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.EligibilityCheckResultInfo.{AlreadyHasAccount, EligibleWithNSIUserInfo, Ineligible}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -50,8 +50,8 @@ trait SessionBehaviour {
       ).flatMap(identity)
 
   def checkSession(noSessionData:         ⇒ Future[Result],
-                   whenEligible:          (EligibleWithNSIUserInfo, Boolean, NSIUserInfo) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
-                   whenIneligible:        (Ineligible, NSIUserInfo) ⇒ Future[Result]                       = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                   whenEligible:          (Eligible, Boolean, NSIUserInfo) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                   whenIneligible:        (Ineligible, NSIUserInfo) ⇒ Future[Result]        = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
                    whenAlreadyHasAccount: NSIUserInfo ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
@@ -59,9 +59,9 @@ trait SessionBehaviour {
 
       htsSession ⇒
         htsSession.userInfo match {
-          case e: EligibleWithNSIUserInfo ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nSIUserInfo)
-          case i: Ineligible              ⇒ whenIneligible(i, htsSession.nSIUserInfo)
-          case AlreadyHasAccount          ⇒ whenAlreadyHasAccount(htsSession.nSIUserInfo)
+          case e: Eligible       ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nSIUserInfo)
+          case i: Ineligible     ⇒ whenIneligible(i, htsSession.nSIUserInfo)
+          case AlreadyHasAccount ⇒ whenAlreadyHasAccount(htsSession.nSIUserInfo)
         }
     )
 
@@ -69,50 +69,54 @@ trait SessionBehaviour {
 
 object SessionBehaviour {
 
-  sealed trait EligibilityCheckResultInfo
+  sealed trait SessionEligibilityCheckResult
 
-  object EligibilityCheckResultInfo {
+  object SessionEligibilityCheckResult {
 
-    case class EligibleWithNSIUserInfo(response: EligibilityCheckResponse, nSIUserInfo: NSIUserInfo) extends EligibilityCheckResultInfo
+    case class Eligible(response: EligibilityCheckResponse) extends SessionEligibilityCheckResult
 
-    case class Ineligible(response: EligibilityCheckResponse, manualCreationAllowed: Boolean) extends EligibilityCheckResultInfo
+    case class Ineligible(response: EligibilityCheckResponse, manualCreationAllowed: Boolean) extends SessionEligibilityCheckResult
 
-    case object AlreadyHasAccount extends EligibilityCheckResultInfo
+    case object AlreadyHasAccount extends SessionEligibilityCheckResult
+
+    def fromEligibilityCheckResult(result: EligibilityCheckResult): SessionEligibilityCheckResult = result match {
+      case EligibilityCheckResult.Eligible(value)      ⇒ Eligible(value)
+      case EligibilityCheckResult.Ineligible(value)    ⇒ Ineligible(value, manualCreationAllowed = false)
+      case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ AlreadyHasAccount
+    }
 
   }
 
-  implicit val format: Format[EligibilityCheckResultInfo] = new Format[EligibilityCheckResultInfo] {
-    override def writes(u: EligibilityCheckResultInfo): JsValue = {
-      val (code, result, details, manualCreationAllowed) = u match {
-        case EligibleWithNSIUserInfo(value, details)  ⇒ (1, Some(value), Some(details), None)
-        case Ineligible(value, manualCreationAllowed) ⇒ (2, Some(value), None, Some(manualCreationAllowed))
-        case AlreadyHasAccount                        ⇒ (3, None, None, None)
+  implicit val format: Format[SessionEligibilityCheckResult] = new Format[SessionEligibilityCheckResult] {
+    override def writes(u: SessionEligibilityCheckResult): JsValue = {
+      val (code, result, manualCreationAllowed) = u match {
+        case Eligible(value)                   ⇒ (1, Some(value), None)
+        case Ineligible(value, manualCreation) ⇒ (2, Some(value), Some(manualCreation))
+        case AlreadyHasAccount                 ⇒ (3, None, None)
       }
 
       val fields: List[(String, JsValue)] =
         List("code" → Some(JsNumber(code)),
           "result" → result.map(Json.toJson(_)),
-          "details" → details.map(Json.toJson(_)),
           "manualCreationAllowed" → manualCreationAllowed.map(Json.toJson(_))
         ).collect { case (key, Some(value)) ⇒ key → value }
 
       JsObject(fields)
     }
 
-    override def reads(json: JsValue): JsResult[EligibilityCheckResultInfo] = {
+    override def reads(json: JsValue): JsResult[SessionEligibilityCheckResult] = {
       ((json \ "code").validate[Int],
         (json \ "result").validateOpt[EligibilityCheckResponse],
-        (json \ "details").validateOpt[NSIUserInfo],
         (json \ "manualCreationAllowed").validate[Boolean]) match {
-          case (JsSuccess(1, _), JsSuccess(Some(value), _), JsSuccess(Some(details), _), _) ⇒ JsSuccess(EligibleWithNSIUserInfo(value, details))
-          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(None, _), JsSuccess(manualCreationAllowed, _)) ⇒ JsSuccess(Ineligible(value, manualCreationAllowed))
-          case (JsSuccess(3, _), JsSuccess(None, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
+          case (JsSuccess(1, _), JsSuccess(Some(value), _), _) ⇒ JsSuccess(Eligible(value))
+          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) ⇒ JsSuccess(Ineligible(value, manualCreationAllowed))
+          case (JsSuccess(3, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
           case _ ⇒ JsError(s"error during parsing eligibility from json $json")
         }
     }
   }
 
-  case class HtsSession(userInfo: EligibilityCheckResultInfo, nSIUserInfo: NSIUserInfo, detailsConfirmed: Boolean = false)
+  case class HtsSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIUserInfo, detailsConfirmed: Boolean = false)
 
   object HtsSession {
     implicit val format: Format[HtsSession] = Json.format[HtsSession]

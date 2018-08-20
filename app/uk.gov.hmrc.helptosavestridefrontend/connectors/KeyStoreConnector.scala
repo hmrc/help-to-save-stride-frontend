@@ -74,7 +74,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
         case NonFatal(e) ⇒
           val _ = timerContext.stop()
           metrics.keystoreWriteErrorCounter.inc()
-          logger.warn(s"unexpected error when writing UserSessionInfo to keystore", e)
+          logger.warn("unexpected error when writing UserSessionInfo to keystore", e)
           pagerDutyAlerting.alert("unexpected error when storing UserSessionInfo to keystore")
           Left(e.getMessage)
       }
