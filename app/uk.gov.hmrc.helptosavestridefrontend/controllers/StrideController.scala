@@ -25,8 +25,8 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.EligibilityCheckResultInfo.{AlreadyHasAccount, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{EligibilityCheckResultInfo, HtsSession}
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.EligibilityCheckResultWithInfo.AlreadyHasAccount
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{EligibilityCheckResultWithInfo, HtsSession}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.{EnrolmentStatus, NSIUserInfo}
@@ -92,21 +92,21 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           checkIfAlreadyEnrolled(form.nino){
             val r = for {
               eligibility ← helpToSaveConnector.getEligibility(form.nino)
-              sessionUserInfo ← getPersonalDetails(eligibility, form.nino)
               nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(form.nino)
-              _ ← keyStoreConnector.put(HtsSession(sessionUserInfo, nsiUserInfo))
-            } yield sessionUserInfo
+              eligibilityCheckResultWithInfo ← EitherT.pure[Future, String](toEligibilityCheckResultWithInfo(eligibility, nsiUserInfo))
+              _ ← keyStoreConnector.put(HtsSession(eligibilityCheckResultWithInfo, nsiUserInfo))
+            } yield eligibilityCheckResultWithInfo
 
             r.fold(
               error ⇒ {
                 logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
                 SeeOther(routes.StrideController.getErrorPage().url)
               }, {
-                case EligibilityCheckResultInfo.EligibleWithNSIUserInfo(_, details) ⇒
+                case EligibilityCheckResultWithInfo.EligibleWithNSIUserWithInfo(_, _) ⇒
                   SeeOther(routes.StrideController.customerEligible().url)
-                case EligibilityCheckResultInfo.Ineligible(_, false) ⇒
+                case EligibilityCheckResultWithInfo.Ineligible(_, _) ⇒
                   SeeOther(routes.StrideController.customerNotEligible().url)
-                case EligibilityCheckResultInfo.AlreadyHasAccount ⇒
+                case EligibilityCheckResultWithInfo.AlreadyHasAccount ⇒
                   SeeOther(routes.StrideController.accountAlreadyExists().url)
               }
             )
@@ -176,7 +176,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          helpToSaveConnector.createAccount(CreateAccountRequest(eligible.nSIUserInfo, eligible.response.reasonCode)).fold(
+          helpToSaveConnector.createAccount(CreateAccountRequest(eligible.nSIUserInfo, eligible.response.reasonCode, "Stride")).fold(
             error ⇒ {
               logger.warn(s"error during create account call, error: $error")
               SeeOther(routes.StrideController.getErrorPage().url)
@@ -191,7 +191,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                  whenIneligible = { (ineligible, nSIUserInfo) ⇒
         if (ineligible.manualCreationAllowed) {
           //send a reasonCode of 0 to the BE for manual account creation
-          helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, 0)).fold(
+          helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, 0, "Stride-Manual")).fold(
             error ⇒ {
               logger.warn(s"error during create account call, error: $error")
               SeeOther(routes.StrideController.getErrorPage().url)
@@ -230,7 +230,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          keyStoreConnector.put(HtsSession(EligibilityCheckResultInfo.AlreadyHasAccount, userInfo.nSIUserInfo)).fold({
+          keyStoreConnector.put(HtsSession(EligibilityCheckResultWithInfo.AlreadyHasAccount, userInfo.nSIUserInfo)).fold({
             e ⇒
               logger.warn(s"Could not write to keystore: $e")
               SeeOther(routes.StrideController.getErrorPage().url)
@@ -244,7 +244,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!ineligible.manualCreationAllowed) {
           SeeOther(routes.StrideController.customerNotEligible().url)
         } else {
-          keyStoreConnector.put(HtsSession(EligibilityCheckResultInfo.AlreadyHasAccount, nino)).fold({
+          keyStoreConnector.put(HtsSession(EligibilityCheckResultWithInfo.AlreadyHasAccount, nino)).fold({
             e ⇒
               logger.warn(s"Could not write to keystore: $e")
               SeeOther(routes.StrideController.getErrorPage().url)
@@ -265,18 +265,18 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     internalServerError()
   }(routes.StrideController.getErrorPage())
 
-  private def getPersonalDetails(r:           EligibilityCheckResult,
-                                 ninoEncoded: String)(implicit hc: HeaderCarrier,
-                                                      request: Request[_]): EitherT[Future, String, EligibilityCheckResultInfo] =
+  private def toEligibilityCheckResultWithInfo(r:           EligibilityCheckResult,
+                                               nsiUserInfo: NSIUserInfo)(implicit hc: HeaderCarrier,
+                                                                         request: Request[_]): EligibilityCheckResultWithInfo =
     r match {
       case Eligible(value) ⇒
-        helpToSaveConnector.getNSIUserInfo(ninoEncoded).map(EligibilityCheckResultInfo.EligibleWithNSIUserInfo(value, _))
+        EligibilityCheckResultWithInfo.EligibleWithNSIUserWithInfo(value, nsiUserInfo)
 
       case EligibilityCheckResult.Ineligible(value) ⇒
-        EitherT.pure[Future, String](EligibilityCheckResultInfo.Ineligible(value, false))
+        EligibilityCheckResultWithInfo.Ineligible(value, manualCreationAllowed = false)
 
-      case EligibilityCheckResult.AlreadyHasAccount(value) ⇒
-        EitherT.pure[Future, String](EligibilityCheckResultInfo.AlreadyHasAccount)
+      case EligibilityCheckResult.AlreadyHasAccount(_) ⇒
+        EligibilityCheckResultWithInfo.AlreadyHasAccount
 
     }
 
