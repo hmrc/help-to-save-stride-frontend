@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.models
 
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligiblityCheckResult.Ineligible
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult.Ineligible
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
 

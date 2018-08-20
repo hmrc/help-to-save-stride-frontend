@@ -17,7 +17,7 @@
 package uk.gov.hmrc.helptosavestridefrontend.models.eligibility
 
 import cats.Eq
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligiblityCheckResult.Ineligible
+import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult.Ineligible
 
 sealed trait IneligibilityReason
 
