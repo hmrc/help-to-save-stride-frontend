@@ -188,8 +188,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       },
                  whenIneligible = { (ineligible, nSIUserInfo) ⇒
         if (ineligible.manualCreationAllowed) {
-          //send a reasonCode of 0 to the BE for manual account creation
-          helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, 0, "Stride-Manual")).fold(
+          // send the ineligiblilty reasonCode to the BE for manual account creation
+          helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, ineligible.response.reasonCode, "Stride-Manual")).fold(
             error ⇒ {
               logger.warn(s"error during create account call, error: $error")
               SeeOther(routes.StrideController.getErrorPage().url)
@@ -224,7 +224,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
   def getAccountCreatedPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-                 whenEligible   = { (userInfo, detailsConfirmed, nsiUserInfo) ⇒
+                 whenEligible   = { (_, detailsConfirmed, nsiUserInfo) ⇒
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {

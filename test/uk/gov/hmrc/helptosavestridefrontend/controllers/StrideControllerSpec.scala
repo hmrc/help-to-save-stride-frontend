@@ -556,7 +556,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, 0, "Stride-Manual"))(Right(AccountCreated))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated))
         }
 
         val result = controller.createAccount(FakeRequest())
