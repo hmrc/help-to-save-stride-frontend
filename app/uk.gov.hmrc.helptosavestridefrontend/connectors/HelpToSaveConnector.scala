@@ -22,18 +22,19 @@ import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.http.Status.OK
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
+import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient.HttpClientOps
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
+import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
+import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, maskNino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.helptosavestridefrontend.util.maskNino
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,7 +52,7 @@ trait HelpToSaveConnector {
 }
 
 @Singleton
-class HelpToSaveConnectorImpl @Inject() (http:                              WSHttp,
+class HelpToSaveConnectorImpl @Inject() (http:                              HttpClient,
                                          metrics:                           Metrics,
                                          pagerDutyAlerting:                 PagerDutyAlerting,
                                          override val runModeConfiguration: Configuration,
@@ -60,22 +61,24 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   private val htsUrl = baseUrl("help-to-save")
 
-  def eligibilityUrl(nino: String): String = s"$htsUrl/help-to-save/stride/eligibility-check?nino=$nino"
+  private val eligibilityUrl: String = s"$htsUrl/help-to-save/stride/eligibility-check"
 
-  def payePersonalDetailsUrl(nino: String): String = s"$htsUrl/help-to-save/stride/paye-personal-details?nino=$nino"
+  private val payePersonalDetailsUrl: String = s"$htsUrl/help-to-save/stride/paye-personal-details"
 
-  val createAccountUrl: String = s"$htsUrl/help-to-save/create-account"
+  private val createAccountUrl: String = s"$htsUrl/help-to-save/create-account"
 
-  def enrolmentStatusUrl(nino: String): String = s"$htsUrl/help-to-save/stride/enrolment-status?nino=$nino"
+  private val enrolmentStatusUrl: String = s"$htsUrl/help-to-save/stride/enrolment-status"
 
   type EitherStringOr[A] = Either[String, A]
+
+  private val emptyQueryParameters: Map[String, String] = Map.empty[String, String]
 
   override def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult] = {
     EitherT[Future, String, EligibilityCheckResult](
       {
         val timerContext = metrics.eligibilityCheckTimer.time()
 
-        http.get(eligibilityUrl(nino)).map { response ⇒
+        http.get(eligibilityUrl, Map("nino" -> nino)).map { response ⇒
           val time = timerContext.stop()
 
           response.status match {
@@ -127,7 +130,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
-        http.get(payePersonalDetailsUrl(nino))
+        http.get(payePersonalDetailsUrl, Map("nino" -> nino))
           .map { response ⇒
             val time = timerContext.stop()
             response.status match {
@@ -187,7 +190,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              WSHt
 
   override def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] = {
 
-    EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl(nino)).map[Either[String, EnrolmentStatus]] { response ⇒
+    EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl, Map("nino" -> nino)).map[Either[String, EnrolmentStatus]] { response ⇒
       response.status match {
         case OK ⇒
           val result = response.parseJson[EnrolmentStatus]

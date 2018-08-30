@@ -21,16 +21,19 @@ import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.libs.json.{Reads, Writes}
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
+import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.AppName
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient.HttpClientOps
+import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 
 @ImplementedBy(classOf[KeyStoreConnectorImpl])
 trait KeyStoreConnector {
@@ -44,7 +47,7 @@ trait KeyStoreConnector {
 }
 
 @Singleton
-class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp,
+class KeyStoreConnectorImpl @Inject() (val http:                          HttpClient,
                                        metrics:                           Metrics,
                                        pagerDutyAlerting:                 PagerDutyAlerting,
                                        override val runModeConfiguration: Configuration,
@@ -62,9 +65,9 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
 
   val sessionKey: String = "htsSession"
 
-  override def put(body: HtsSession)(implicit writes: Writes[HtsSession],
-                                     hc: HeaderCarrier,
-                                     ec: ExecutionContext): Result[CacheMap] =
+  def put(body: HtsSession)(implicit writes: Writes[HtsSession],
+                            hc: HeaderCarrier,
+                            ec: ExecutionContext): Result[CacheMap] =
     EitherT[Future, String, CacheMap] {
       val timerContext = metrics.keystoreWriteTimer.time()
       cache[HtsSession](sessionKey, body).map { cacheMap ⇒
@@ -81,9 +84,9 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
 
     }
 
-  override def get(implicit reads: Reads[HtsSession],
-                   hc: HeaderCarrier,
-                   ec: ExecutionContext): Result[Option[HtsSession]] =
+  def get(implicit reads: Reads[HtsSession],
+          hc: HeaderCarrier,
+          ec: ExecutionContext): Result[Option[HtsSession]] =
     EitherT[Future, String, Option[HtsSession]] {
       val timerContext = metrics.keystoreReadTimer.time()
 
@@ -100,7 +103,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
       }
     }
 
-  override def delete(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[Unit] =
+  def delete(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[Unit] =
     EitherT[Future, String, Unit] {
       val timerContext = metrics.keystoreDeleteTimer.time()
 
@@ -122,4 +125,27 @@ class KeyStoreConnectorImpl @Inject() (val http:                          WSHttp
           Left(e.getMessage)
       }
     }
+
+  override def get(uri: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[CacheMap] =
+    http.get(uri).flatMap { r ⇒
+      r.status match {
+        case Status.OK ⇒
+          r.parseJson[CacheMap] match {
+            case Right(c: CacheMap) ⇒ Future.successful(c)
+            case Left(e)            ⇒ Future.failed(new Exception(s"Could not parse response: $e"))
+          }
+        case Status.NOT_FOUND ⇒ Future.failed(new NotFoundException(""))
+      }
+    }
+
+  override def put[T](uri: String, body: T)(implicit hc: HeaderCarrier, wts: Writes[T], executionContext: ExecutionContext): Future[CacheMap] =
+    http.put(uri, body).flatMap{
+      _.parseJson[CacheMap] match {
+        case Right(c: CacheMap) ⇒ Future.successful(c)
+        case Left(e)            ⇒ Future.failed(new Exception(s"Could not parse response: $e"))
+      }
+    }
+
+  override def delete(uri: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] =
+    http.delete(uri)
 }
