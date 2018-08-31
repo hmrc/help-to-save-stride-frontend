@@ -16,35 +16,19 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.connectors
 
-import org.scalamock.handlers.{CallHandler4, CallHandler6}
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, SessionEligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.http.cache.client.CacheMap
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
 
-class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData { // scalastyle:off magic.number
+class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData with HttpSupport { // scalastyle:off magic.number
 
   val connector = new KeyStoreConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, environment)
-
-  def mockPut[I, O](url: String, body: I)(response: Option[O]): CallHandler6[String, I, Writes[I], HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
-    (mockHttp.PUT[I, O](_: String, _: I)(_: Writes[I], _: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, body, *, *, *, *)
-      .returning(response.fold(Future.failed[O](new Exception("")))(Future.successful))
-
-  def mockGet[I](url: String)(response: Option[I]): CallHandler4[String, HttpReads[I], HeaderCarrier, ExecutionContext, Future[I]] =
-    (mockHttp.GET[I](_: String)(_: HttpReads[I], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, *, *, *)
-      .returning(response.fold(Future.failed[I](new Exception("")))(Future.successful))
-
-  def mockDelete[O](url: String)(response: Option[O]): CallHandler4[String, HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
-    (mockHttp.DELETE[O](_: String)(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, *, *, *)
-      .returning(response.fold(Future.failed[O](new Exception("")))(Future.successful))
 
   class TestApparatus {
 
@@ -67,7 +51,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "store user session info as expected" in new TestApparatus {
 
-        mockPut[HtsSession, CacheMap](putUrl, body)(Some(response))
+        mockPut[HtsSession](putUrl, body)(Some(HttpResponse(200, Some(Json.toJson(response)))))
 
         Await.result(connector.put(body).value, 5.seconds) shouldBe Right(response)
 
@@ -75,7 +59,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "handle unexpected errors" in new TestApparatus {
 
-        mockPut[HtsSession, CacheMap](putUrl, body)(None)
+        mockPut[HtsSession](putUrl, body)(None)
         mockPagerDutyAlert("unexpected error when storing UserSessionInfo to keystore")
 
         Await.result(connector.put(body).value, 5.seconds).isLeft shouldBe true
@@ -87,7 +71,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "return successful result when retrieving user session info" in new TestApparatus {
 
-        mockGet[CacheMap](getUrl)(Some(response))
+        mockGet(getUrl)(Some(HttpResponse(200, Some(Json.toJson(response)))))
 
         Await.result(connector.get.value, 5.seconds) shouldBe Right(Some(body))
 
@@ -95,7 +79,7 @@ class KeyStoreConnectorSpec extends TestSupport with MockPagerDuty with TestData
 
       "handle unexpected errors" in new TestApparatus {
 
-        mockGet[CacheMap](getUrl)(None)
+        mockGet(getUrl)(None)
         mockPagerDutyAlert("unexpected error when retrieving UserSessionInfo from keystore")
 
         Await.result(connector.get.value, 5.seconds).isLeft shouldBe true

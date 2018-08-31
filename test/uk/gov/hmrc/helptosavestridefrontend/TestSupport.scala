@@ -27,7 +27,7 @@ import org.scalatest.{BeforeAndAfterAll, Suite}
 import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration, Environment, Play}
-import uk.gov.hmrc.helptosavestridefrontend.config.{FrontendAppConfig, WSHttp}
+import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
 import uk.gov.hmrc.http.HeaderCarrier
@@ -63,8 +63,6 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
   val nino = "AE123456C"
-
-  val mockHttp: WSHttp = mock[WSHttp]
 
   val mockMetrics = new Metrics(stub[PlayMetrics]) {
     override def timer(name: String): Timer = new Timer()
