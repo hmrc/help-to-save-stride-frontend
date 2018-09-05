@@ -38,5 +38,6 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   lazy val reportAProblemNonJSUrl: String = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
   val authUrl: String = baseUrl("auth")
+  val manualAccountCreationEnabled: Boolean = getBoolean("manual-account-creation.enabled")
 
 }
