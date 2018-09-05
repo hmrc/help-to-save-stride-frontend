@@ -24,6 +24,7 @@ import uk.gov.hmrc.play.config.ServicesConfig
 
 @Singleton
 class FrontendAppConfig @Inject() (override val runModeConfiguration: Configuration, val environment: Environment) extends ServicesConfig {
+
   override protected def mode: Mode = environment.mode
 
   private def loadConfig(key: String) = runModeConfiguration.getString(key).getOrElse(sys.error(s"Missing configuration key: $key"))
@@ -38,5 +39,7 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   lazy val reportAProblemNonJSUrl: String = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
   val authUrl: String = baseUrl("auth")
+
+  val appName: String = getString("appName")
 
 }

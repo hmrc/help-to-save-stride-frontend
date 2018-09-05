@@ -22,6 +22,7 @@ import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
@@ -29,7 +30,7 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.Session
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, SessionEligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.{EnrolmentStatus}
+import uk.gov.hmrc.helptosavestridefrontend.models.{EnrolmentStatus, PersonalInformationDisplayed}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
@@ -42,6 +43,7 @@ import scala.concurrent.Future
 class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
                                   val keyStoreConnector:   KeyStoreConnector,
+                                  val auditor:             HTSAuditor,
                                   val frontendAppConfig:   FrontendAppConfig,
                                   messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
@@ -112,7 +114,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.checkEligibilityAndGetPersonalInfo())
 
-  def customerNotEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def customerNotEligible: Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ implicit operatorDetails ⇒
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
       whenIneligible = { (ineligible, nsiUserInfo) ⇒
@@ -120,6 +122,10 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           logger.warn(s"Could not parse ineligiblity reason: $ineligible")
           SeeOther(routes.StrideController.getErrorPage().url)
         }{ reason ⇒
+          //do TxM Auditing
+          val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname)
+          auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
+
           Ok(views.html.customer_not_eligible(reason, nsiUserInfo))
         }
       }
@@ -168,7 +174,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.getCreateAccountPage())
 
-  def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def createAccount: Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ implicit operatorDetails ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
                  whenEligible   = { (eligible, detailsConfirmed, nsiUserInfo) ⇒
         if (!detailsConfirmed) {
@@ -188,13 +194,14 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       },
                  whenIneligible = { (ineligible, nSIUserInfo) ⇒
         if (ineligible.manualCreationAllowed) {
-          // send the ineligiblilty reasonCode to the BE for manual account creation
+          // send the ineligibility reasonCode to the BE for manual account creation
           helpToSaveConnector.createAccount(CreateAccountRequest(nSIUserInfo, ineligible.response.reasonCode, "Stride-Manual")).fold(
             error ⇒ {
               logger.warn(s"error during create account call, error: $error")
               SeeOther(routes.StrideController.getErrorPage().url)
             }, {
               case AccountCreated ⇒
+                auditor.sendEvent(ManualAccountCreationSelected(nSIUserInfo.nino, request.path, operatorDetails), nSIUserInfo.nino)
                 SeeOther(routes.StrideController.getAccountCreatedPage().url)
               case AccountAlreadyExists ⇒
                 Ok(views.html.account_already_exists())

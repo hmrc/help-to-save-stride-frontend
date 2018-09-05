@@ -23,8 +23,8 @@ import org.scalamock.handlers.CallHandler4
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.allEnrolments
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.Retrievals._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,6 +35,9 @@ trait AuthSupport { this: TestSupport ⇒
     val base64EncodedRoles = fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-roles").value
     base64EncodedRoles.map(x ⇒ new String(Base64.getDecoder.decode(x)))
   }
+
+  type RetrievalsType = Enrolments ~ Credentials ~ Name ~ Option[String]
+  val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Credentials("PID", "pidType")), Name(Some("name"), None)), Some("email"))
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
@@ -47,6 +50,10 @@ trait AuthSupport { this: TestSupport ⇒
   def mockSuccessfulAuthorisation(): CallHandler4[Predicate, Retrieval[Enrolments], HeaderCarrier, ExecutionContext, Future[Enrolments]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
       Right(Enrolments(roles.map(Enrolment(_)).toSet)))
+
+  def mockSuccessfulAuthorisationWithDetails(): CallHandler4[Predicate, Retrieval[RetrievalsType], HeaderCarrier, ExecutionContext, Future[RetrievalsType]] =
+    mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
+      Right(retrievals))
 
   def mockAuthFail(): Unit =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(

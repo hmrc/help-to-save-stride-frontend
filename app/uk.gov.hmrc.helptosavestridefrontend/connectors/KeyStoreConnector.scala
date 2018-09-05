@@ -28,7 +28,6 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Re
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.AppName
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -53,9 +52,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          HttpCl
                                        override val runModeConfiguration: Configuration,
                                        override val environment:          Environment
 )
-  extends FrontendAppConfig(runModeConfiguration, environment) with KeyStoreConnector with SessionCache with Logging with AppName {
-
-  override protected def appNameConfiguration: Configuration = runModeConfiguration
+  extends FrontendAppConfig(runModeConfiguration, environment) with KeyStoreConnector with SessionCache with Logging {
 
   def defaultSource: String = appName
 
