@@ -207,19 +207,23 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.createAccount())
 
   def allowManualAccountCreation(): Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
-                 whenIneligible = { (ineligible, nSIUserInfo) ⇒
-        {
-          keyStoreConnector.put(HtsSession(ineligible.copy(manualCreationAllowed = true), nSIUserInfo)).fold({
-            e ⇒
-              logger.warn(s"Could not write to keystore: $e")
-              SeeOther(routes.StrideController.getErrorPage().url)
-          }, { _ ⇒
-            Ok(views.html.create_account())
-          })
+    if (appConfig.manualAccountCreationEnabled) {
+      checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
+                   whenIneligible = { (ineligible, nSIUserInfo) ⇒
+          {
+            keyStoreConnector.put(HtsSession(ineligible.copy(manualCreationAllowed = true), nSIUserInfo)).fold({
+              e ⇒
+                logger.warn(s"Could not write to keystore: $e")
+                SeeOther(routes.StrideController.getErrorPage().url)
+            }, { _ ⇒
+              Ok(views.html.create_account())
+            })
+          }
         }
-      }
-    )
+      )
+    } else {
+      Forbidden
+    }
   }(routes.StrideController.allowManualAccountCreation())
 
   def getAccountCreatedPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
