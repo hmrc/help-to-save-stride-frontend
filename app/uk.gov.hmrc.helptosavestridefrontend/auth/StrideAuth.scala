@@ -27,7 +27,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve._
-import uk.gov.hmrc.auth.core.{AuthProviders, AuthorisedFunctions, Enrolment, NoActiveSession}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.models.OperatorDetails
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
@@ -60,10 +60,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
         enrolments ⇒
-          val necessaryRoles: Option[List[Enrolment]] =
-            requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
-
-          necessaryRoles.fold[Future[Result]](Unauthorized("Insufficient roles")){ _ ⇒ action(request) }
+          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")){ _ ⇒ action(request) }
       }.recover{
         case _: NoActiveSession ⇒
           toStrideLogin(getRedirectUrl(request, redirectCall))
@@ -74,10 +71,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments and credentials and name and email) {
         case enrolments ~ creds ~ name ~ email ⇒
-          val necessaryRoles: Option[List[Enrolment]] =
-            requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
-
-          necessaryRoles.fold[Future[Result]](Unauthorized("Insufficient roles")) {
+          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) {
             roles ⇒ action(request)(OperatorDetails(roles.map(_.key), creds.providerId, getName(name), email.getOrElse("")))
           }
       }.recover {
@@ -85,6 +79,9 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
           toStrideLogin(getRedirectUrl(request, redirectCall))
       }
     }
+
+  private def necessaryRoles(enrolments: Enrolments) =
+    requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
 
   private def getName(name: Name): String =
     (name.name.toList ++ name.lastName.toList).mkString(" ")
