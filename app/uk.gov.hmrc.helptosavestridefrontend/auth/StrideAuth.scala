@@ -22,19 +22,22 @@ import cats.instances.list._
 import cats.instances.option._
 import cats.syntax.traverse._
 import configs.syntax._
-import play.api.{Configuration, Environment}
 import play.api.mvc._
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.allEnrolments
-import uk.gov.hmrc.auth.core.{AuthProviders, AuthorisedFunctions, Enrolment, NoActiveSession}
+import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.models.OperatorDetails
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
-trait StrideAuth extends AuthorisedFunctions with AuthRedirects { this: FrontendController ⇒
+trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
+  this: FrontendController ⇒
 
   val frontendAppConfig: FrontendAppConfig
 
@@ -57,14 +60,29 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects { this: Frontend
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
         enrolments ⇒
-          val necessaryRoles: Option[List[Enrolment]] =
-            requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
-
-          necessaryRoles.fold[Future[Result]](Unauthorized("Insufficient roles")){ _ ⇒ action(request) }
+          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")){ _ ⇒ action(request) }
       }.recover{
         case _: NoActiveSession ⇒
           toStrideLogin(getRedirectUrl(request, redirectCall))
       }
     }
 
+  def authorisedFromStrideWithDetails(action: Request[AnyContent] ⇒ OperatorDetails ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
+    Action.async { implicit request ⇒
+      authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments and credentials and name and email) {
+        case enrolments ~ creds ~ name ~ email ⇒
+          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) {
+            roles ⇒ action(request)(OperatorDetails(roles.map(_.key), creds.providerId, getName(name), email.getOrElse("")))
+          }
+      }.recover {
+        case _: NoActiveSession ⇒
+          toStrideLogin(getRedirectUrl(request, redirectCall))
+      }
+    }
+
+  private def necessaryRoles(enrolments: Enrolments) =
+    requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
+
+  private def getName(name: Name): String =
+    (name.name.toList ++ name.lastName.toList).mkString(" ")
 }

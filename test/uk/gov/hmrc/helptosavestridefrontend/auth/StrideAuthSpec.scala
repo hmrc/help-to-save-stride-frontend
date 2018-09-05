@@ -20,18 +20,19 @@ import java.net.URLEncoder
 import java.util.Base64
 
 import play.api.Configuration
-import play.api.mvc.Results._
 import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.allEnrolments
+import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, _}
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuthSpec.NotLoggedInException
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.models.OperatorDetails
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -93,12 +94,21 @@ class StrideAuthSpec extends TestSupport {
               status(action(FakeRequest())) shouldBe UNAUTHORIZED
             }
         }
-
       }
 
       "allow authorised logic to be run if the requester has the correct roles" in {
         mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(roles.map(Enrolment(_)).toSet)))
+        status(action(FakeRequest())) shouldBe OK
+      }
 
+      "should return stride operator details when requested" in {
+        val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Credentials("PID", "pidType")), Name(Some("name"), None)), Some("email"))
+        mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(Right(retrievals))
+        val action = test.authorisedFromStrideWithDetails { _ ⇒ operatorDetails ⇒ {
+          operatorDetails shouldBe OperatorDetails(List("a", "b"), "PID", "name", "email")
+          Ok
+        }
+        }(controllers.routes.Default.redirect())
         status(action(FakeRequest())) shouldBe OK
       }
 
