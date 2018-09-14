@@ -22,7 +22,7 @@ import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -50,9 +50,9 @@ trait SessionBehaviour {
       ).flatMap(identity)
 
   def checkSession(noSessionData:         ⇒ Future[Result],
-                   whenEligible:          (Eligible, Boolean, NSIUserInfo) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
-                   whenIneligible:        (Ineligible, NSIUserInfo) ⇒ Future[Result]        = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
-                   whenAlreadyHasAccount: NSIUserInfo ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
+                   whenEligible:          (Eligible, Boolean, NSIPayload) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                   whenIneligible:        (Ineligible, NSIPayload) ⇒ Future[Result]        = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                   whenAlreadyHasAccount: NSIPayload ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
       noSessionData,
@@ -116,7 +116,7 @@ object SessionBehaviour {
     }
   }
 
-  case class HtsSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIUserInfo, detailsConfirmed: Boolean = false)
+  case class HtsSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIPayload, detailsConfirmed: Boolean = false)
 
   object HtsSession {
     implicit val format: Format[HtsSession] = Json.format[HtsSession]
