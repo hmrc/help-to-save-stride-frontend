@@ -63,7 +63,7 @@ class StrideControllerSpec
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockPayeDetails(nino: NINO)(result: Either[String, NSIUserInfo]) =
+  def mockPayeDetails(nino: NINO)(result: Either[String, NSIPayload]) =
     (helpToSaveConnector.getNSIUserInfo(_: String)(_: HeaderCarrier, _: ExecutionContext))
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
