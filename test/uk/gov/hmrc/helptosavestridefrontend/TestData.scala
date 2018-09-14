@@ -20,8 +20,8 @@ import java.time.LocalDate
 import java.util.UUID
 
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo
-import uk.gov.hmrc.helptosavestridefrontend.models.NSIUserInfo.ContactDetails
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload.ContactDetails
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 
@@ -48,7 +48,7 @@ trait TestData { // scalastyle:off magic.number
 
   val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("GB"), Some("07841097845"), "00")
 
-  val nsiUserInfo = NSIUserInfo("A", "Smith", LocalDate.parse("1980-01-01"), "AE123456C", contactDetails, "callCentre")
+  val nsiUserInfo = NSIPayload("A", "Smith", LocalDate.parse("1980-01-01"), "AE123456C", contactDetails, "callCentre")
 
   val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
 
