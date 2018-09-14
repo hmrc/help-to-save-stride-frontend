@@ -29,7 +29,7 @@ import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
-import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIUserInfo, PayePersonalDetails}
+import uk.gov.hmrc.helptosavestridefrontend.models.{CreateAccountResult, EnrolmentStatus, NSIPayload, PayePersonalDetails}
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, maskNino}
@@ -43,7 +43,7 @@ trait HelpToSaveConnector {
 
   def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult]
 
-  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIUserInfo]
+  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload]
 
   def createAccount(createAccountRequest: CreateAccountRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
 
@@ -125,8 +125,8 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
 
   private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
 
-  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIUserInfo] =
-    EitherT[Future, String, NSIUserInfo](
+  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload] =
+    EitherT[Future, String, NSIPayload](
       {
         val timerContext = metrics.payePersonalDetailsTimer.time()
 
@@ -163,7 +163,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
 
   override def createAccount(createAccountRequest: CreateAccountRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
 
-    val nSIUserInfo = createAccountRequest.userInfo
+    val nSIUserInfo = createAccountRequest.payload
 
     EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, createAccountRequest).map[Either[String, CreateAccountResult]] { response ⇒
       response.status match {
