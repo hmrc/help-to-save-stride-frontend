@@ -16,51 +16,60 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.connectors
 
-import org.scalamock.handlers.CallHandler4
+import org.scalamock.handlers.CallHandler3
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.Matchers
 import play.api.libs.json.Writes
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import play.api.libs.ws.WSClient
+import uk.gov.hmrc.helptosavestridefrontend.TestSupport
+import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait HttpSupport { this: MockFactory with Matchers ⇒
-
-  val mockHttp: HttpClient = mock[HttpClient]
+trait HttpSupport {
+  this: MockFactory with TestSupport with Matchers ⇒
 
   private val emptyMap = Map.empty[String, String]
 
+  private val mockAuditor = mock[AuditConnector]
+  private val mockWsClient = mock[WSClient]
+
+  class FakedHttpClient extends HttpClient(mockAuditor, configuration, mockWsClient)
+
+  val mockHttp: HttpClient = mock[FakedHttpClient]
+
   def mockGet(url: String, queryParams: Map[String, String] = emptyMap, headers: Map[String, String] = emptyMap)(response: Option[HttpResponse]) =
-    (mockHttp.GET(_: String, _: Seq[(String, String)])(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
-      .expects(where{ (u: String, q: Seq[(String, String)], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
+    (mockHttp.get(_: String, _: Map[String, String], _: Map[String, String])(_: HeaderCarrier, _: ExecutionContext))
+      .expects(where { (u: String, q: Map[String, String], h: Map[String, String], hc: HeaderCarrier, _: ExecutionContext) ⇒
         // use matchers here to get useful error messages when the following predicates
         // are not satisfied - otherwise it is difficult to tell in the logs what went wrong
         u shouldBe url
-        q shouldBe queryParams.toSeq
-        h.extraHeaders shouldBe headers.toSeq
+        q shouldBe queryParams
+        hc.extraHeaders shouldBe h.toSeq
         true
       })
       .returning(response.fold(Future.failed[HttpResponse](new Exception("Test exception message")))(Future.successful))
 
   def mockPut[A](url: String, body: A, headers: Map[String, String] = Map.empty[String, String])(result: Option[HttpResponse]): Unit =
-    (mockHttp.PUT(_: String, _: A)(_: Writes[A], _: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
-      .expects(where{ (u: String, a: A, _: Writes[A], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
+    (mockHttp.put(_: String, _: A, _: Map[String, String])(_: Writes[A], _: HeaderCarrier, _: ExecutionContext))
+      .expects(where { (u: String, a: A, h: Map[String, String], _: Writes[A], hc: HeaderCarrier, _: ExecutionContext) ⇒
         u shouldBe url
         a shouldBe body
-        h.extraHeaders shouldBe headers.toSeq
+        hc.extraHeaders shouldBe headers.toSeq
         true
       })
       .returning(result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful))
 
   def mockPost[A](url: String, headers: Map[String, String], body: A)(result: Option[HttpResponse]): Unit =
-    (mockHttp.POST(_: String, _: A, _: Seq[(String, String)])(_: Writes[A], _: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, body, headers.toSeq, *, *, *, *)
+    (mockHttp.post(_: String, _: A, _: Map[String, String])(_: Writes[A], _: HeaderCarrier, _: ExecutionContext))
+      .expects(url, body, headers, *, *, *)
       .returning(result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful))
 
-  def mockDelete[O](url: String)(response: Option[O]): CallHandler4[String, HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
-    (mockHttp.DELETE[O](_: String)(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, *, *, *)
-      .returning(response.fold(Future.failed[O](new Exception("")))(Future.successful))
+  def mockDelete(url: String)(response: Option[HttpResponse]): CallHandler3[String, HeaderCarrier, ExecutionContext, Future[HttpResponse]] =
+    (mockHttp.delete(_: String)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(url, *, *)
+      .returning(response.fold(Future.failed[HttpResponse](new Exception("")))(Future.successful))
 
 }
