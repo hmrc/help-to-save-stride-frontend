@@ -123,7 +123,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           SeeOther(routes.StrideController.getErrorPage().url)
         }{ reason ⇒
           //do TxM Auditing
-          val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname)
+          val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname, None, List.empty[String])
           auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
 
           Ok(views.html.customer_not_eligible(reason, nsiUserInfo))
@@ -139,10 +139,26 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.accountAlreadyExists())
 
-  def customerEligible: Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def customerEligible: Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ operatorDetails ⇒
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      (_, _, nsiUserInfo) ⇒ Ok(views.html.customer_eligible(nsiUserInfo))
+      {
+        (_, _, nsiUserInfo) ⇒
+          //do TxM Auditing
+          val contactDetails = nsiUserInfo.contactDetails
+          val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname,
+                                                                   Some(nsiUserInfo.dateOfBirth),
+                                                                   List(contactDetails.address1,
+                                                                        contactDetails.address2,
+                                                                        contactDetails.address3.getOrElse(""),
+                                                                        contactDetails.address4.getOrElse(""),
+                                                                        contactDetails.address5.getOrElse(""),
+                                                                        contactDetails.postcode
+            ))
+          auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
+
+          Ok(views.html.customer_eligible(nsiUserInfo))
+      }
     )
   }(routes.StrideController.customerEligible())
 
@@ -174,7 +190,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.getCreateAccountPage())
 
-  def createAccount: Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ implicit operatorDetails ⇒
+  def createAccount: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
                  whenEligible   = { (eligible, detailsConfirmed, nsiUserInfo) ⇒
         if (!detailsConfirmed) {
@@ -201,7 +217,6 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               SeeOther(routes.StrideController.getErrorPage().url)
             }, {
               case AccountCreated ⇒
-                auditor.sendEvent(ManualAccountCreationSelected(nSIUserInfo.nino, request.path, operatorDetails), nSIUserInfo.nino)
                 SeeOther(routes.StrideController.getAccountCreatedPage().url)
               case AccountAlreadyExists ⇒
                 Ok(views.html.account_already_exists())
@@ -213,7 +228,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.createAccount())
 
-  def allowManualAccountCreation(): Action[AnyContent] = authorisedFromStride { implicit request ⇒
+  def allowManualAccountCreation(): Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ operatorDetails ⇒
     if (appConfig.manualAccountCreationEnabled) {
       checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
                    whenIneligible = { (ineligible, nSIUserInfo) ⇒
@@ -223,6 +238,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                 logger.warn(s"Could not write to keystore: $e")
                 SeeOther(routes.StrideController.getErrorPage().url)
             }, { _ ⇒
+              auditor.sendEvent(ManualAccountCreationSelected(nSIUserInfo.nino, request.path, operatorDetails), nSIUserInfo.nino)
               Ok(views.html.create_account())
             })
           }
