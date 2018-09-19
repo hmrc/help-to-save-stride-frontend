@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.audit
 
+import java.time.LocalDate
+
 import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, PersonalInformationDisplayed}
@@ -30,7 +32,11 @@ class HTSEventSpec extends TestSupport {
 
     "be created with appropriate fields" in {
 
-      val event = PersonalInformationDisplayedToOperator(PersonalInformationDisplayed("AE123456C", "foo bar"), operatorDetails, "path")
+      val event = PersonalInformationDisplayedToOperator(
+        PersonalInformationDisplayed("AE123456C", "foo bar", Some(LocalDate.of(1900, 1, 1)), List("address1", "address2")),
+        operatorDetails,
+        "path"
+      )
       event.value.auditSource shouldBe appName
       event.value.auditType shouldBe "PersonalInformationDisplayedToOperator"
       event.value.tags.get("path") shouldBe Some("path")
@@ -40,7 +46,9 @@ class HTSEventSpec extends TestSupport {
           """{
             |   "detailsDisplayed":{
             |      "nino":"AE123456C",
-            |      "name":"foo bar"
+            |      "name":"foo bar",
+            |      "dateOfBirth":"1900-01-01",
+            |      "address": [ "address1", "address2" ]
             |   },
             |   "operatorDetails":{
             |      "roles":[

@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.models
 
+import java.time.LocalDate
+
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 
-case class PersonalInformationDisplayed(nino: NINO, name: String)
+case class PersonalInformationDisplayed(nino: NINO, name: String, dateOfBirth: Option[LocalDate], address: List[String])
 
 object PersonalInformationDisplayed {
   implicit val format: Format[PersonalInformationDisplayed] = Json.format[PersonalInformationDisplayed]
