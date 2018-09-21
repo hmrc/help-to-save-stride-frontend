@@ -38,7 +38,7 @@ class HTSEventSpec extends TestSupport {
         "path"
       )
       event.value.auditSource shouldBe appName
-      event.value.auditType shouldBe "PersonalInformationDisplayedToOperator"
+      event.value.auditType shouldBe "personalInformationDisplayedToOperator"
       event.value.tags.get("path") shouldBe Some("path")
       event.value.tags.get("transactionName") shouldBe Some("personal-information-displayed-to-stride-operator")
       event.value.detail shouldBe
@@ -69,7 +69,7 @@ class HTSEventSpec extends TestSupport {
 
       val event = ManualAccountCreationSelected("nino", "path", operatorDetails)
       event.value.auditSource shouldBe appName
-      event.value.auditType shouldBe "ManualAccountCreationSelected"
+      event.value.auditType shouldBe "manualAccountCreationSelected"
       event.value.tags.get("path") shouldBe Some("path")
       event.value.tags.get("transactionName") shouldBe Some("manual-account-created")
       event.value.detail shouldBe

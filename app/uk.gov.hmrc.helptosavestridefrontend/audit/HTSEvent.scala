@@ -43,7 +43,7 @@ case class PersonalInformationDisplayedToOperator(piDisplayed:     PersonalInfor
                                                   path:            String)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig) extends HTSEvent {
   val value: ExtendedDataEvent = HTSEvent(
     appConfig.appName,
-    "PersonalInformationDisplayedToOperator",
+    "personalInformationDisplayedToOperator",
     Json.obj(
       "detailsDisplayed" -> Json.toJson(piDisplayed),
       "operatorDetails" -> Json.toJson(operatorDetails)
@@ -58,7 +58,7 @@ case class ManualAccountCreationSelected(nino:            NINO,
                                          operatorDetails: OperatorDetails)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig) extends HTSEvent {
   val value: ExtendedDataEvent = HTSEvent(
     appConfig.appName,
-    "ManualAccountCreationSelected",
+    "manualAccountCreationSelected",
     Json.obj(
       "nino" -> nino,
       "operatorDetails" -> Json.toJson(operatorDetails)
