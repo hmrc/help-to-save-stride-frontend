@@ -36,7 +36,7 @@ object NINOValidation {
     private def validatedFromBoolean[A](a: A)(predicate: A ⇒ Boolean, ifFalse: ⇒ String): ValidatedNel[String, A] =
       if (predicate(a)) Valid(a) else invalid(ifFalse)
 
-    val ninoRegex: Regex = """^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]?$""".r
+    val ninoRegex: Regex = """^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]{1}$""".r
 
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], String] = {
       val validation: Validated[NonEmptyList[String], String] =
