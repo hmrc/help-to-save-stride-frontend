@@ -23,7 +23,7 @@ import play.api.http.Status
 import play.api.http.Status.OK
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient
+import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient.HttpClientOps
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
@@ -34,6 +34,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, maskNino}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 

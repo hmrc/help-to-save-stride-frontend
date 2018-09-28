@@ -23,14 +23,15 @@ import play.api.libs.json.{Reads, Writes}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient.HttpClientOps
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 
 @ImplementedBy(classOf[KeyStoreConnectorImpl])
