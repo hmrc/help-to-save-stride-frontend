@@ -16,6 +16,8 @@ Stride Frontend application process for Help To Save
 |UC| Universal Credit|
 |WTC| Working Tax Credit|
 
+
+
 ## Product Background
 
 The Prime Minister set out the government’s intention to bring forward, a new Help to Save
