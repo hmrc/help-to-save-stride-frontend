@@ -1,3 +1,4 @@
+import com.typesafe.sbt.uglify.Import
 import play.core.PlayVersion
 import sbt.Keys._
 import sbt._
@@ -115,10 +116,11 @@ lazy val wartRemoverSettings = {
 }
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins: _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory, SbtWeb) ++ plugins: _*)
   .settings(addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"))
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(scalaSettings: _*)
+  .settings(majorVersion := 2)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(PlayKeys.playDefaultPort := 7006)
@@ -151,7 +153,7 @@ lazy val microservice = Project(appName, file("."))
       "javascripts/h2s-app.js" -> group(Seq("javascripts/extendPreventDoubleClick.js", "javascripts/overrideIneligibleCheckboxButtonBind.js"))
     ),
     // prevent removal of unused code which generates warning errors due to use of third-party libs
-    UglifyKeys.compressOptions := Seq("unused=false", "dead_code=false"),
+    Import.uglifyCompressOptions := Seq("unused=false", "dead_code=false"),
     pipelineStages := Seq(digest),
     // below line required to force asset pipeline to operate in dev rather than only prod
     pipelineStages in Assets := Seq(concat,uglify),
