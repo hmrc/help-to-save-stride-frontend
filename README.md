@@ -54,7 +54,7 @@ Runs on port 7006 when started locally by the service manager.
 Start service manager with the following command to run the service with all required dependencies:
 
 ```
-sm --start HTS_ALL -f
+sm --start HTS_STRIDE_SELENIUM -f
 ```
 
 
