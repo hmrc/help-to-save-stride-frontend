@@ -53,8 +53,8 @@ object Configuration {
 
   val (host: String, strideAuthFrontendHost: String, strideIdpStubHost: String) = {
     environment match {
-      case Environment.Local ⇒ ("http://localhost:7006", "http://localhost:9041", "http://localhost:9043")
-      case Environment.Dev | Environment.Qa | Environment.Staging | Environment.Esit ⇒
+      case Environment.Local | Environment.Dev ⇒ ("http://localhost:7006", "http://localhost:9041", "http://localhost:9043")
+      case Environment.Qa | Environment.Staging | Environment.Esit ⇒
         val rootUrl = Option(System.getProperty("rootUrl")).getOrElse(sys.error("no rootUrl supplied")).toLowerCase
         List.fill(3)(rootUrl) // scalastyle:ignore magic.number
       case _ ⇒ sys.error(s"Environment '$environment' not known")
