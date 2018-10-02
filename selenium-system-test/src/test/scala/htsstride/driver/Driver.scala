@@ -27,7 +27,10 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
+import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxOptions}
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
+import htsstride.utils.Configuration.environment
+import htsstride.utils.Environment.Local
 
 import scala.io.Source
 
@@ -38,14 +41,20 @@ class Driver {
   private val systemProperties = System.getProperties
 
   def newWebDriver(): Either[String, WebDriver] = {
-    val selectedDriver: Either[String, WebDriver] =
-      Option(systemProperties.getProperty("browser")).map(_.toLowerCase) match {
-        case Some("chrome")       ⇒ Right(createChromeDriver(false))
-        case Some("headless")     ⇒ Right(createChromeDriver(true))
-        case Some("browserstack") ⇒ Right(createBrowserStackDriver)
-        case Some(other)          ⇒ Left(s"Unrecognised browser: $other")
-        case None                 ⇒ Left("No browser set")
-      }
+    val selectedDriver: Either[String, WebDriver] = Option(systemProperties.getProperty("browser")).map(_.toLowerCase) match {
+      case Some("firefox") ⇒ Right(new FirefoxDriver())
+      case Some("chrome") ⇒
+        environment match {
+          case Local ⇒
+            Right(createChromeDriver(false))
+          case _ ⇒ Right(new ChromeDriver())
+        }
+      case Some("remote-chrome")  ⇒ Right(createRemoteChrome)
+      case Some("remote-firefox") ⇒ Right(createRemoteFirefox)
+      case Some("browserstack")   ⇒ Right(createBrowserStackDriver)
+      case Some(other)            ⇒ Left(s"Unrecognised browser: $other")
+      case None                   ⇒ Left("No browser set")
+    }
 
     selectedDriver.foreach { driver ⇒
       val (_, _) = (sys.addShutdownHook(driver.quit()),
@@ -53,6 +62,14 @@ class Driver {
       )
     }
     selectedDriver
+  }
+
+  def createRemoteChrome: WebDriver = {
+    new RemoteWebDriver(new URL(s"http://localhost:4444/wd/hub"), new ChromeOptions())
+  }
+
+  def createRemoteFirefox: WebDriver = {
+    new RemoteWebDriver(new URL(s"http://localhost:4444/wd/hub"), new FirefoxOptions())
   }
 
   private val os: String =
