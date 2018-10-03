@@ -47,7 +47,7 @@ object Configuration {
   }
 
   lazy val redirectWithAbsoluteUrls: Boolean = environment match {
-    case Environment.Local ⇒ true
+    case Environment.Local | Environment.Dev ⇒ true
     case _                 ⇒ false
   }
 
