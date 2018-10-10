@@ -48,6 +48,5 @@ object StrideSignInPage extends Page {
     setFieldByName("status", "true")
     setFieldByName("signature", "valid")
     setFieldByName("roles", "hts helpdesk advisor")
-    setFieldByName("RelayState", "successURL=http://localhost:7006/help-to-save/hmrc-internal/check-eligibility&failureURL=/stride/failure?continueURL=http://localhost:7006/help-to-save/hmrc-internal/check-eligibility")
   }
 }
