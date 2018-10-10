@@ -20,6 +20,8 @@ import htsstride.browser.Browser
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
+import scala.util.Random
+
 object StrideSignInPage extends Page {
 
   val successURL: String =
@@ -39,12 +41,13 @@ object StrideSignInPage extends Page {
   }
 
   private def fillInStrideDetails()(implicit driver: WebDriver): Unit = {
-    setFieldByName("pid", "random-pid")
+    setFieldByName("pid", Random.nextString(3))
     setFieldByName("usersGivenName", "test-given-name")
     setFieldByName("usersSurname", "test-surname")
     setFieldByName("emailAddress", "test@hmrc-hts.com")
     setFieldByName("status", "true")
     setFieldByName("signature", "valid")
     setFieldByName("roles", "hts helpdesk advisor")
+    setFieldByName("RelayState", "successURL=http://localhost:7006/help-to-save/hmrc-internal/check-eligibility&failureURL=/stride/failure?continueURL=http://localhost:7006/help-to-save/hmrc-internal/check-eligibility")
   }
 }
