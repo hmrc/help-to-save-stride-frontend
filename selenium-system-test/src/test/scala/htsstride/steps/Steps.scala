@@ -67,6 +67,8 @@ private[steps] trait Steps extends ScalaDsl with EN with Matchers {
 
       val failurePageUrl = driver.getCurrentUrl()
 
+      println(s"current failurePageUrl =  $failurePageUrl")
+
       // Try to take screen shot of previous page
       driver.navigate().back()
       val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
@@ -80,6 +82,8 @@ private[steps] trait Steps extends ScalaDsl with EN with Matchers {
 
       val screenshotPreviousPage = driver.getScreenshotAs(OutputType.BYTES)
       scenario.embed(screenshotPreviousPage, "image/png")
+
+      println(s"after clicking back, failurePageUrl =  ${driver.getCurrentUrl}")
 
     } catch {
       case e: TimeoutException   ⇒ println("Not possible to take screen shot of page before error.")
