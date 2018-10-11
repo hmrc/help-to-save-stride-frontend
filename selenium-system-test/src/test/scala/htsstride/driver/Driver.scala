@@ -41,7 +41,7 @@ class Driver {
   private val systemProperties = System.getProperties
 
   def newWebDriver(): Either[String, WebDriver] = {
-    val selectedDriver: Either[String, WebDriver] = Option(systemProperties.getProperty("browser")).map(_.toLowerCase) match {
+    val selectedDriver: Either[String, WebDriver] = Option(systemProperties.getProperty("marcusbrowser")).map(_.toLowerCase) match {
       case Some("firefox") ⇒ Right(new FirefoxDriver())
       case Some("chrome") ⇒
         environment match {

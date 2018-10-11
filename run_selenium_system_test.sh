@@ -1,5 +1,5 @@
 #! /bin/bash
-USAGE="run_selenium_system_test.sh [--environment -e=env] [--browser -b=browser] [--driver -d=driver] [--rootUrl -r=rootUrl] [--with-java-flags -j=java_opts: optional] [--with-tags -t=tags: optional]
+USAGE="run_selenium_system_test.sh [--environment -e=env] [--marcusbrowser -marcusb=browser] [--driver -d=driver] [--rootUrl -r=rootUrl] [--with-java-flags -j=java_opts: optional] [--with-tags -t=tags: optional]
 
 env      - The environment to run the tests on [ dev | qa | local ]
 browser  - The browser to run the tests on [ chrome | zap-chrome | headless | browserstack ]
@@ -62,13 +62,13 @@ while [ "$1" != "" ]; do
    fi
        java_opts+=("-Denvironment=$VALUE")
        ;;
-   --browser | -b)
+   --marcusbrowser | -marcusb)
    if [ "$VALUE" != 'chrome' ] && "$VALUE" != 'remote-chrome' ] && [ "$VALUE" != 'firefox' ] && [ "$VALUE" != 'zap-chrome' ] && [ "$VALUE" != 'headless' ] && [ "$VALUE" != 'browserstack' ] && [ "$VALUE" != 'browserstack1' ] && [ "$VALUE" != 'browserstack2' ] && [ "$VALUE" != 'browserstack3' ] && [ "$VALUE" != 'browserstack4' ]
    then
         usage
         exit 1
    fi
-        java_opts+=("-Dbrowser=$VALUE")
+        java_opts+=("-Dmarcusbrowser=$VALUE")
         ;;
    --driver | -d)
         java_opts+=("-Dwebdriver.driver=$VALUE")
