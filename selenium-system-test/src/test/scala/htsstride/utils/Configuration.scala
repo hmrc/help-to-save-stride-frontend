@@ -48,7 +48,7 @@ object Configuration {
 
   lazy val redirectWithAbsoluteUrls: Boolean = environment match {
     case Environment.Local | Environment.Dev ⇒ true
-    case _                 ⇒ false
+    case _                                   ⇒ false
   }
 
   val (host: String, strideAuthFrontendHost: String, strideIdpStubHost: String) = {

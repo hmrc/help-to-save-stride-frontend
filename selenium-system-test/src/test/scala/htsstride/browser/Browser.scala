@@ -110,7 +110,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
           val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
           val expectedCondition = new Function[WebDriver, Boolean]() {
             override def apply(t: WebDriver): Boolean = {
-              ExpectedConditions.urlContains(expectedUrl).apply(driver)
+              ExpectedConditions.urlToBe(expectedUrl).apply(driver)
             }
           }
 
@@ -125,6 +125,12 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
     val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
 
     result shouldBe Right(())
+
+    println(s"Current URL is =  ${driver.getCurrentUrl}")
+    println(s"Current Page is ${driver.getPageSource}")
+
+    println(s"Expected page is ${page.expectedURL}")
+
     page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$t - Help to Save - HMRC")
     page.expectedPageHeader.foreach(getPageHeading shouldBe _)
   }
