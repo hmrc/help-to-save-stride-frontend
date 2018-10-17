@@ -20,8 +20,6 @@ import htsstride.browser.Browser
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
-import scala.util.Random
-
 object StrideSignInPage extends Page {
 
   val successURL: String =
