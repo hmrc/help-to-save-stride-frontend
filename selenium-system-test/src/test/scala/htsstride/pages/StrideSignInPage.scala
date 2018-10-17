@@ -41,7 +41,7 @@ object StrideSignInPage extends Page {
   }
 
   private def fillInStrideDetails()(implicit driver: WebDriver): Unit = {
-    setFieldByName("pid", Random.nextString(3))
+    setFieldByName("pid", "pid1234")
     setFieldByName("usersGivenName", "test-given-name")
     setFieldByName("usersSurname", "test-surname")
     setFieldByName("emailAddress", "test@hmrc-hts.com")
