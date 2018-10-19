@@ -26,7 +26,6 @@ import htsstride.driver.Driver
 import org.openqa.selenium._
 import org.openqa.selenium.support.ui.{ExpectedConditions, WebDriverWait}
 import org.scalatest.Matchers
-import sys.process._
 
 private[steps] trait Steps extends ScalaDsl with EN with Matchers {
 
@@ -56,10 +55,6 @@ private[steps] trait Steps extends ScalaDsl with EN with Matchers {
           case _                       ⇒ println("Screenshot will not be taken")
         }
       }
-
-      val runningServices = Process("sm -s").!!
-      println("Marcus printing running services")
-      println(runningServices)
 
       _driver.foreach(_.quit())
       _driver = None
