@@ -61,14 +61,6 @@ private[steps] trait Steps extends ScalaDsl with EN with Matchers {
       println("Marcus printing running services")
       println(runningServices)
 
-      val port9041 = Process("lsof -i :9041").!!
-      val port9042 = Process("lsof -i :9042").!!
-      val port9043 = Process("lsof -i :9043").!!
-      println("Marcus printing ports")
-      println(port9041)
-      println(port9042)
-      println(port9043)
-
       _driver.foreach(_.quit())
       _driver = None
   }
