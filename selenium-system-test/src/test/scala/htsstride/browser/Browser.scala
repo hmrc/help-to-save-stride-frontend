@@ -123,12 +123,6 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
 
     val urlMatches = isActualUrlExpectedUrl(page.expectedURL)
     val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
-
-    println(s"Current URL is =  ${driver.getCurrentUrl}")
-    println(s"Current Page is ${driver.getPageSource}")
-
-    println(s"Expected page is ${page.expectedURL}")
-
     result shouldBe Right(())
 
     page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$t - Help to Save - HMRC")
