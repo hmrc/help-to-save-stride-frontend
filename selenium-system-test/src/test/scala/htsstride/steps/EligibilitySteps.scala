@@ -23,7 +23,7 @@ import htsstride.utils.NINOGenerator
 
 class EligibilitySteps extends Steps with NINOGenerator {
 
-  Given("^the applicant has NINO (.*)$") { (nino: String) ⇒
+  Given("^the applicant has NINO (.*)$") { nino: String ⇒
     defineNINO(nino)
   }
 
@@ -48,7 +48,7 @@ class EligibilitySteps extends Steps with NINOGenerator {
     IntroductionHelpToSavePage.checkEligibility(generateEligibilityHTTPErrorCodeNINO(500))
   }
 
-  Then("^they see that the applicant is NOT eligible for Help to Save with reason code (.+)$") { (reason: Int) ⇒
+  Then("^they see that the applicant is NOT eligible for Help to Save with reason code (.+)$") { reason: Int ⇒
     reason match {
       case 3 ⇒
         Browser.checkCurrentPageIs(NotEligibleReason3Page)
@@ -66,5 +66,19 @@ class EligibilitySteps extends Steps with NINOGenerator {
         notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(())
         )
     }
+  }
+
+  Given("^the operator has evidence the applicant is eligible for a Help to Save account$") {
+    NotEligibleReason5Page.checkConfirmEligible()
+  }
+
+  When("^the internal operator chooses to create an account manually on behalf of the applicant$") {
+    NotEligibleReason5Page.clickSubmitForManualAccount()
+    Browser.checkCurrentPageIs(AllowManualAccountCreationPage)
+    AllowManualAccountCreationPage.clickSubmit()
+  }
+
+  Then("^the account is successfully created$") {
+    Browser.checkCurrentPageIs(AccountCreatedPage)
   }
 }
