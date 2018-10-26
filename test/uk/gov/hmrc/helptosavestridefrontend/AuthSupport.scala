@@ -24,7 +24,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
-import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,8 +36,8 @@ trait AuthSupport { this: TestSupport ⇒
     base64EncodedRoles.map(x ⇒ new String(Base64.getDecoder.decode(x)))
   }
 
-  type RetrievalsType = Enrolments ~ Credentials ~ Name ~ Option[String]
-  val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Credentials("PID", "pidType")), Name(Some("name"), None)), Some("email"))
+  type RetrievalsType = Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]
+  val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 

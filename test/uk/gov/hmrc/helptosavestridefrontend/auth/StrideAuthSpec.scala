@@ -27,7 +27,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, _}
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuthSpec.NotLoggedInException
@@ -102,10 +102,10 @@ class StrideAuthSpec extends TestSupport {
       }
 
       "should return stride operator details when requested" in {
-        val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Credentials("PID", "pidType")), Name(Some("name"), None)), Some("email"))
+        val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
         mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(Right(retrievals))
         val action = test.authorisedFromStrideWithDetails { _ ⇒ operatorDetails ⇒ {
-          operatorDetails shouldBe OperatorDetails(List("a", "b"), "PID", "name", "email")
+          operatorDetails shouldBe OperatorDetails(List("a", "b"), Some("PID"), "name", "email")
           Ok
         }
         }(controllers.routes.Default.redirect())

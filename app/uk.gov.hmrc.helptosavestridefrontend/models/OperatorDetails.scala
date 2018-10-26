@@ -27,7 +27,7 @@ object PersonalInformationDisplayed {
   implicit val format: Format[PersonalInformationDisplayed] = Json.format[PersonalInformationDisplayed]
 }
 
-case class OperatorDetails(roles: List[String], pid: String, name: String, email: String)
+case class OperatorDetails(roles: List[String], pid: Option[String], name: String, email: String)
 
 object OperatorDetails {
   implicit val format: Format[OperatorDetails] = Json.format[OperatorDetails]
