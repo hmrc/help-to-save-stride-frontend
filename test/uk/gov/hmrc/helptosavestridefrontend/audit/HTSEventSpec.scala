@@ -26,7 +26,7 @@ class HTSEventSpec extends TestSupport {
 
   val appName = "help-to-save-stride-frontend"
 
-  val operatorDetails = OperatorDetails(List("hts helpdesk advisor"), "pid", "name", "test@operator.com")
+  val operatorDetails = OperatorDetails(List("hts helpdesk advisor"), Some("pid"), "name", "test@operator.com")
 
   "PersonalInformationDisplayedToOperator" must {
 

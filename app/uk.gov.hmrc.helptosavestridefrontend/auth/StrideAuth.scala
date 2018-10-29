@@ -25,7 +25,7 @@ import configs.syntax._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
-import uk.gov.hmrc.auth.core.retrieve.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
@@ -72,7 +72,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments and credentials and name and email) {
         case enrolments ~ creds ~ name ~ email ⇒
           necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) {
-            roles ⇒ action(request)(OperatorDetails(roles.map(_.key), creds.providerId, getName(name), email.getOrElse("")))
+            roles ⇒ action(request)(OperatorDetails(roles.map(_.key), creds.map(_.providerId), getName(name), email.getOrElse("")))
           }
       }.recover {
         case _: NoActiveSession ⇒
@@ -83,6 +83,6 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
   private def necessaryRoles(enrolments: Enrolments) =
     requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
 
-  private def getName(name: Name): String =
-    (name.name.toList ++ name.lastName.toList).mkString(" ")
+  private def getName(name: Option[Name]): String =
+    (name.flatMap(_.name).toList ++ name.flatMap(_.lastName).toList).mkString(" ")
 }

@@ -159,7 +159,7 @@ class StrideControllerSpec
                  contactDetails.address5.getOrElse(""),
                  contactDetails.postcode
             )),
-          OperatorDetails(List("hts helpdesk advisor"), "PID", "name", "email"), "/")
+          OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email"), "/")
 
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
@@ -228,7 +228,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulAuthorisationWithDetails()
             mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code)), nsiUserInfo))))
-            mockAudit(PersonalInformationDisplayedToOperator(PersonalInformationDisplayed("AE123456C", "A Smith", None, List.empty[String]), OperatorDetails(List("hts helpdesk advisor"), "PID", "name", "email"), "/"), "AE123456C")
+            mockAudit(PersonalInformationDisplayedToOperator(PersonalInformationDisplayed("AE123456C", "A Smith", None, List.empty[String]), OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email"), "/"), "AE123456C")
           }
 
           val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -597,7 +597,7 @@ class StrideControllerSpec
           mockSuccessfulAuthorisationWithDetails()
           mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
           mockKeyStorePut(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Right(()))
-          mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor"), "PID", "name", "email")), "AE123456C")
+          mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email")), "AE123456C")
         }
 
         val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)

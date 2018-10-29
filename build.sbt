@@ -22,7 +22,7 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",
   "uk.gov.hmrc" %% "play-ui" % "7.17.0",
   "uk.gov.hmrc" %% "bootstrap-play-25" % "3.5.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.6.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.17.0-play-25",
   "uk.gov.hmrc" %% "domain" % "5.1.0",
   "org.typelevel" %% "cats-core" % "1.1.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
