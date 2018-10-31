@@ -91,12 +91,12 @@
     <div class="divider--top subsection--wide push--bottom">
         <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.manually.create.title")</h2>
         <p>@Messages("hts.eligibility.not.eligible.manually.create.p1")</p>
-
+        <h2 class="heading-small">@Messages("hts.eligibility.not.eligible.manually.create.h2")</h2>
+        <p>@Messages("hts.eligibility.not.eligible.manually.create.p2")</p>
         <ul class="list list-bullet">
             <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li1")</li>
             <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li2")</li>
             <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
-            <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li4")</li>
         </ul>
 
         @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.allowManualAccountCreation()) {
@@ -104,13 +104,7 @@
                 <fieldset>
                     <div class="multiple-choice">
                         <input id="confirm_eligible" name="confirm_eligible" type="checkbox" value="yes" class="button-disable-binding" />
-                        <label class="form-label-bold" for="confirm_eligible">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")
-                            <ul class="list list-bullet">
-                                <li><span class="bold">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label.ul-li1")</span></li>
-                                <li><span class="bold">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label.ul-li2")</span></li>
-                                <li><span class="bold">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label.ul-li3")</span></li>
-                            </ul>
-                        </label>
+                        <label class="form-label-bold" for="confirm_eligible">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")</label>
                     </div>
                 </fieldset>
             </div>
