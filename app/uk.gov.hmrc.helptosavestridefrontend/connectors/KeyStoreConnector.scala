@@ -127,7 +127,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          HttpCl
     http.get(uri).flatMap { r ⇒
       r.status match {
         case Status.OK ⇒
-          r.parseJson[CacheMap] match {
+          r.parseJson[CacheMap]() match {
             case Right(c: CacheMap) ⇒ Future.successful(c)
             case Left(e)            ⇒ Future.failed(new Exception(s"Could not parse response: $e"))
           }
@@ -137,7 +137,7 @@ class KeyStoreConnectorImpl @Inject() (val http:                          HttpCl
 
   override def put[T](uri: String, body: T)(implicit hc: HeaderCarrier, wts: Writes[T], executionContext: ExecutionContext): Future[CacheMap] =
     http.put(uri, body).flatMap{
-      _.parseJson[CacheMap] match {
+      _.parseJson[CacheMap]() match {
         case Right(c: CacheMap) ⇒ Future.successful(c)
         case Left(e)            ⇒ Future.failed(new Exception(s"Could not parse response: $e"))
       }

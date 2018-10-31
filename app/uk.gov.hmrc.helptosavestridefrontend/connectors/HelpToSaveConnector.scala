@@ -82,7 +82,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
           response.status match {
             case OK ⇒
               val result = {
-                response.parseJson[EligibilityCheckResponse].flatMap(toEligibilityCheckResult)
+                response.parseJson[EligibilityCheckResponse](_ \ "eligibilityCheckResult").flatMap(toEligibilityCheckResult)
               }
               result.fold({
                 e ⇒
@@ -133,7 +133,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
             val time = timerContext.stop()
             response.status match {
               case OK ⇒
-                val result = response.parseJson[PayePersonalDetails].map(_.convertToNSIUserInfo(nino))
+                val result = response.parseJson[PayePersonalDetails]().map(_.convertToNSIUserInfo(nino))
                 result.fold({
                   e ⇒
                     metrics.payePersonalDetailsErrorCounter.inc()
@@ -191,7 +191,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
     EitherT[Future, String, EnrolmentStatus](http.get(enrolmentStatusUrl, Map("nino" -> nino)).map[Either[String, EnrolmentStatus]] { response ⇒
       response.status match {
         case OK ⇒
-          val result = response.parseJson[EnrolmentStatus]
+          val result = response.parseJson[EnrolmentStatus]()
           result.fold({
             e ⇒
               logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK): $e", nino)

@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 import cats.instances.int._
 import cats.syntax.eq._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
@@ -44,29 +44,31 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
   "HelpToSaveConnector" when {
 
     "checking eligibility" must {
-        def eligibilityCheckResponse(resultCode: Int) = EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1)
+        def eligibilityCheckResponse(resultCode: Int): JsValue =
+          JsObject(Map("eligibilityCheckResult" → Json.toJson(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1))))
 
       "return a successful eligibility response for a valid NINO" in {
-        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(1)))))) // scalastyle:ignore magic.number
+        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(eligibilityCheckResponse(1))))) // scalastyle:ignore magic.number
+
         await(connector.getEligibility(nino).value) shouldBe Right(
           Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
       }
 
       "handles the case of success response but user is not eligible" in {
-        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(2)))))) // scalastyle:ignore magic.number
+        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(eligibilityCheckResponse(2))))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
       }
 
       "handles the case of success response but user has hot an account already" in {
-        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(3)))))) // scalastyle:ignore magic.number
+        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(eligibilityCheckResponse(3))))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
       }
 
       "handles the case of success response but invalid eligibility result code" in {
         (4 to 10).foreach { resultCode ⇒
-          mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(Json.toJson(eligibilityCheckResponse(resultCode)))))) // scalastyle:ignore magic.number
+          mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, Some(eligibilityCheckResponse(resultCode))))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
           await(connector.getEligibility(nino).value).isLeft shouldBe true
