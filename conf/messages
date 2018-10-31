@@ -77,15 +77,13 @@ hts.eligibility.not.eligible.no.benefits.p5=If they have just claimed Working Ta
 hts.eligibility.not.eligible.no.benefits.p6=Tell customer what they need to do if they still think they are eligible.
 
 hts.eligibility.not.eligible.manually.create.title=Create account manually
-hts.eligibility.not.eligible.manually.create.p1=You can create a Help to Save account for a customer if there has been a problem with our system and:
-hts.eligibility.not.eligible.manually.create.ul1.li1=you have evidence they are eligible for an account
-hts.eligibility.not.eligible.manually.create.ul1.li2=they want to open an account
-hts.eligibility.not.eligible.manually.create.ul1.li3=you have the approval of a manager
-hts.eligibility.not.eligible.manually.create.ul1.li4=you have set the ITMP Help to Save indicator
-hts.eligibility.not.eligible.manually.create.confirm.eligible.label=I confirm I have:
-hts.eligibility.not.eligible.manually.create.confirm.eligible.label.ul-li1=evidence the customer is eligible for a Help to Save account
-hts.eligibility.not.eligible.manually.create.confirm.eligible.label.ul-li2=the approval of a manager
-hts.eligibility.not.eligible.manually.create.confirm.eligible.label.ul-li3=set the ITMP Help to Save indicator
+hts.eligibility.not.eligible.manually.create.p1=You can create a Help to Save account for a customer if they are eligible for one but they cannot create one because of a problem with our system.
+hts.eligibility.not.eligible.manually.create.h2=Conditions you must meet
+hts.eligibility.not.eligible.manually.create.p2=Before you can create a Help to Save account for a customer, you must have:
+hts.eligibility.not.eligible.manually.create.ul1.li1=evidence the customer is eligible for an account
+hts.eligibility.not.eligible.manually.create.ul1.li2=the approval of a manager
+hts.eligibility.not.eligible.manually.create.ul1.li3=set the ITMP Help to Save indicator
+hts.eligibility.not.eligible.manually.create.confirm.eligible.label=I confirm I have met these conditions.
 
 hts.error.page.title=Something went wrong
 hts.error.page.h1=Something went wrong
