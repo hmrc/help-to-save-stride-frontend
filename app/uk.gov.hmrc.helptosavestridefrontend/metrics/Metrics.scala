@@ -38,17 +38,17 @@ class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
 
   val payePersonalDetailsErrorCounter: Counter = counter("stride.frontend.paye-personal-details-error.count")
 
-  val keystoreWriteTimer: Timer = timer("stride.frontend.keystore-write-time")
+  val sessionStoreWriteTimer: Timer = timer("stride.frontend.sessionstore-write-time")
 
-  val keystoreWriteErrorCounter: Counter = counter("stride.frontend.keystore-write-error.count")
+  val sessionStoreWriteErrorCounter: Counter = counter("stride.frontend.sessionstore-write-error.count")
 
-  val keystoreReadTimer: Timer = timer("stride.frontend.keystore-read-time")
+  val sessionStoreReadTimer: Timer = timer("stride.frontend.sessionstore-read-time")
 
-  val keystoreReadErrorCounter: Counter = counter("stride.frontend.keystore-read-error.count")
+  val sessionStoreReadErrorCounter: Counter = counter("stride.frontend.sessionstore-read-error.count")
 
-  val keystoreDeleteTimer: Timer = timer("stride.frontend.keystore-delete-time")
+  val sessionStoreDeleteTimer: Timer = timer("stride.frontend.sessionstore-delete-time")
 
-  val keystoreDeleteErrorCounter: Counter = counter("stride.frontend.keystore-delete-error.count")
+  val sessionStoreDeleteErrorCounter: Counter = counter("stride.frontend.sessionstore-delete-error.count")
 }
 
 object Metrics {
