@@ -50,7 +50,7 @@ class SessionStoreImpl @Inject() (mongo:             ReactiveMongoComponent,
 
   private val expireAfterSeconds = appConfig.mongoSessionExpireAfter.toSeconds
 
-  private val cacheRepository = new CacheMongoRepository("stride-sessions", expireAfterSeconds)(mongo.mongoConnector.db, ec)
+  private val cacheRepository = new CacheMongoRepository("sessions", expireAfterSeconds)(mongo.mongoConnector.db, ec)
 
   private type EitherStringOr[A] = Either[String, A]
 
