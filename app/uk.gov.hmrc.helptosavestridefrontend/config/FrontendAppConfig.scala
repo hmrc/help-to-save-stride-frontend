@@ -17,10 +17,11 @@
 package uk.gov.hmrc.helptosavestridefrontend.config
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.{Configuration, Environment}
 import play.api.Mode.Mode
 import uk.gov.hmrc.play.config.ServicesConfig
+
+import scala.concurrent.duration.Duration
 
 @Singleton
 class FrontendAppConfig @Inject() (override val runModeConfiguration: Configuration, val environment: Environment) extends ServicesConfig {
@@ -42,5 +43,7 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   val manualAccountCreationEnabled: Boolean = getBoolean("manual-account-creation.enabled")
 
   val appName: String = getString("appName")
+
+  val mongoSessionExpireAfter: Duration = getDuration("mongodb.session.expireAfter")
 
 }

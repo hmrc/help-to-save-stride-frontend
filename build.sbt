@@ -19,7 +19,7 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 lazy val dependencies = Seq(
   ws,
   "uk.gov.hmrc" %% "govuk-template" % "5.22.0",
-  "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",
+  "uk.gov.hmrc" %% "mongo-caching" % "5.5.0",
   "uk.gov.hmrc" %% "play-ui" % "7.17.0",
   "uk.gov.hmrc" %% "bootstrap-play-25" % "3.5.0",
   "uk.gov.hmrc" %% "auth-client" % "2.17.0-play-25",
@@ -43,7 +43,8 @@ lazy val testDependencies = Seq(
   "org.seleniumhq.selenium" % "selenium-java" % "3.13.0" % test,
   "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0" % test,
   "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test,
-  "com.google.guava" % "guava" % "25.1-jre" % test
+  "com.google.guava" % "guava" % "25.1-jre" % test,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % test
 )
 
 def seleniumTestFilter(name: String): Boolean = name.contains("suites")

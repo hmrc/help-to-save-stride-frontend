@@ -18,8 +18,8 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult._
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 
 class SessionEligibilityCheckResultSpec extends WordSpec with Matchers {
@@ -33,8 +33,8 @@ class SessionEligibilityCheckResultSpec extends WordSpec with Matchers {
         Eligible(eligibilityCheckResult),
         Ineligible(eligibilityCheckResult, manualCreationAllowed = true),
         AlreadyHasAccount
-      ).foreach{ result ⇒
-          withClue(s"For $result: "){
+      ).foreach { result ⇒
+          withClue(s"For $result: ") {
             Json.fromJson[SessionEligibilityCheckResult](Json.toJson(result)).asOpt shouldBe Some(result)
           }
         }

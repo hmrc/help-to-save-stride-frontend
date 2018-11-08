@@ -17,13 +17,10 @@
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.instances.future._
-import play.api.libs.json._
 import play.api.mvc.{Request, Result}
-import uk.gov.hmrc.helptosavestridefrontend.connectors.KeyStoreConnector
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
-import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
+import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSession, NSIPayload}
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
+import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -32,21 +29,21 @@ import scala.concurrent.Future
 trait SessionBehaviour {
   this: StrideFrontendController with Logging ⇒
 
-  val keyStoreConnector: KeyStoreConnector
+  val sessionStore: SessionStore
 
   private def checkSessionInternal(noSessionData: ⇒ Future[Result],
                                    whenSession:   HtsSession ⇒ Future[Result])(
       implicit
       hc: HeaderCarrier, request: Request[_]
   ): Future[Result] =
-    keyStoreConnector
+    sessionStore
       .get
       .fold[Future[Result]]({
         error ⇒
-          logger.warn(s"error during retrieving UserSessionInfo from keystore, error= $error")
+          logger.warn(s"error during retrieving UserSessionInfo from mongo session, error= $error")
           SeeOther(routes.StrideController.getErrorPage().url)
       },
-        _.fold(noSessionData)(whenSession)
+        _.fold(noSessionData)(whenSession(_))
       ).flatMap(identity)
 
   def checkSession(noSessionData:         ⇒ Future[Result],
@@ -66,61 +63,3 @@ trait SessionBehaviour {
     )
 
 }
-
-object SessionBehaviour {
-
-  sealed trait SessionEligibilityCheckResult
-
-  object SessionEligibilityCheckResult {
-
-    case class Eligible(response: EligibilityCheckResponse) extends SessionEligibilityCheckResult
-
-    case class Ineligible(response: EligibilityCheckResponse, manualCreationAllowed: Boolean) extends SessionEligibilityCheckResult
-
-    case object AlreadyHasAccount extends SessionEligibilityCheckResult
-
-    def fromEligibilityCheckResult(result: EligibilityCheckResult): SessionEligibilityCheckResult = result match {
-      case EligibilityCheckResult.Eligible(value)      ⇒ Eligible(value)
-      case EligibilityCheckResult.Ineligible(value)    ⇒ Ineligible(value, manualCreationAllowed = false)
-      case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ AlreadyHasAccount
-    }
-
-  }
-
-  implicit val format: Format[SessionEligibilityCheckResult] = new Format[SessionEligibilityCheckResult] {
-    override def writes(u: SessionEligibilityCheckResult): JsValue = {
-      val (code, result, manualCreationAllowed) = u match {
-        case Eligible(value)                   ⇒ (1, Some(value), None)
-        case Ineligible(value, manualCreation) ⇒ (2, Some(value), Some(manualCreation))
-        case AlreadyHasAccount                 ⇒ (3, None, None)
-      }
-
-      val fields: List[(String, JsValue)] =
-        List("code" → Some(JsNumber(code)),
-          "result" → result.map(Json.toJson(_)),
-          "manualCreationAllowed" → manualCreationAllowed.map(Json.toJson(_))
-        ).collect { case (key, Some(value)) ⇒ key → value }
-
-      JsObject(fields)
-    }
-
-    override def reads(json: JsValue): JsResult[SessionEligibilityCheckResult] = {
-      ((json \ "code").validate[Int],
-        (json \ "result").validateOpt[EligibilityCheckResponse],
-        (json \ "manualCreationAllowed").validate[Boolean]) match {
-          case (JsSuccess(1, _), JsSuccess(Some(value), _), _) ⇒ JsSuccess(Eligible(value))
-          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) ⇒ JsSuccess(Ineligible(value, manualCreationAllowed))
-          case (JsSuccess(3, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
-          case _ ⇒ JsError(s"error during parsing eligibility from json $json")
-        }
-    }
-  }
-
-  case class HtsSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIPayload, detailsConfirmed: Boolean = false)
-
-  object HtsSession {
-    implicit val format: Format[HtsSession] = Json.format[HtsSession]
-  }
-
-}
-

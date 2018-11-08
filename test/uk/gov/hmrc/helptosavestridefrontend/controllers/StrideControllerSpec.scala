@@ -18,27 +18,26 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.data.EitherT
 import cats.instances.future._
-import cats.syntax.either._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.i18n.MessagesApi
-import play.api.libs.json.{JsValue, Reads, Writes}
+import play.api.libs.json.{Reads, Writes}
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, HTSEvent, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.HtsSession
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult._
+import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
+import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
+import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
-import uk.gov.hmrc.helptosavestridefrontend.models._
+import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, CSRFSupport, TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.cache.client.CacheMap
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,7 +46,7 @@ class StrideControllerSpec
 
   val helpToSaveConnector = mock[HelpToSaveConnector]
 
-  val keystoreConnector = mock[KeyStoreConnector]
+  val sessionStore = mock[SessionStore]
 
   val mockAuditor = mock[HTSAuditor]
 
@@ -68,19 +67,19 @@ class StrideControllerSpec
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockKeyStoreGet(result: Either[String, Option[HtsSession]]) =
-    (keystoreConnector.get(_: Reads[HtsSession], _: HeaderCarrier, _: ExecutionContext))
-      .expects(*, *, *)
+  def mockSessionStoreGet(result: Either[String, Option[HtsSession]]) =
+    (sessionStore.get(_: Reads[HtsSession], _: HeaderCarrier))
+      .expects(*, *)
       .returning(EitherT.fromEither[Future](result))
 
-  def mockKeyStorePut(htsSession: HtsSession)(result: Either[String, Unit]): Unit =
-    (keystoreConnector.put(_: HtsSession)(_: Writes[HtsSession], _: HeaderCarrier, _: ExecutionContext))
-      .expects(htsSession, *, *, *)
-      .returning(EitherT.fromEither[Future](result.map(_ ⇒ CacheMap("1", Map.empty[String, JsValue]))))
+  def mockSessionStoreInsert(htsSession: HtsSession)(result: Either[String, Unit]): Unit =
+    (sessionStore.store(_: HtsSession)(_: Writes[HtsSession], _: HeaderCarrier))
+      .expects(htsSession, *, *)
+      .returning(EitherT.fromEither[Future](result))
 
-  def mockKeyStoreDelete(result: Either[String, Unit]): Unit =
-    (keystoreConnector.delete(_: HeaderCarrier, _: ExecutionContext))
-      .expects(*, *)
+  def mockSessionStoreDelete(result: Either[String, Unit]): Unit =
+    (sessionStore.delete(_: HeaderCarrier))
+      .expects(*)
       .returning(EitherT.fromEither[Future](result))
 
   def mockCreateAccount(createAccountRequest: CreateAccountRequest)(result: Either[String, CreateAccountResult]) =
@@ -101,7 +100,7 @@ class StrideControllerSpec
   lazy val controller =
     new StrideController(mockAuthConnector,
                          helpToSaveConnector,
-                         keystoreConnector,
+                         sessionStore,
                          mockAuditor,
                          fakeApplication.injector.instanceOf[FrontendAppConfig],
                          fakeApplication.injector.instanceOf[MessagesApi])
@@ -113,7 +112,7 @@ class StrideControllerSpec
       "show the page when the user is authorised" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreDelete(Right(()))
+          mockSessionStoreDelete(Right(()))
         }
 
         val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
@@ -121,10 +120,10 @@ class StrideControllerSpec
         contentAsString(result) should include("explain Help to Save to the customer")
       }
 
-      "handle error during keystore delete after the user is authorised" in {
+      "handle error during mongo session delete after the user is authorised" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreDelete(Left("error during keystore delete"))
+          mockSessionStoreDelete(Left("error during session delete"))
         }
 
         val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
@@ -135,10 +134,10 @@ class StrideControllerSpec
 
     "the check-eligibility page" must {
 
-      "show the /check-eligibility when there is no session in key-store" in {
+      "show the /check-eligibility when there is no session in mongo" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
@@ -146,7 +145,7 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "show the you-are-eligible page if session is found in key-store and user is eligible" in {
+      "show the you-are-eligible page if session is found in mongo and user is eligible" in {
         val auditEvent = PersonalInformationDisplayedToOperator(
           PersonalInformationDisplayed(
             "AE123456C",
@@ -163,7 +162,7 @@ class StrideControllerSpec
 
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
           mockAudit(auditEvent, "AE123456C")
         }
 
@@ -172,10 +171,10 @@ class StrideControllerSpec
         contentAsString(result) should include("Customer is eligible for a Help to Save account")
       }
 
-      "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+      "redirect to the you-are-not-eligible page if session is found in mongo and but user is NOT eligible" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
@@ -183,10 +182,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
 
-      "redirect to the account-already-exists page if session is found in key-store and but user has an account already" in {
+      "redirect to the account-already-exists page if session is found in mongo and but user has an account already" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
@@ -201,10 +200,10 @@ class StrideControllerSpec
 
         def ineligibleResponse(reasonCode: Int) = EligibilityCheckResponse("", 2, "", reasonCode)
 
-      "show the /check-eligibility when there is no session in key-store" in {
+      "show the /check-eligibility when there is no session in mongo" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -212,10 +211,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
+      "redirect to the you-are-eligible page if session is found in mongo and user is eligible" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -223,11 +222,11 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
-      "show the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+      "show the you-are-not-eligible page if session is found in mongo and but user is NOT eligible" in {
         ineligibleReasonCodes.foreach { code ⇒
           inSequence {
             mockSuccessfulAuthorisationWithDetails()
-            mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code)), nsiUserInfo))))
+            mockSessionStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code)), nsiUserInfo))))
             mockAudit(PersonalInformationDisplayedToOperator(PersonalInformationDisplayed("AE123456C", "A Smith", None, List.empty[String]), OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email"), "/"), "AE123456C")
           }
 
@@ -237,12 +236,12 @@ class StrideControllerSpec
         }
       }
 
-      "show an error page if the session is found in key-store and the user is ineligible but the reason code cannot be parsed" in {
+      "show an error page if the session is found in mongo and the user is ineligible but the reason code cannot be parsed" in {
         forAll { code: Int ⇒
           whenever(!ineligibleReasonCodes.contains(code)) {
             inSequence {
               mockSuccessfulAuthorisationWithDetails()
-              mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code)), nsiUserInfo))))
+              mockSessionStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo.copy(response = ineligibleResponse(code)), nsiUserInfo))))
             }
 
             val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -252,10 +251,10 @@ class StrideControllerSpec
         }
       }
 
-      "redirect to the account-already-exists page if session is found in key-store and but user has an account already" in {
+      "redirect to the account-already-exists page if session is found in mongo and but user has an account already" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -267,10 +266,10 @@ class StrideControllerSpec
 
     "getting the account-already-exists page" must {
 
-      "show the /check-eligibility when there is no session in key-store" in {
+      "show the /check-eligibility when there is no session in mongo" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
@@ -278,10 +277,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "redirect to the you-are-eligible page if session is found in key-store and user is eligible" in {
+      "redirect to the you-are-eligible page if session is found in mongo and user is eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
@@ -289,10 +288,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
-      "redirect to the you-are-not-eligible page if session is found in key-store and but user is NOT eligible" in {
+      "redirect to the you-are-not-eligible page if session is found in mongo and but user is NOT eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
@@ -300,10 +299,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
 
-      "show the account-already-exists page if session is found in key-store and but user has an account already" in {
+      "show the account-already-exists page if session is found in mongo and but user has an account already" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
@@ -320,7 +319,7 @@ class StrideControllerSpec
       "handle the forms with invalid input" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = doRequest("in-valid-nino")
@@ -331,11 +330,11 @@ class StrideControllerSpec
       "handle the case where user is not eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Ineligible(emptyECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(Ineligible(emptyECResponse, false), nsiUserInfo))(Right(()))
+          mockSessionStoreInsert(HtsSession(Ineligible(emptyECResponse, false), nsiUserInfo))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -346,10 +345,10 @@ class StrideControllerSpec
       "handle the case where user has already got account" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(Enrolled))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(AlreadyHasAccount, nsiUserInfo))(Right(()))
+          mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -360,11 +359,11 @@ class StrideControllerSpec
       "handle the case where user is eligible and paye-details exist" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Right(()))
+          mockSessionStoreInsert(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -375,7 +374,7 @@ class StrideControllerSpec
       "handle the errors during eligibility check" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Left("unexpected error"))
         }
@@ -388,7 +387,7 @@ class StrideControllerSpec
       "handle the errors during retrieve user session info" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Left("unexpected error"))
@@ -399,10 +398,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
 
-      "handle the errors when retrieving user session info from keystore" in {
+      "handle the errors when retrieving user session info from mongo" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Left("unexpected key-store error"))
+          mockSessionStoreGet(Left("unexpected mongo error"))
         }
 
         val result = doRequest(nino)
@@ -413,7 +412,7 @@ class StrideControllerSpec
       "return an Internal Server Error when the getEnrolmentStatus call fails" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Left("error occurred when getting enrolment status"))
         }
         val result = doRequest(nino)
@@ -424,11 +423,11 @@ class StrideControllerSpec
       "return an Internal Server Error when the updateSessionIfEnrolled returns a Left" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
           mockEligibility(nino)(Right(EligibilityCheckResult.Eligible(eligibleECResponse)))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockKeyStorePut(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Left("Error occurred"))
+          mockSessionStoreInsert(HtsSession(Eligible(eligibleECResponse), nsiUserInfo))(Left("Error occurred"))
         }
         val result = doRequest(nino)
         status(result) shouldBe SEE_OTHER
@@ -438,10 +437,10 @@ class StrideControllerSpec
 
     "handling getCreateAccountPage" must {
 
-      "redirect to the eligibility page if there is no session data in keystore" in {
+      "redirect to the eligibility page if there is no session data in mongo" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = controller.getCreateAccountPage(FakeRequest())
@@ -452,7 +451,7 @@ class StrideControllerSpec
       "show the create account page if the user is eligible and details are confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
         }
 
         val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
@@ -463,7 +462,7 @@ class StrideControllerSpec
       "redirect to the eligible page if the user is eligible and details are NOT confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.getCreateAccountPage(FakeRequest())
@@ -475,10 +474,10 @@ class StrideControllerSpec
 
     "handling detailsConfirmed" must {
 
-      "redirect to the eligibility page if there is no session data in keystore" in {
+      "redirect to the eligibility page if there is no session data in mongo" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = controller.handleDetailsConfirmed(FakeRequest())
@@ -486,11 +485,11 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "update the detailsConfirmed flag to true in keystore and show the terms and conditions" in {
+      "update the detailsConfirmed flag to true in mongo and show the terms and conditions" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
-          mockKeyStorePut(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Right(()))
         }
 
         val result = controller.handleDetailsConfirmed(FakeRequest())
@@ -498,11 +497,11 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
       }
 
-      "handle errors in case of updating keystore with detailsConfirmed flag" in {
+      "handle errors in case of updating mongo session with detailsConfirmed flag" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
-          mockKeyStorePut(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Left("unexpected error during put"))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Left("unexpected error during put"))
         }
 
         val result = controller.handleDetailsConfirmed(FakeRequest())
@@ -521,10 +520,10 @@ class StrideControllerSpec
 
     "handling createAccount" must {
 
-      "redirect to the eligibility page if there is no session data in keystore" in {
+      "redirect to the eligibility page if there is no session data in mongo" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -532,10 +531,10 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
 
-      "redirect to the eligible page if session data found in keystore but details are not confirmed" in {
+      "redirect to the eligible page if session data found in mongo but details are not confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = false))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -546,7 +545,7 @@ class StrideControllerSpec
       "show the account created page if session data found and details are confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
           mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated))
         }
 
@@ -558,7 +557,7 @@ class StrideControllerSpec
       "show the account already exists page when the applicant is already enrolled into HTS" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -568,7 +567,7 @@ class StrideControllerSpec
       "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
           mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Left("error occured creating an account"))
         }
 
@@ -580,7 +579,7 @@ class StrideControllerSpec
       "handle manual account creation requests when there is userInfo passed in" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
           mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated))
         }
 
@@ -595,8 +594,8 @@ class StrideControllerSpec
       "return 200 and redirect to the create account page if retrieval of user info is successful" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockKeyStorePut(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Right(()))
           mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email")), "AE123456C")
         }
 
@@ -608,8 +607,8 @@ class StrideControllerSpec
       "redirect to the error page when retrieval of user info fails" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockKeyStorePut(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Left(""))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Left(""))
         }
 
         val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
@@ -622,10 +621,10 @@ class StrideControllerSpec
 
         def doRequest(): Future[Result] = controller.getAccountCreatedPage()(FakeRequest())
 
-      "redirect to the eligibility page if there is no session data in keystore" in {
+      "redirect to the eligibility page if there is no session data in mongo" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(None))
+          mockSessionStoreGet(Right(None))
         }
 
         val result = doRequest()
@@ -636,7 +635,7 @@ class StrideControllerSpec
       "redirect to the not eligible page if the session data indicates ineligibility" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = doRequest()
@@ -647,7 +646,7 @@ class StrideControllerSpec
       "redirect the account created page if the session data indicates ineligibility" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
         }
 
         val result = doRequest()
@@ -658,7 +657,7 @@ class StrideControllerSpec
       "redirect to the eligible page if the user is eligible and the details have not been confirmed" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = false))))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo))))
         }
 
         val result = doRequest()
@@ -666,11 +665,11 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
-      "write an already has account status to keystore and then show the account created page" in {
+      "write an already has account status to mongo and then show the account created page" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockKeyStorePut(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Right(()))
         }
 
         val result = doRequest()
@@ -678,11 +677,11 @@ class StrideControllerSpec
         contentAsString(result) should include("account has been created")
       }
 
-      "show an error page if the keystore write fails" in {
+      "show an error page if the mongo write fails" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockKeyStorePut(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Left(""))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Left(""))
         }
 
         val result = doRequest()
@@ -693,8 +692,8 @@ class StrideControllerSpec
       "redirect the account created page if the session data indicates ineligibility but the stride operator creates account manually" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockKeyStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockKeyStorePut(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Right(()))
 
         }
 

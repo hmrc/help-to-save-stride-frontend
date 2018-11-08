@@ -25,15 +25,16 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.connectors.{HelpToSaveConnector, KeyStoreConnector}
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.SessionEligibilityCheckResult.AlreadyHasAccount
-import uk.gov.hmrc.helptosavestridefrontend.controllers.SessionBehaviour.{HtsSession, SessionEligibilityCheckResult}
+import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
+import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSession, SessionEligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.{EnrolmentStatus, PersonalInformationDisplayed}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
+import uk.gov.hmrc.helptosavestridefrontend.models.{EnrolmentStatus, PersonalInformationDisplayed}
+import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,14 +43,14 @@ import scala.concurrent.Future
 
 class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
-                                  val keyStoreConnector:   KeyStoreConnector,
+                                  val sessionStore:        SessionStore,
                                   val auditor:             HTSAuditor,
                                   val frontendAppConfig:   FrontendAppConfig,
                                   messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒
-    keyStoreConnector.delete.fold(
+    sessionStore.delete.fold(
       error ⇒ {
         logger.warn(error)
         SeeOther(routes.StrideController.getErrorPage().url)
@@ -63,7 +64,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         case Enrolled ⇒
           for {
             nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
-            _ ← keyStoreConnector.put(HtsSession(AlreadyHasAccount, nsiUserInfo))
+            _ ← sessionStore.store(HtsSession(AlreadyHasAccount, nsiUserInfo))
           } yield ()
 
         case NotEnrolled ⇒ EitherT.pure[Future, String](())
@@ -94,7 +95,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
             val r = for {
               eligibility ← helpToSaveConnector.getEligibility(form.nino)
               nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(form.nino)
-              _ ← keyStoreConnector.put(HtsSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo))
+              _ ← sessionStore.store(HtsSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo))
             } yield eligibility
 
             r.fold(
@@ -166,7 +167,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
       whenEligible = (eligible, _, nsiUserInfo) ⇒
-        keyStoreConnector.put(HtsSession(eligible, nsiUserInfo, detailsConfirmed = true)).fold(
+        sessionStore.store(HtsSession(eligible, nsiUserInfo, detailsConfirmed = true)).fold(
           error ⇒ {
             logger.warn(error)
             SeeOther(routes.StrideController.getErrorPage().url)
@@ -233,9 +234,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       checkSession(SeeOther(routes.StrideController.getEligibilityPage().url),
                    whenIneligible = { (ineligible, nSIUserInfo) ⇒
           {
-            keyStoreConnector.put(HtsSession(ineligible.copy(manualCreationAllowed = true), nSIUserInfo)).fold({
+            sessionStore.store(HtsSession(ineligible.copy(manualCreationAllowed = true), nSIUserInfo)).fold({
               e ⇒
-                logger.warn(s"Could not write to keystore: $e")
+                logger.warn(s"Could not write session to mongo: $e")
                 SeeOther(routes.StrideController.getErrorPage().url)
             }, { _ ⇒
               auditor.sendEvent(ManualAccountCreationSelected(nSIUserInfo.nino, request.path, operatorDetails), nSIUserInfo.nino)
@@ -255,9 +256,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          keyStoreConnector.put(HtsSession(SessionEligibilityCheckResult.AlreadyHasAccount, nsiUserInfo)).fold({
+          sessionStore.store(HtsSession(SessionEligibilityCheckResult.AlreadyHasAccount, nsiUserInfo)).fold({
             e ⇒
-              logger.warn(s"Could not write to keystore: $e")
+              logger.warn(s"Could not write session to mongo dueto: $e")
               SeeOther(routes.StrideController.getErrorPage().url)
           }, { _ ⇒
             Ok(views.html.account_created())
@@ -269,9 +270,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!ineligible.manualCreationAllowed) {
           SeeOther(routes.StrideController.customerNotEligible().url)
         } else {
-          keyStoreConnector.put(HtsSession(SessionEligibilityCheckResult.AlreadyHasAccount, nino)).fold({
+          sessionStore.store(HtsSession(SessionEligibilityCheckResult.AlreadyHasAccount, nino)).fold({
             e ⇒
-              logger.warn(s"Could not write to keystore: $e")
+              logger.warn(s"Could not write session to mongo dueto: $e")
               SeeOther(routes.StrideController.getErrorPage().url)
           }, { _ ⇒
             Ok(views.html.account_created())
