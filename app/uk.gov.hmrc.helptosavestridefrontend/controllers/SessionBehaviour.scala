@@ -47,8 +47,8 @@ trait SessionBehaviour {
       ).flatMap(identity)
 
   def checkSession(noSessionData:         ⇒ Future[Result],
-                   whenEligible:          (Eligible, Boolean, NSIPayload) ⇒ Future[Result] = (_, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
-                   whenIneligible:        (Ineligible, NSIPayload) ⇒ Future[Result]        = (_, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                   whenEligible:          (Eligible, Boolean, NSIPayload, Option[String]) ⇒ Future[Result] = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                   whenIneligible:        (Ineligible, NSIPayload, Option[String]) ⇒ Future[Result]        = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
                    whenAlreadyHasAccount: NSIPayload ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
@@ -56,8 +56,8 @@ trait SessionBehaviour {
 
       htsSession ⇒
         htsSession.userInfo match {
-          case e: Eligible       ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nSIUserInfo)
-          case i: Ineligible     ⇒ whenIneligible(i, htsSession.nSIUserInfo)
+          case e: Eligible       ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nSIUserInfo, htsSession.accountNumber)
+          case i: Ineligible     ⇒ whenIneligible(i, htsSession.nSIUserInfo, htsSession.accountNumber)
           case AlreadyHasAccount ⇒ whenAlreadyHasAccount(htsSession.nSIUserInfo)
         }
     )

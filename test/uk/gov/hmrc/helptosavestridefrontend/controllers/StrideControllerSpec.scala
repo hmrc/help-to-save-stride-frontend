@@ -546,7 +546,8 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+          mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Right(()))
         }
 
         val result = controller.createAccount(FakeRequest())
@@ -579,13 +580,27 @@ class StrideControllerSpec
       "handle manual account creation requests when there is userInfo passed in" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated("123456789")))
+          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
         }
 
         val result = controller.createAccount(FakeRequest())
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
+      }
+
+      "show an error page if the mongo write fails after account has been created successfully" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+          mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Left(""))
+        }
+
+        val result = controller.createAccount(FakeRequest())
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
     }
 
@@ -665,11 +680,11 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
-      "write an already has account status to mongo and then show the account created page" in {
+      "write an 'already has account' status to mongo and then show the account created page" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Right(()))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo, true))(Right(()))
         }
 
         val result = doRequest()
@@ -681,7 +696,7 @@ class StrideControllerSpec
         inSequence {
           mockSuccessfulAuthorisation()
           mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Left(""))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo, true))(Left(""))
         }
 
         val result = doRequest()

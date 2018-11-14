@@ -37,6 +37,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 @ImplementedBy(classOf[HelpToSaveConnectorImpl])
 trait HelpToSaveConnector {
@@ -166,11 +167,19 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
     EitherT[Future, String, CreateAccountResult](http.post(createAccountUrl, createAccountRequest).map[Either[String, CreateAccountResult]] { response ⇒
       response.status match {
         case Status.CREATED ⇒
-          logger.debug("createAccount returned 201 (Created)", nSIUserInfo.nino)
-          Right(AccountCreated)
+          Try((response.json \ "accountNumber").as[String]) match {
+            case Success(accountNumber) ⇒ Right(AccountCreated(accountNumber))
+            case Failure(e) ⇒
+              val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body, error = $e"
+              logger.warn(message, nSIUserInfo.nino)
+              pagerDutyAlerting.alert("createAccount returned 201 but couldn't parse the accountNumber from response body")
+              Left(message)
+          }
+
         case Status.CONFLICT ⇒
           logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
           Right(AccountAlreadyExists)
+
         case _ ⇒
           logger.warn(s"createAccount returned a status: ${response.status} " +
             s"with response body: ${maskNino(response.body)}", nSIUserInfo.nino)

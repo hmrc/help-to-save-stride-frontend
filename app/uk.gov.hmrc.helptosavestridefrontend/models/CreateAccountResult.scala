@@ -20,7 +20,7 @@ sealed trait CreateAccountResult
 
 object CreateAccountResult {
 
-  case object AccountCreated extends CreateAccountResult
+  case class AccountCreated(accountNumber: String) extends CreateAccountResult
 
   case object AccountAlreadyExists extends CreateAccountResult
 

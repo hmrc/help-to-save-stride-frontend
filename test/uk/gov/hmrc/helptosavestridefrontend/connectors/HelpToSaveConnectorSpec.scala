@@ -178,10 +178,19 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride")
 
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED)))
+        mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Some(Json.parse("""{"accountNumber":"123456789"}""")))))
 
         val result = await(connector.createAccount(createAccountRequest).value)
-        result shouldBe Right(AccountCreated)
+        result shouldBe Right(AccountCreated("123456789"))
+      }
+
+      "return an error if the createAccount returns 201 but with invalid or no accountNumber json body" in {
+        inSequence {
+          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Some(Json.parse("""{"blah":"blah"}""")))))
+          mockPagerDutyAlert("createAccount returned 201 but couldn't parse the accountNumber from response body")
+        }
+        val result = await(connector.createAccount(createAccountRequest).value)
+        result.isLeft shouldBe true
       }
 
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
