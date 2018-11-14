@@ -170,9 +170,9 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
           Try((response.json \ "accountNumber").as[String]) match {
             case Success(accountNumber) ⇒ Right(AccountCreated(accountNumber))
             case Failure(e) ⇒
-              val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body, error = $e"
-              logger.warn(message, nSIUserInfo.nino)
-              pagerDutyAlerting.alert("createAccount returned 201 but couldn't parse the accountNumber from response body")
+              val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body"
+              logger.warn(s"$message, error = $e", nSIUserInfo.nino)
+              pagerDutyAlerting.alert(message)
               Left(message)
           }
 
