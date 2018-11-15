@@ -689,7 +689,7 @@ class StrideControllerSpec
 
         val result = doRequest()
         status(result) shouldBe OK
-        contentAsString(result) should include("account has been created")
+        contentAsString(result) should include("Help to Save account created")
       }
 
       "show an error page if the mongo write fails" in {
@@ -714,7 +714,7 @@ class StrideControllerSpec
 
         val result = doRequest()
         status(result) shouldBe OK
-        contentAsString(result) should include("account has been created")
+        contentAsString(result) should include("Help to Save account created")
       }
 
     }
