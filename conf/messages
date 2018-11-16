@@ -37,8 +37,8 @@ hts.create.account.p2=Ask customer if they understand - and accept the terms and
 hts.account.exists.title=Customer already has an account
 hts.account.exists.h1=Customer already has an account
 
-hts.account-created.h1=Help to Save account created
-hts.account-created.customer-account-number.title=Customer''s account number
+hts.account-created.title=Help to Save account created
+hts.account-created.customer-account-number.title=Customer&rsquo;s account number
 hts.account-created.tell-customer.heading=Tell the customer:
 hts.account.created.tell-customer.ul1-li1=their account lasts for 4 years and this time starts now
 hts.account.created.tell-customer.ul1-li2=they can save from £1 to £50 each calendar month
@@ -51,14 +51,14 @@ hts.account.created.tell-customer.what-happens-next.ul1-li2=password
 hts.account.created.tell-customer.start-saving=The customer can start saving now through a bank transfer or standing order. Or they will need to wait until they get their password and Welcome pack in the post.
 
 hts.account-created.tell-customer.bank-transfer-details.header=Bank transfer and standing order details
-hts.account-created.tell-customer.bank-transfer-details.title=Details for the customer's bank:
+hts.account-created.tell-customer.bank-transfer-details.title=Details for the customer&rsquo;s bank:
 hts.account-created.tell-customer.bank-transfer-details.sortcode.text=Sort code:
 hts.account-created.tell-customer.bank-transfer-details.sortcode.value=60 89 77
 hts.account-created.tell-customer.bank-transfer-details.accountNumber.text=account number:
 hts.account-created.tell-customer.bank-transfer-details.accountNumber.value=10028471
 hts.account-created.tell-customer.bank-transfer-details.payment-reference-number.text=payment reference number
 hts.account-created.tell-customer.bank-transfer-details.payment-reference-number.value=[1234567890123]
-hts.account-created.tell-customer.bank-transfer-details.monthly-deadline.message=To help make sure payments reach the customer's account by the end of the month, they'll need to go out before the 26th.
+hts.account-created.tell-customer.bank-transfer-details.monthly-deadline.message=To help make sure payments reach the customer&rsquo;s account by the end of the month, they'll need to go out before the 26th.
 
 hts.application.cancelled.title=Application cancelled
 hts.application.cancelled.h1=Application cancelled
