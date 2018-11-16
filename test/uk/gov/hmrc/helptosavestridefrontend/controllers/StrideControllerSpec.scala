@@ -683,13 +683,13 @@ class StrideControllerSpec
       "write an 'already has account' status to mongo and then show the account created page" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo, true))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true, Some("123456789")))))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Right(()))
         }
 
         val result = doRequest()
         status(result) shouldBe OK
-        contentAsString(result) should include("account has been created")
+        contentAsString(result) should include("Help to Save account created")
       }
 
       "show an error page if the mongo write fails" in {
@@ -707,14 +707,14 @@ class StrideControllerSpec
       "redirect the account created page if the session data indicates ineligibility but the stride operator creates account manually" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))))
+          mockSessionStoreInsert(HtsSession(accountExistsStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
 
         }
 
         val result = doRequest()
         status(result) shouldBe OK
-        contentAsString(result) should include("account has been created")
+        contentAsString(result) should include("Help to Save account created")
       }
 
     }
