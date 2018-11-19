@@ -46,4 +46,9 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
 
   val mongoSessionExpireAfter: Duration = getDuration("mongodb.session.expireAfter")
 
+  object NsiBankTransferDetails {
+    val sortCode: String = getString("nsi-bank-transfer-details.sortcode")
+    val accountNumber: String = getString("nsi-bank-transfer-details.accountNumber")
+    val paymentReferenceNumber: String = getString("nsi-bank-transfer-details.paymentReferenceNumber")
+  }
 }

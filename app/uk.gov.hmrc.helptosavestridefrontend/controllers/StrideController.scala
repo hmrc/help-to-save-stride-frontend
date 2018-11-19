@@ -215,28 +215,24 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                             detailsConfirmed:  Boolean,
                                             reasonCode:        Int,
                                             source:            String)(implicit hc: HeaderCarrier, request: Request[_]) = {
-
-      def updateSession(a:                CreateAccountResult,
-                        eligible:         SessionEligibilityCheckResult,
-                        detailsConfirmed: Boolean,
-                        nsiUserInfo:      NSIPayload)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, String, Result] =
-        a match {
-          case AccountCreated(accountNumber) ⇒
-            sessionStore.store(HtsSession(eligible, nsiUserInfo, detailsConfirmed, Some(accountNumber)))
-              .semiflatMap(_ ⇒ SeeOther(routes.StrideController.getAccountCreatedPage().url))
-          case AccountAlreadyExists ⇒ EitherT.liftF[Future, String, Result](toFuture(Ok(views.html.account_already_exists())))
-        }
-
     val result = for {
       createAccountResult ← helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source))
-      updateSessionResult ← updateSession(createAccountResult, eligibilityResult, detailsConfirmed, nsiUserInfo)
-    } yield updateSessionResult
+      _ ← createAccountResult match {
+        case AccountCreated(accountNumber) ⇒
+          sessionStore.store(HtsSession(eligibilityResult, nsiUserInfo, detailsConfirmed, Some(accountNumber)))
+        case AccountAlreadyExists ⇒ EitherT.liftF[Future, String, Unit](toFuture(()))
+      }
+    } yield createAccountResult
 
     result.fold[Result](
       error ⇒ {
         logger.warn(s"error during create account and update session, error: $error")
         SeeOther(routes.StrideController.getErrorPage().url)
-      }, identity)
+      }, {
+        case AccountCreated(_)    ⇒ SeeOther(routes.StrideController.getAccountCreatedPage().url)
+        case AccountAlreadyExists ⇒ Ok(views.html.account_already_exists())
+      }
+    )
   }
 
   def allowManualAccountCreation(): Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ operatorDetails ⇒

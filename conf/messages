@@ -53,11 +53,8 @@ hts.account.created.tell-customer.start-saving=The customer can start saving now
 hts.account-created.tell-customer.bank-transfer-details.header=Bank transfer and standing order details
 hts.account-created.tell-customer.bank-transfer-details.title=Details for the customer&rsquo;s bank:
 hts.account-created.tell-customer.bank-transfer-details.sortcode.text=Sort code:
-hts.account-created.tell-customer.bank-transfer-details.sortcode.value=60 89 77
 hts.account-created.tell-customer.bank-transfer-details.accountNumber.text=account number:
-hts.account-created.tell-customer.bank-transfer-details.accountNumber.value=10028471
 hts.account-created.tell-customer.bank-transfer-details.payment-reference-number.text=payment reference number
-hts.account-created.tell-customer.bank-transfer-details.payment-reference-number.value=[1234567890123]
 hts.account-created.tell-customer.bank-transfer-details.monthly-deadline.message=To help make sure payments reach the customer&rsquo;s account by the end of the month, they'll need to go out before the 26th.
 
 hts.application.cancelled.title=Application cancelled
