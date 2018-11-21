@@ -31,7 +31,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountA
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
 import uk.gov.hmrc.helptosavestridefrontend.models._
-import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
+import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
@@ -63,7 +63,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         case Enrolled ⇒
           for {
             nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
-            _ ← sessionStore.store(HtsSession(AlreadyHasAccount, nsiUserInfo))
+            accountDetails ← EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
+            _ ← sessionStore.store(HtsSession(AlreadyHasAccount, nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
           } yield ()
 
         case NotEnrolled ⇒ EitherT.pure[Future, String](())
@@ -85,6 +86,15 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     ).flatMap(identity)
   }
 
+  private def getAccountDetails(nino: String)(implicit hc: HeaderCarrier): Future[Option[AccountDetails]] =
+    helpToSaveConnector.getAccount(nino).fold({
+      e ⇒
+        logger.warn(s"Could not get account details: $e")
+        None
+    },
+      Some(_)
+    )
+
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
@@ -94,7 +104,11 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
             val r = for {
               eligibility ← helpToSaveConnector.getEligibility(form.nino)
               nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(form.nino)
-              _ ← sessionStore.store(HtsSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo))
+              accountDetails ← EitherT.liftF(eligibility match {
+                case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ getAccountDetails(form.nino)
+                case _ ⇒ Future.successful(None)
+              })
+              _ ← sessionStore.store(HtsSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
             } yield eligibility
 
             r.fold(
@@ -102,12 +116,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                 logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
                 SeeOther(routes.StrideController.getErrorPage().url)
               }, {
-                case EligibilityCheckResult.Eligible(_) ⇒
-                  SeeOther(routes.StrideController.customerEligible().url)
-                case EligibilityCheckResult.Ineligible(_) ⇒
-                  SeeOther(routes.StrideController.customerNotEligible().url)
-                case EligibilityCheckResult.AlreadyHasAccount(_) ⇒
-                  SeeOther(routes.StrideController.accountAlreadyExists().url)
+                case EligibilityCheckResult.Eligible(_)          ⇒ SeeOther(routes.StrideController.customerEligible().url)
+                case EligibilityCheckResult.Ineligible(_)        ⇒ SeeOther(routes.StrideController.customerNotEligible().url)
+                case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
               }
             )
           })
@@ -135,7 +146,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒
     checkSession(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenAlreadyHasAccount = _ ⇒ Ok(views.html.account_already_exists())
+      whenAlreadyHasAccount = (_, accountNumber) ⇒ Ok(views.html.account_already_exists(accountNumber))
     )
   }(routes.StrideController.accountAlreadyExists())
 
@@ -217,11 +228,11 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                             source:            String)(implicit hc: HeaderCarrier, request: Request[_]) = {
     val result = for {
       createAccountResult ← helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source))
-      _ ← createAccountResult match {
-        case AccountCreated(accountNumber) ⇒
-          sessionStore.store(HtsSession(eligibilityResult, nsiUserInfo, detailsConfirmed, Some(accountNumber)))
-        case AccountAlreadyExists ⇒ EitherT.liftF[Future, String, Unit](toFuture(()))
+      sessionToStore ← createAccountResult match {
+        case AccountCreated(accountNumber) ⇒ EitherT.pure(HtsSession(eligibilityResult, nsiUserInfo, detailsConfirmed, Some(accountNumber)))
+        case AccountAlreadyExists          ⇒ EitherT.liftF(getAccountDetails(nsiUserInfo.nino)).map(a ⇒ HtsSession(AlreadyHasAccount, nsiUserInfo, detailsConfirmed, a.map(_.accountNumber)))
       }
+      _ ← sessionStore.store(sessionToStore)
     } yield createAccountResult
 
     result.fold[Result](
@@ -230,7 +241,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         SeeOther(routes.StrideController.getErrorPage().url)
       }, {
         case AccountCreated(_)    ⇒ SeeOther(routes.StrideController.getAccountCreatedPage().url)
-        case AccountAlreadyExists ⇒ Ok(views.html.account_already_exists())
+        case AccountAlreadyExists ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
       }
     )
   }
@@ -268,7 +279,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         }, { _ ⇒
           mayBeAccountNumber.fold(
             {
-              logger.warn(s"expecting previously stored account number in the session, but not found")
+              logger.warn("expecting previously stored account number in the session, but not found")
               SeeOther(routes.StrideController.getErrorPage().url)
             }
           )(

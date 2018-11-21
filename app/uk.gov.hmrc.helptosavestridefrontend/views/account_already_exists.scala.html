@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
-@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(accountNumber: Option[String])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
 title = Messages("hts.account.exists.title"),
@@ -25,6 +25,7 @@ bodyClasses = None) {
 
   <h1 class="heading-large">@Messages("hts.account.exists.h1")</h1>
 
+    <p>Account number is @accountNumber</p>
   <a role="button" class="button" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
 
 }

@@ -31,6 +31,8 @@ trait SessionBehaviour {
 
   val sessionStore: SessionStore
 
+  type AccountReferenceNumber = String
+
   private def checkSessionInternal(noSessionData: ⇒ Future[Result],
                                    whenSession:   HtsSession ⇒ Future[Result])(
       implicit
@@ -47,9 +49,9 @@ trait SessionBehaviour {
       ).flatMap(identity)
 
   def checkSession(noSessionData:         ⇒ Future[Result],
-                   whenEligible:          (Eligible, Boolean, NSIPayload, Option[String]) ⇒ Future[Result] = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
-                   whenIneligible:        (Ineligible, NSIPayload, Option[String]) ⇒ Future[Result]        = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
-                   whenAlreadyHasAccount: NSIPayload ⇒ Future[Result] = _ ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
+                   whenEligible:          (Eligible, Boolean, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result] = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                   whenIneligible:        (Ineligible, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]        = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                   whenAlreadyHasAccount: (NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]                    = (_, _) ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
       noSessionData,
@@ -58,7 +60,7 @@ trait SessionBehaviour {
         htsSession.userInfo match {
           case e: Eligible       ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nSIUserInfo, htsSession.accountNumber)
           case i: Ineligible     ⇒ whenIneligible(i, htsSession.nSIUserInfo, htsSession.accountNumber)
-          case AlreadyHasAccount ⇒ whenAlreadyHasAccount(htsSession.nSIUserInfo)
+          case AlreadyHasAccount ⇒ whenAlreadyHasAccount(htsSession.nSIUserInfo, htsSession.accountNumber)
         }
     )
 

@@ -31,13 +31,18 @@ trait HttpSupport { this: MockFactory with Matchers ⇒
 
   private val emptyMap = Map.empty[String, String]
 
+  // for the query params, to check that a query parameter for a key is defined but to not check it's actual value enter
+  // the value "*" for the key in the `queryParms` input
   def mockGet(url: String, queryParams: Map[String, String] = emptyMap, headers: Map[String, String] = emptyMap)(response: Option[HttpResponse]) =
     (mockHttp.GET(_: String, _: Seq[(String, String)])(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
       .expects(where{ (u: String, q: Seq[(String, String)], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
+        val (ignoreQueryParams, checkQueryParams) = queryParams.partition(_._2 === "*")
+
         // use matchers here to get useful error messages when the following predicates
         // are not satisfied - otherwise it is difficult to tell in the logs what went wrong
         u shouldBe url
-        q shouldBe queryParams.toSeq
+        ignoreQueryParams.keys.foreach(k ⇒ withClue(s"For query parameter $k: "){ q.exists(_._1 === k) shouldBe true })
+        q.filterNot{ case (key, _) ⇒ ignoreQueryParams.isDefinedAt(key) } shouldBe checkQueryParams.toSeq
         h.extraHeaders shouldBe headers.toSeq
         true
       })

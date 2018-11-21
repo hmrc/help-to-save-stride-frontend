@@ -59,7 +59,7 @@ bodyClasses = None) {
 <ul class="list list-bullet">
     <li>@messages("hts.account-created.tell-customer.bank-transfer-details.sortcode.text") <span class="bold">@appConfig.NsiBankTransferDetails.sortCode</span></li>
     <li>@messages("hts.account-created.tell-customer.bank-transfer-details.accountNumber.text") <span class="bold">@appConfig.NsiBankTransferDetails.accountNumber</span></li>
-    <li>@messages("hts.account-created.tell-customer.bank-transfer-details.payment-reference-number.text") <span class="bold">[@appConfig.NsiBankTransferDetails.paymentReferenceNumber]</span></li>
+    <li>@messages("hts.account-created.tell-customer.bank-transfer-details.payment-reference-number.text") <span class="bold">[@accountNumber]</span></li>
 </ul>
 
 <p>@Html(messages("hts.account-created.tell-customer.bank-transfer-details.monthly-deadline.message"))</p>

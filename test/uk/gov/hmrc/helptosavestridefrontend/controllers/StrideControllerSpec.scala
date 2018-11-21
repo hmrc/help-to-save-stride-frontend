@@ -29,7 +29,7 @@ import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
-import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.AccountCreated
+import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
@@ -96,6 +96,11 @@ class StrideControllerSpec
     (mockAuditor.sendEvent(_: HTSEvent, _: NINO)(_: ExecutionContext))
       .expects(event, nino, *)
       .returning(())
+
+  def mockGetAccount(nino: String)(result: Either[String, AccountDetails]) =
+    (helpToSaveConnector.getAccount(_: String)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(nino, *, *)
+      .returning(EitherT.fromEither[Future](result))
 
   lazy val controller =
     new StrideController(mockAuthConnector,
@@ -327,7 +332,7 @@ class StrideControllerSpec
         contentAsString(result) should include("Enter a valid National Insurance number")
       }
 
-      "handle the case where user is not eligible" in {
+      "handle the case where the eligibility check indicates that the user is not eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockSessionStoreGet(Right(None))
@@ -342,13 +347,61 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
 
-      "handle the case where user has already got account" in {
+      "handle the case where the enrolment store indicates that user has already got account" in {
         inSequence {
           mockSuccessfulAuthorisation()
           mockSessionStoreGet(Right(None))
           mockGetEnrolmentStatus(nino)(Right(Enrolled))
           mockPayeDetails(nino)(Right(nsiUserInfo))
-          mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo))(Right(()))
+          mockGetAccount(nino)(Right(AccountDetails("account")))
+          mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo, accountNumber = Some("account")))(Right(()))
+        }
+
+        val result = doRequest(nino)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+      }
+
+      "handle the case where the enrolment store indicates that user has already got account but the account reference number cannot be retrieved" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockSessionStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(Enrolled))
+          mockPayeDetails(nino)(Right(nsiUserInfo))
+          mockGetAccount(nino)(Left("oh no"))
+          mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo, accountNumber = None))(Right(()))
+        }
+
+        val result = doRequest(nino)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+      }
+
+      "handle the case where the eligibility check indicates that the user has an account" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockSessionStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
+          mockEligibility(nino)(Right(EligibilityCheckResult.AlreadyHasAccount(emptyECResponse)))
+          mockPayeDetails(nino)(Right(nsiUserInfo))
+          mockGetAccount(nino)(Right(AccountDetails("account")))
+          mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo, accountNumber = Some("account")))(Right(()))
+        }
+
+        val result = doRequest(nino)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+      }
+
+      "handle the case where the eligibility check indicates that the user has an account but the account number cannot be retrieved" in {
+        inSequence {
+          mockSuccessfulAuthorisation()
+          mockSessionStoreGet(Right(None))
+          mockGetEnrolmentStatus(nino)(Right(NotEnrolled))
+          mockEligibility(nino)(Right(EligibilityCheckResult.AlreadyHasAccount(emptyECResponse)))
+          mockPayeDetails(nino)(Right(nsiUserInfo))
+          mockGetAccount(nino)(Left("uh oh"))
+          mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo, accountNumber = None))(Right(()))
         }
 
         val result = doRequest(nino)
@@ -555,14 +608,47 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
       }
 
-      "show the account already exists page when the applicant is already enrolled into HTS" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+      "redirect to the account already exists page" when {
+
+        "the session indicates that the applicant is already enrolled into HTS" in {
+          inSequence {c
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
         }
 
-        val result = controller.createAccount(FakeRequest())
-        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+        "NS&I indicate that the account already exists" in {
+          val accountNumber = "account"
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+            mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
+            mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, true, Some(accountNumber)))(Right(()))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+        }
+
+        "NS&I indicate that the account already exists and the account number cannot be retrieved" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+            mockGetAccount(nsiUserInfo.nino)(Left("oh no"))
+            mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, true, None))(Right(()))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+        }
+
       }
 
       "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
