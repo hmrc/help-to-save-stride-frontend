@@ -19,9 +19,10 @@
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
 @import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
+@import uk.gov.hmrc.helptosavestridefrontend.models.{RoleType, Standard}
 @import cats.syntax.eq._
 
-@(ineligibilityReason: IneligibilityReason, nsiUserInfo: NSIPayload)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(ineligibilityReason: IneligibilityReason, nsiUserInfo: NSIPayload, roleType: RoleType)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
     title = messages("hts.eligibility.not.eligible.title"),
@@ -87,7 +88,7 @@
 
     <a role="button" class="button subsection--wide push--bottom" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.eligibility.not.eligible.end-call")</a>
 
-    @if(appConfig.manualAccountCreationEnabled){
+    @roleType match { case Standard(_) => {
     <div class="divider--top subsection--wide push--bottom">
         <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.manually.create.title")</h2>
         <p>@Messages("hts.eligibility.not.eligible.manually.create.p1")</p>
@@ -99,7 +100,6 @@
             <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
         </ul>
 
-        @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.allowManualAccountCreation()) {
             <div class="form-group">
                 <fieldset>
                     <div class="multiple-choice">
@@ -109,7 +109,6 @@
                 </fieldset>
             </div>
             @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") { @messages("hts.global.continue-button") }
-        }
     </div>
-    }
+    }}
 }

@@ -201,7 +201,6 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
   }
 
   override def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] = {
-
     EitherT(http.get(enrolmentStatusUrl, Map("nino" -> nino)).map[Either[String, EnrolmentStatus]]{ response ⇒
       response.status match {
         case OK ⇒
