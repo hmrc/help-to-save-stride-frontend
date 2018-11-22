@@ -611,7 +611,7 @@ class StrideControllerSpec
       "redirect to the account already exists page" when {
 
         "the session indicates that the applicant is already enrolled into HTS" in {
-          inSequence {c
+          inSequence {
             mockSuccessfulAuthorisation()
             mockSessionStoreGet(Right(Some(HtsSession(accountExistsStrideUserInfo, nsiUserInfo))))
           }
@@ -627,7 +627,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
             mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
             mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
-            mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, true, Some(accountNumber)))(Right(()))
+            mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo, true, Some(accountNumber)))(Right(()))
           }
 
           val result = controller.createAccount(FakeRequest())
@@ -641,7 +641,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
             mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
             mockGetAccount(nsiUserInfo.nino)(Left("oh no"))
-            mockSessionStoreInsert(HtsSession(eligibleStrideUserInfo, nsiUserInfo, true, None))(Right(()))
+            mockSessionStoreInsert(HtsSession(AlreadyHasAccount, nsiUserInfo, true, None))(Right(()))
           }
 
           val result = controller.createAccount(FakeRequest())
