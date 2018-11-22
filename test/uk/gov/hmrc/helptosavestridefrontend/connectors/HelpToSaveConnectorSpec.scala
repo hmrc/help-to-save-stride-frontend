@@ -22,7 +22,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus
+import uk.gov.hmrc.helptosavestridefrontend.models.{AccountDetails, EnrolmentStatus}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
@@ -39,6 +39,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
   private val payePersonalDetailsUrl: String = "http://localhost:7001/help-to-save/stride/paye-personal-details"
   private val createAccountUrl: String = "http://localhost:7001/help-to-save/create-account"
   private val enrolmentStatusUrl: String = "http://localhost:7001/help-to-save/stride/enrolment-status"
+  private def getAccountUrl(nino: String): String = s"http://localhost:7001/help-to-save/$nino/account"
   private val emptyQueryParameters: Map[String, String] = Map.empty[String, String]
 
   "HelpToSaveConnector" when {
@@ -178,10 +179,19 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
       val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride")
 
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED)))
+        mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Some(Json.parse("""{"accountNumber":"123456789"}""")))))
 
         val result = await(connector.createAccount(createAccountRequest).value)
-        result shouldBe Right(AccountCreated)
+        result shouldBe Right(AccountCreated("123456789"))
+      }
+
+      "return an error if the createAccount returns 201 but with invalid or no accountNumber json body" in {
+        inSequence {
+          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Some(Json.parse("""{"blah":"blah"}""")))))
+          mockPagerDutyAlert("createAccount returned 201 but couldn't parse the accountNumber from response body")
+        }
+        val result = await(connector.createAccount(createAccountRequest).value)
+        result.isLeft shouldBe true
       }
 
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
@@ -289,6 +299,42 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
           val result = connector.getEnrolmentStatus(nino)
           await(result.value).isLeft shouldBe true
         }
+      }
+
+    }
+
+    "getAccount" must {
+
+      val accountNumber = "12345678"
+      val validJSON = Json.parse(s"""{ "accountNumber" : "${accountNumber}"}""")
+
+        def mockGetAccount(httpResponse: Option[HttpResponse]): Either[String, AccountDetails] = {
+          mockGet(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" → "*"))(httpResponse)
+          await(connector.getAccount(nino).value)
+        }
+
+      "return the account details" in {
+        mockGetAccount(Some(HttpResponse(200, Some(validJSON)))) shouldBe Right(AccountDetails(accountNumber))
+      }
+
+      "return an error" when {
+
+        "the response comes back with any status other than 200" in {
+          forAll { status: Int ⇒
+            whenever(status > 0 && status =!= 200) {
+              mockGetAccount(Some(HttpResponse(status, Some(validJSON)))) shouldBe a[Left[_, _]]
+            }
+          }
+        }
+
+        "the JSON in the response cannot be parsed" in {
+          mockGetAccount(Some(HttpResponse(200, Some(Json.parse("""{}"""))))) shouldBe a[Left[_, _]]
+        }
+
+        "the future fails" in {
+          mockGetAccount(None) shouldBe a[Left[_, _]]
+        }
+
       }
 
     }

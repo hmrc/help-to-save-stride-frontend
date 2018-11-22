@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.models
 
-sealed trait CreateAccountResult
+import play.api.libs.json.{Format, Json}
 
-object CreateAccountResult {
+case class AccountDetails(accountNumber: String)
 
-  case class AccountCreated(accountNumber: String) extends CreateAccountResult
+object AccountDetails {
 
-  case object AccountAlreadyExists extends CreateAccountResult
+  implicit val format: Format[AccountDetails] = Json.format[AccountDetails]
 
 }

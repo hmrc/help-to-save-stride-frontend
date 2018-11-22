@@ -67,7 +67,7 @@ object SessionEligibilityCheckResult {
   }
 }
 
-case class HtsSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIPayload, detailsConfirmed: Boolean = false)
+case class HtsSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIPayload, detailsConfirmed: Boolean = false, accountNumber: Option[String] = None)
 
 object HtsSession {
   implicit val format: Format[HtsSession] = Json.format[HtsSession]
