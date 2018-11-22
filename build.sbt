@@ -47,6 +47,8 @@ lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % test
 )
 
+lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
+
 def seleniumTestFilter(name: String): Boolean = name.contains("suites")
 
 def unitTestFilter(name: String): Boolean = !seleniumTestFilter(name)
@@ -173,3 +175,12 @@ lazy val microservice = Project(appName, file("."))
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
+.settings(
+  formatMessageQuotes := {
+    import sys.process._
+    val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
+    if(result != 0){ logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes") }
+  },
+  compile := ((compile in Compile) dependsOn formatMessageQuotes).value
+)
+

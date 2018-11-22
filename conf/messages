@@ -4,22 +4,22 @@ hts.global.end-call.button=End call
 hts.global.title-suffix=- Help to Save - HMRC
 hts.global.title.prepended-error-message=Error:
 
-hts.payment-details.details-are=Details for the customer&rsquo;s bank:
+hts.payment-details.details-are=Details for the customer’s bank:
 hts.payment-details.sort-code.text=sort code:
 hts.payment-details.account-number.text=account number:
 hts.payment-details.payment-reference-number.text=payment reference number:
-hts.payment-details.monthly-deadline.message=To help make sure payments reach the customer&rsquo;s account by the end of the month, they&rsquo;ll need to go out before the 26th.
+hts.payment-details.monthly-deadline.message=To help make sure payments reach the customer’s account by the end of the month, they’ll need to go out before the 26th.
 
-hts.eligibility.title=Check the customer''s eligibility
-hts.eligibility.h1=Check the customer''s eligibility
+hts.eligibility.title=Check the customer’s eligibility
+hts.eligibility.h1=Check the customer’s eligibility
 hts.eligibility.p1=You need to:
-hts.eligibility.ul1-li1=confirm the customer''s identity
+hts.eligibility.ul1-li1=confirm the customer’s identity
 hts.eligibility.ul1-li2=explain Help to Save to the customer
-hts.eligibility.give-nino.h2=Enter the customer''s National Insurance number
+hts.eligibility.give-nino.h2=Enter the customer’s National Insurance number
 hts.eligibility.give-nino.hint=For example, QQ 12 34 56 C
 hts.eligibility.invalid.nino.error.title=There is a problem
 hts.eligibility.invalid.nino=Enter a valid National Insurance number, for example, QQ 12 34 56 C
-hts.eligibility.blank.nino=Enter the customer''s National Insurance number
+hts.eligibility.blank.nino=Enter the customer’s National Insurance number
 hts.eligibility.check-availability.continue-button=Check eligibility
 
 hts.you.are.eligible.title=Customer is eligible for a Help to Save account
@@ -30,7 +30,7 @@ hts.you.are.eligible.user.details.nino-label=National Insurance number
 hts.you.are.eligible.user.details.dob-label=Date of birth
 hts.you.are.eligible.user.details.address-label=Address
 hts.you.are.eligible.h3=Tell the customer that, by continuing, they are confirming they are eligible.
-hts.you.are.eligible.continue-button=Customer''s details are correct
+hts.you.are.eligible.continue-button=Customer’s details are correct
 hts.you.are.eligible.end-call.button=Cancel application and end call
 
 hts.create.account.title=Create an account
@@ -45,14 +45,14 @@ hts.account.exists.h1=Customer already has an account
 hts.account.exists.p1=Customer can pay in by bank transfer or standing order. They will need to set up the payment through their bank.
 
 hts.account-created.title=Help to Save account created
-hts.account-created.customer-account-number.title=Customer&rsquo;s account number
+hts.account-created.customer-account-number.title=Customer’s account number
 hts.account-created.tell-customer.heading=Tell the customer:
 hts.account.created.tell-customer.ul1-li1=their account lasts for 4 years and this time starts now
 hts.account.created.tell-customer.ul1-li2=they can save from £1 to £50 each calendar month
 hts.account.created.tell-customer.ul1-li3=they have until the last day of the month to pay in each month
 hts.account.created.tell-customer.ul1-li4=they do not have to pay in each month but cannot make up for months they’ve missed
 hts.account-created.tell-customer.what-happens-next.header=What happens next
-hts.account-created.tell-customer.what-happens-next.title=We’'ll post the customer a:
+hts.account-created.tell-customer.what-happens-next.title=We’ll post the customer a:
 hts.account.created.tell-customer.what-happens-next.ul1-li1=Welcome pack
 hts.account.created.tell-customer.what-happens-next.ul1-li2=password
 hts.account.created.tell-customer.start-saving=The customer can start saving now through a bank transfer or standing order. Or they will need to wait until they get their password and Welcome pack in the post.
@@ -102,10 +102,9 @@ hts.eligibility.not.eligible.manually.create.confirm.eligible.label=I confirm I 
 
 hts.error.page.title=Something went wrong
 hts.error.page.h1=Something went wrong
-hts.error.page.p1=You''ll need to start again.
+hts.error.page.p1=You’ll need to start again.
 hts.error.page.button.start-again=Start again
 
 
 hts.restart.journey=Restart Journey
 hts.create-account.continue-button=Create account
-
