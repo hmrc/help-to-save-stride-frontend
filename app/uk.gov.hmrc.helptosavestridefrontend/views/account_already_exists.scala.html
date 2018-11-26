@@ -32,7 +32,7 @@
   <ul class="list list-bullet">
    <li>{messages("hts.payment-details.sort-code.text")} <span class="bold">{appConfig.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</span></li>
    <li>{messages("hts.payment-details.account-number.text")} <span class="bold">{appConfig.NsiBankTransferDetails.accountNumber}</span></li>
-   <li>{messages("hts.payment-details.payment-reference-number.text")} <span class="bold">[{number}]</span></li>
+   <li>{messages("hts.payment-details.payment-reference-number.text")} <span class="bold">{number}</span></li>
   </ul>
 
   <p>{messages("hts.payment-details.monthly-deadline.message")}</p>
