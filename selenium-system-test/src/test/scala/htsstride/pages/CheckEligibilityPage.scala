@@ -19,7 +19,7 @@ package htsstride.pages
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
-object IntroductionHelpToSavePage extends Page {
+object CheckEligibilityPage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/check-eligibility"
 
   override val expectedPageTitle: Option[String] = Some("Check the customer’s eligibility")

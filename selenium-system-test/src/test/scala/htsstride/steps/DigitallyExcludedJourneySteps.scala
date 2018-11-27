@@ -53,7 +53,7 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
   }
 
   Then("^they have the option to enter a new applicant's NINO on the opening screen$") {
-    Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
+    Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 
   Then("they see the application has been cancelled$") {

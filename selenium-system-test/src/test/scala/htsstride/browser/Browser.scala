@@ -162,4 +162,11 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
   def isElementByIdVisible(id: String)(implicit driver: WebDriver): Boolean = {
     driver.findElement(By.id(id)).isDisplayed
   }
+
+  def checkForOldQuotes()(implicit driver: WebDriver): Unit = {
+    val bodyText: String = driver.findElement(By.tagName("body")).getText()
+    bodyText.isEmpty shouldBe false
+    bodyText should not contain "'"
+    bodyText should not contain '"'
+  }
 }
