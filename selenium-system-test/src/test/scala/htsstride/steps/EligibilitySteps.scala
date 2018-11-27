@@ -28,24 +28,24 @@ class EligibilitySteps extends Steps with NINOGenerator {
   }
 
   When("^the operator does an eligibility check for an existing account holder$") {
-    IntroductionHelpToSavePage.checkEligibility(generateAccountCreatedNINO())
+    CheckEligibilityPage.checkEligibility(generateAccountCreatedNINO())
   }
 
   When("^the internal operator does an eligibility check on behalf of the applicant$") {
-    IntroductionHelpToSavePage.checkEligibility(currentNINO())
+    CheckEligibilityPage.checkEligibility(currentNINO())
   }
 
   Given("^an applicant is eligible$") {
-    IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
+    CheckEligibilityPage.checkEligibility(generateEligibleNINO())
     Browser.checkCurrentPageIs(CustomerEligiblePage)
   }
 
   Given("^the operator does an eligibility check when NS&I is down$") {
-    IntroductionHelpToSavePage.checkEligibility(generateAccountCreationErrorNINO())
+    CheckEligibilityPage.checkEligibility(generateAccountCreationErrorNINO())
   }
 
   When("^the eligibility service is down and an operator chooses to pass an applicant through the eligibility check$") {
-    IntroductionHelpToSavePage.checkEligibility(generateEligibilityHTTPErrorCodeNINO(500))
+    CheckEligibilityPage.checkEligibility(generateEligibilityHTTPErrorCodeNINO(500))
   }
 
   Then("^they see that the applicant is NOT eligible for Help to Save with reason code (.+)$") { reason: Int ⇒

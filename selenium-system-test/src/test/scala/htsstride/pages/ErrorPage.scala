@@ -28,6 +28,6 @@ object ErrorPage extends Page {
 
   def clickGoBackButton()(implicit driver: WebDriver): Unit = {
     clickSubmit()
-    Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
+    Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 }
