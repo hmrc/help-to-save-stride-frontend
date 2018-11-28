@@ -29,11 +29,14 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
 
   When("^the internal operator chooses to create an account on behalf of the applicant$") {
     CustomerEligiblePage.continue()
+    Browser.checkCurrentPageIs(CreateAccountPage)
+    Browser.checkForOldQuotes()
     CreateAccountPage.createAccount()
   }
 
   Then("^an account is successfully created$") {
     Browser.checkCurrentPageIs(AccountCreatedPage)
+    Browser.checkForOldQuotes()
   }
 
   When("^the internal operator is in the process of creating an account on behalf of the applicant$") {
