@@ -36,15 +36,17 @@ class EligibilitySteps extends Steps with NINOGenerator {
   }
 
   Given("^an applicant is eligible$") {
+    Browser.checkForOldQuotes()
     CheckEligibilityPage.checkEligibility(generateEligibleNINO())
     Browser.checkCurrentPageIs(CustomerEligiblePage)
+    Browser.checkForOldQuotes()
   }
 
   Given("^the operator does an eligibility check when NS&I is down$") {
     CheckEligibilityPage.checkEligibility(generateAccountCreationErrorNINO())
   }
 
-  When("^the eligibility service is down and an operator chooses to pass an applicant through the eligibility check$") {
+  When("^the eligibility service is down and an operator performs an eligibility check$") {
     CheckEligibilityPage.checkEligibility(generateEligibilityHTTPErrorCodeNINO(500))
   }
 
@@ -66,6 +68,7 @@ class EligibilitySteps extends Steps with NINOGenerator {
         notEligibleTextItems.foreach(text ⇒ Browser.isTextOnPage(text) shouldBe Right(())
         )
     }
+    Browser.checkForOldQuotes()
   }
 
   Given("^the operator has evidence the applicant is eligible for a Help to Save account$") {
