@@ -57,6 +57,10 @@ trait AuthSupport { this: TestSupport ⇒
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
       Right(Enrolments(roles.map(Enrolment(_)).toSet)))
 
+  def mockSuccessfulSecureAuthorisation(): CallHandler4[Predicate, Retrieval[Enrolments], HeaderCarrier, ExecutionContext, Future[Enrolments]] =
+    mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
+      Right(Enrolments(secureRoles.map(Enrolment(_)).toSet)))
+
   def mockSuccessfulAuthorisationWithDetails(): CallHandler4[Predicate, Retrieval[RetrievalsType], HeaderCarrier, ExecutionContext, Future[RetrievalsType]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
       Right(retrievals))

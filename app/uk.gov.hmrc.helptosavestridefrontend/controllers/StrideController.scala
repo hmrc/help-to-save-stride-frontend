@@ -30,6 +30,7 @@ import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
+import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
@@ -59,24 +60,31 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.getEligibilityPage())
 
   private def checkIfAlreadyEnrolled(nino: String, roleType: RoleType)(ifNotEnrolled: ⇒ Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier): Future[Result] = { // scalastyle:ignore
-      def updateSessionIfEnrolled(enrolmentStatus: EnrolmentStatus)(implicit hc: HeaderCarrier): EitherT[Future, String, Unit] = enrolmentStatus match {
+      def updateSessionIfEnrolled(enrolmentStatus: EnrolmentStatus, roleType: RoleType)(implicit hc: HeaderCarrier): EitherT[Future, String, Unit] = enrolmentStatus match {
         case Enrolled ⇒
-          for {
-            nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
-            accountDetails ← EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
-            _ ← sessionStore.store(roleType match {
-              case Standard(_) ⇒ HtsStandardSession(AlreadyHasAccount, nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber))
-              case Secure(_)   ⇒ HtsSecureSession(nino, AlreadyHasAccount, Some(nsiUserInfo), accountNumber = accountDetails.map(_.accountNumber))
-            })
-          } yield ()
+          roleType match {
+            case Standard(_) ⇒
+              for {
+                nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
+                accountDetails ← EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
+                _ ← sessionStore.store(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
+              } yield ()
+
+            case Secure(_) ⇒
+              for {
+                accountDetails ← EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
+                _ ← sessionStore.store(HtsSecureSession(nino, AlreadyHasAccount, None, accountNumber = accountDetails.map(_.accountNumber)))
+              } yield ()
+          }
 
         case NotEnrolled ⇒ EitherT.pure[Future, String](())
       }
 
-    val result = for {
-      status ← helpToSaveConnector.getEnrolmentStatus(nino)
-      _ ← updateSessionIfEnrolled(status)
-    } yield status
+    val result =
+      for {
+        status ← helpToSaveConnector.getEnrolmentStatus(nino)
+        _ ← updateSessionIfEnrolled(status, roleType)
+      } yield status
 
     result.fold[Future[Result]](
       { e ⇒
@@ -99,33 +107,40 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
 
   def checkEligibilityAndGetPersonalInfo: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
+    def updateSession(eligibility: EligibilityCheckResult, nino: String, roleType: RoleType): EitherT[Future, String, Unit] = {
+        lazy val getAccountDetailsResult: EitherT[Future, String, Option[AccountDetails]] = EitherT.liftF(
+          eligibility match {
+            case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ getAccountDetails(nino)
+            case _ ⇒ Future.successful(None)
+          })
+
+        roleType match {
+          case Standard(_) ⇒
+            for {
+              nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
+              accountDetails ← getAccountDetailsResult
+              _ ← sessionStore.store(HtsStandardSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
+            } yield ()
+
+          case Secure(_) ⇒
+            for {
+              accountDetails ← getAccountDetailsResult
+              _ ← sessionStore.store(HtsSecureSession(nino, SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), None, accountDetails.map(_.accountNumber)))
+            } yield ()
+        }
+      }
+
     checkSession(roleType)(
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
         withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
         form ⇒ {
           checkIfAlreadyEnrolled(form.nino, roleType) {
-            val r = roleType match {
+            val result = for {
+              eligibility ← helpToSaveConnector.getEligibility(form.nino)
+              _ ← updateSession(eligibility, form.nino, roleType)
+            } yield eligibility
 
-              case Secure(_) ⇒ {
-                for {
-                  eligibility ← helpToSaveConnector.getEligibility(form.nino)
-                  _ ← sessionStore.store(HtsSecureSession(form.nino, SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), None))
-                } yield eligibility
-              }
-
-              case Standard(_) ⇒ {
-                for {
-                  eligibility ← helpToSaveConnector.getEligibility(form.nino)
-                  nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(form.nino)
-                  accountDetails ← EitherT.liftF(eligibility match {
-                    case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ getAccountDetails(form.nino)
-                    case _ ⇒ Future.successful(None)
-                  })
-                  _ ← sessionStore.store(HtsStandardSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
-                } yield eligibility
-              }
-            }
-            r.fold(
+            result.fold(
               error ⇒ {
                 logger.warn(s"error during retrieving eligibility result and paye-personal-info, error: $error")
                 SeeOther(routes.StrideController.getErrorPage().url)
@@ -143,7 +158,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def customerNotEligible: Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ implicit operatorDetails ⇒ roleType ⇒
     checkSession(roleType)(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenIneligible = { (ineligible, nsiUserInfo, _) ⇒
+      whenIneligible       = { (ineligible, nsiUserInfo, _) ⇒
         IneligibilityReason.fromIneligible(ineligible).fold {
           logger.warn(s"Could not parse ineligiblity reason: $ineligible")
           SeeOther(routes.StrideController.getErrorPage().url)
@@ -152,7 +167,15 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname, None, List.empty[String])
           auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
 
-          Ok(views.html.customer_not_eligible(reason, nsiUserInfo, roleType))
+          Ok(views.html.customer_not_eligible(reason, Some(nsiUserInfo.forename → nsiUserInfo.surname), nsiUserInfo.nino, roleType))
+        }
+      },
+      whenIneligibleSecure = { (ineligible, nino, _) ⇒
+        IneligibilityReason.fromIneligible(ineligible).fold {
+          logger.warn(s"Could not parse ineligiblity reason: $ineligible")
+          SeeOther(routes.StrideController.getErrorPage().url)
+        } { reason ⇒
+          Ok(views.html.customer_not_eligible(reason, None, nino, roleType))
         }
       }
     )

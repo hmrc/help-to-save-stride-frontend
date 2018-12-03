@@ -19,10 +19,10 @@
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
 @import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
-@import uk.gov.hmrc.helptosavestridefrontend.models.{RoleType, Standard}
+@import uk.gov.hmrc.helptosavestridefrontend.models.RoleType
 @import cats.syntax.eq._
 
-@(ineligibilityReason: IneligibilityReason, nsiUserInfo: NSIPayload, roleType: RoleType)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(ineligibilityReason: IneligibilityReason, foreNameAndSurname: Option[(String,String)], nino: String, roleType: RoleType)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
     title = messages("hts.eligibility.not.eligible.title"),
@@ -34,8 +34,10 @@
 
     <div class="divider--bottom subsection">
         <p>
-            <span class="bold">@Messages("hts.eligibility.not.eligible.name")</span> @{nsiUserInfo.forename} @{nsiUserInfo.surname}<br />
-            <span class="bold">@Messages("hts.eligibility.not.eligible.nino")</span> @{nsiUserInfo.nino.grouped(2).mkString(" ")}<br />
+            @foreNameAndSurname.map{ case (forename, surname) =>
+            <span class="bold">@Messages("hts.eligibility.not.eligible.name")</span> @forename @surname<br />
+            }
+            <span class="bold">@Messages("hts.eligibility.not.eligible.nino")</span> @{nino.grouped(2).mkString(" ")}<br />
         </p>
     </div>
 
@@ -88,17 +90,19 @@
 
     <a role="button" class="button subsection--wide push--bottom" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.eligibility.not.eligible.end-call")</a>
 
-    @roleType match { case Standard(_) => {
-    <div class="divider--top subsection--wide push--bottom">
-        <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.manually.create.title")</h2>
-        <p>@Messages("hts.eligibility.not.eligible.manually.create.p1")</p>
-        <h2 class="heading-small">@Messages("hts.eligibility.not.eligible.manually.create.h2")</h2>
-        <p>@Messages("hts.eligibility.not.eligible.manually.create.p2")</p>
-        <ul class="list list-bullet">
-            <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li1")</li>
-            <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li2")</li>
-            <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
-        </ul>
+    @roleType match {
+
+    case RoleType.Standard(_) => {
+        <div class="divider--top subsection--wide push--bottom">
+            <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.manually.create.title")</h2>
+            <p>@Messages("hts.eligibility.not.eligible.manually.create.p1")</p>
+            <h2 class="heading-small">@Messages("hts.eligibility.not.eligible.manually.create.h2")</h2>
+            <p>@Messages("hts.eligibility.not.eligible.manually.create.p2")</p>
+            <ul class="list list-bullet">
+                <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li1")</li>
+                <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li2")</li>
+                <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
+            </ul>
 
             <div class="form-group">
                 <fieldset>
@@ -108,7 +112,13 @@
                     </div>
                 </fieldset>
             </div>
-            @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") { @messages("hts.global.continue-button") }
-    </div>
-    }}
+            @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") {
+                @messages("hts.global.continue-button")
+            }
+        </div>
+    }
+
+    case RoleType.Secure(_) => { }
+    }
+
 }

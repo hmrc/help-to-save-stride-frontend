@@ -17,5 +17,10 @@
 package uk.gov.hmrc.helptosavestridefrontend.models
 
 sealed trait RoleType { val roleNames: List[String] }
-case class Standard(roleNames: List[String]) extends RoleType
-case class Secure(roleNames: List[String]) extends RoleType
+
+object RoleType {
+  case class Standard(roleNames: List[String]) extends RoleType
+  case class Secure(roleNames: List[String]) extends RoleType
+
+}
+
