@@ -23,13 +23,20 @@ import scala.io.Source
 
 object CountryCode {
 
-  val countryCodes: Map[String, String] = {
+  type AlphaTwoCode = String
+  type CountryName = String
+
+  val countryCodes: List[(CountryName, AlphaTwoCode)] = {
     val content = Source.fromInputStream(getClass.getResourceAsStream("/resources/country.json")).mkString
     Json.parse(content) match {
       case JsObject(fields) ⇒
         fields
-          .map(x ⇒ ((x._2 \ "alpha_two_code").asOpt[String], (x._2 \ "short_name").asOpt[String]))
-          .collect { case (Some(countryCode), Some(countryName)) ⇒ countryCode.take(2) -> countryName }
+          .toList
+          .map(x ⇒ ((x._2 \ "short_name").asOpt[String], (x._2 \ "alpha_two_code").asOpt[String]))
+          .collect {
+            case (Some(countryName), Some(countryCode)) ⇒
+              countryName → countryCode.take(2)
+          }
       case _ ⇒ sys.error("no country codes were found, terminating the service")
     }
   }

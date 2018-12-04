@@ -10,6 +10,8 @@ GET       /introduction-help-to-save                  @controllers.Default.redir
 
 GET       /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligible()
 
+POST      /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligibleSubmit()
+
 GET       /not-eligible                               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerNotEligible()
 
 GET       /customer-already-has-account               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()

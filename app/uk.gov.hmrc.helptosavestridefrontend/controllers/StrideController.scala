@@ -211,11 +211,15 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           Ok(views.html.customer_eligible(nsiUserInfo))
       }, {
         // whenEligibleSecure
-        (_, _, _, _) ⇒
-          Ok(views.html.enter_customer_details())
+        (_, nino, _, _) ⇒
+          Ok(views.html.enter_customer_details(nino))
       }
     )
   }(routes.StrideController.customerEligible())
+
+  def customerEligibleSubmit: Action[AnyContent] = Action { implicit request ⇒
+    Ok
+  }
 
   def handleDetailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(
