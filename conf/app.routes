@@ -14,6 +14,8 @@ POST      /customer-eligible                          @uk.gov.hmrc.helptosavestr
 
 GET       /not-eligible                               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerNotEligible()
 
+POST       /allow-manual-account-creation              @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.allowManualAccountCreation()
+
 GET       /customer-already-has-account               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 
 POST      /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()

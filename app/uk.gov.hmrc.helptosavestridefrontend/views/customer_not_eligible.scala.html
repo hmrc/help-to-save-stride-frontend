@@ -104,16 +104,18 @@
                 <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
             </ul>
 
-            <div class="form-group">
-                <fieldset>
-                    <div class="multiple-choice">
-                        <input id="confirm_eligible" name="confirm_eligible" type="checkbox" value="yes" class="button-disable-binding" />
-                        <label class="form-label-bold" for="confirm_eligible">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")</label>
-                    </div>
-                </fieldset>
-            </div>
-            @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") {
-                @messages("hts.global.continue-button")
+            @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.allowManualAccountCreation()) {
+                <div class="form-group">
+                    <fieldset>
+                        <div class="multiple-choice">
+                            <input id="confirm_eligible" name="confirm_eligible" type="checkbox" value="yes" class="button-disable-binding" />
+                            <label class="form-label-bold" for="confirm_eligible">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")</label>
+                        </div>
+                    </fieldset>
+                </div>
+                @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") {
+                    @messages("hts.global.continue-button")
+                }
             }
         </div>
     }
