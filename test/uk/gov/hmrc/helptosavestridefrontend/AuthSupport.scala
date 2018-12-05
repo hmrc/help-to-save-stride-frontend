@@ -36,8 +36,14 @@ trait AuthSupport { this: TestSupport ⇒
     base64EncodedRoles.map(x ⇒ new String(Base64.getDecoder.decode(x)))
   }
 
+  lazy val secureRoles: List[String] = {
+    val base64SecureValues = fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-secure-roles").value
+    base64SecureValues.map(x ⇒ new String(Base64.getDecoder.decode(x)))
+  }
+
   type RetrievalsType = Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]
   val retrievals = new ~(new ~(new ~(Enrolments(roles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
+  val secureRetrievals = new ~(new ~(new ~(Enrolments(secureRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
@@ -51,9 +57,17 @@ trait AuthSupport { this: TestSupport ⇒
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
       Right(Enrolments(roles.map(Enrolment(_)).toSet)))
 
+  def mockSuccessfulSecureAuthorisation(): CallHandler4[Predicate, Retrieval[Enrolments], HeaderCarrier, ExecutionContext, Future[Enrolments]] =
+    mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
+      Right(Enrolments(secureRoles.map(Enrolment(_)).toSet)))
+
   def mockSuccessfulAuthorisationWithDetails(): CallHandler4[Predicate, Retrieval[RetrievalsType], HeaderCarrier, ExecutionContext, Future[RetrievalsType]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
       Right(retrievals))
+
+  def mockSuccessfulSecureAuthorisationWithDetails(): CallHandler4[Predicate, Retrieval[RetrievalsType], HeaderCarrier, ExecutionContext, Future[RetrievalsType]] =
+    mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
+      Right(secureRetrievals))
 
   def mockAuthFail(): Unit =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(

@@ -15,15 +15,17 @@
  *@
 
 @(id: String,
-label: String,
-value: String = "",
-secondaryLabel: Option[String] = None,
-inputClass: Option[String] = None,
-hint: Option[String] = None,
-name: String = "value",
-containerClass: Option[String] = None,
-labelClass: Option[String] = None,
-errorMessage: Option[Html] = None
+  label: String,
+  value: String = "",
+  secondaryLabel: Option[String] = None,
+  inputClass: Option[String] = None,
+  hint: Option[String] = None,
+  name: String = "value",
+  containerClass: Option[String] = None,
+  labelClass: Option[String] = None,
+  errorMessage: Option[Html] = None,
+  inputType: String = "text",
+  readOnly: Boolean = false
 )(implicit messages: Messages)
 
 <div class="form-group @if(errorMessage.isDefined){form-group-error} @if(containerClass.nonEmpty){@containerClass}">
@@ -38,11 +40,12 @@ errorMessage: Option[Html] = None
     <div class="form-control-wrapper" data-type="@secondaryLabel">
         <input
         class="form-control @inputClass"
-        type="text"
+        type="@inputType"
         id="@id"
         name="@name"
         value="@value"
-            @if(errorMessage.isDefined){aria-describedby="error-message-this-input"}
+        @if(errorMessage.isDefined){aria-describedby="error-message-this-input"}
+        @if(readOnly) { readonly }
         />
     </div>
 </div>

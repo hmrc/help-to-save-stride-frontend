@@ -18,9 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.auth
 
 import java.util.Base64
 
-import cats.instances.list._
-import cats.instances.option._
-import cats.syntax.traverse._
 import configs.syntax._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
@@ -29,7 +26,8 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.models.OperatorDetails
+import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
+import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -50,29 +48,40 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
     base64Values.map(x ⇒ new String(Base64.getDecoder.decode(x)))
   }
 
+  private val secureRoles: List[String] = {
+    val base64SecureValues = config.underlying.get[List[String]]("stride.base64-encoded-secure-roles").value
+    base64SecureValues.map(x ⇒ new String(Base64.getDecoder.decode(x)))
+  }
+
   private val getRedirectUrl: (Request[AnyContent], Call) ⇒ String = if (config.underlying.get[Boolean]("stride.redirect-with-absolute-urls").value) {
     case (r, c) ⇒ c.absoluteURL()(r)
   } else {
     case (_, c) ⇒ c.url
   }
 
-  def authorisedFromStride(action: Request[AnyContent] ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
+  def authorisedFromStride(action: Request[AnyContent] ⇒ RoleType ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
         enrolments ⇒
-          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")){ _ ⇒ action(request) }
+          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")){
+            roles ⇒
+              action(request)(roles)
+          }
       }.recover{
         case _: NoActiveSession ⇒
           toStrideLogin(getRedirectUrl(request, redirectCall))
       }
     }
 
-  def authorisedFromStrideWithDetails(action: Request[AnyContent] ⇒ OperatorDetails ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
+  def authorisedFromStrideWithDetails(action: Request[AnyContent] ⇒ OperatorDetails ⇒ RoleType ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments and credentials and name and email) {
         case enrolments ~ creds ~ name ~ email ⇒
           necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) {
-            roles ⇒ action(request)(OperatorDetails(roles.map(_.key), creds.map(_.providerId), getName(name), email.getOrElse("")))
+            roles ⇒
+              action(request)(OperatorDetails(roles.roleNames, creds.map(_.providerId), getName(name), email.getOrElse("")))(
+                roles
+              )
           }
       }.recover {
         case _: NoActiveSession ⇒
@@ -80,8 +89,14 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
       }
     }
 
-  private def necessaryRoles(enrolments: Enrolments) =
-    requiredRoles.map(enrolments.getEnrolment).traverse[Option, Enrolment](identity)
+  private def necessaryRoles(enrolments: Enrolments): Option[RoleType] = {
+    val enrolmentKeys = enrolments.enrolments.map(_.key).toList
+    if (secureRoles.diff(enrolmentKeys).isEmpty) {
+      Some(Secure(enrolmentKeys))
+    } else if (requiredRoles.diff(enrolmentKeys).isEmpty) {
+      Some(Standard(enrolmentKeys))
+    } else None
+  }
 
   private def getName(name: Option[Name]): String =
     (name.flatMap(_.name).toList ++ name.flatMap(_.lastName).toList).mkString(" ")

@@ -21,7 +21,7 @@ import java.util.UUID
 import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HttpSupport
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession._
-import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSession, SessionEligibilityCheckResult}
+import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSecureSession, HtsStandardSession, SessionEligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -33,9 +33,11 @@ class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty 
 
   "SessionStore" when {
 
-    val htsSession = HtsSession(SessionEligibilityCheckResult.Eligible(eligibleResponse.value), nsiUserInfo)
+    val htsSession = HtsStandardSession(SessionEligibilityCheckResult.Eligible(eligibleResponse.value), nsiUserInfo)
 
-    "be able to insert HtsSession into and read from mongo" in {
+    val htsSecureSession = HtsSecureSession("AE123456C", SessionEligibilityCheckResult.Eligible(eligibleResponse.value), Some(nsiUserInfo))
+
+    "be able to insert a HtsStandardSession into and read from mongo" in {
 
       val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
       val result = sessionStore.store(htsSession)(format, hc)
@@ -44,6 +46,17 @@ class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty 
 
       val getResult = sessionStore.get(format, hc)
       getResult.value.futureValue should be(Right(Some(htsSession)))
+    }
+
+    "be able to insert a HtsSecureSession into and read from mongo" in {
+
+      val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
+      val result = sessionStore.store(htsSecureSession)(format, hc)
+
+      result.value.futureValue should be(Right(()))
+
+      val getResult = sessionStore.get(format, hc)
+      getResult.value.futureValue should be(Right(Some(htsSecureSession)))
     }
 
     "be able to delete a HTSSession from mongo" in {

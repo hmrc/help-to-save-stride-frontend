@@ -18,20 +18,24 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.instances.future._
 import play.api.mvc.{Request, Result}
-import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSession, NSIPayload}
+import uk.gov.hmrc.helptosavestridefrontend.models._
+import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 
 import scala.concurrent.Future
 
-trait SessionBehaviour {
+trait SessionBehaviour extends StrideAuth {
   this: StrideFrontendController with Logging ⇒
 
   val sessionStore: SessionStore
 
   type AccountReferenceNumber = String
+
+  type NINO = String
 
   private def checkSessionInternal(noSessionData: ⇒ Future[Result],
                                    whenSession:   HtsSession ⇒ Future[Result])(
@@ -48,20 +52,35 @@ trait SessionBehaviour {
         _.fold(noSessionData)(whenSession(_))
       ).flatMap(identity)
 
-  def checkSession(noSessionData:         ⇒ Future[Result],
-                   whenEligible:          (Eligible, Boolean, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result] = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
-                   whenIneligible:        (Ineligible, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]        = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
-                   whenAlreadyHasAccount: (NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]                    = (_, _) ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
+  def checkSession(roleType: RoleType)(noSessionData:         ⇒ Future[Result],
+                                       whenEligible:          (Eligible, Boolean, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]      = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                                       whenEligibleSecure:    (Eligible, NINO, Option[NSIPayload], Option[AccountReferenceNumber]) ⇒ Future[Result] = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerEligible().url),
+                                       whenIneligible:        (Ineligible, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]             = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                                       whenIneligibleSecure:  (Ineligible, NINO, Option[AccountReferenceNumber]) ⇒ Future[Result]                   = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
+                                       whenAlreadyHasAccount: (Option[NSIPayload], Option[AccountReferenceNumber]) ⇒ Future[Result]                 = (_, _) ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
   )(implicit request: Request[_]): Future[Result] =
     checkSessionInternal(
-      noSessionData,
+      noSessionData, htsSession ⇒
 
-      htsSession ⇒
-        htsSession.userInfo match {
-          case e: Eligible       ⇒ whenEligible(e, htsSession.detailsConfirmed, htsSession.nSIUserInfo, htsSession.accountNumber)
-          case i: Ineligible     ⇒ whenIneligible(i, htsSession.nSIUserInfo, htsSession.accountNumber)
-          case AlreadyHasAccount ⇒ whenAlreadyHasAccount(htsSession.nSIUserInfo, htsSession.accountNumber)
-        }
+      (htsSession, roleType) match {
+
+        case (session: HtsStandardSession, roleType: Standard) ⇒
+          session.userInfo match {
+            case e: Eligible       ⇒ whenEligible(e, session.detailsConfirmed, session.nSIUserInfo, session.accountNumber)
+            case i: Ineligible     ⇒ whenIneligible(i, session.nSIUserInfo, session.accountNumber)
+            case AlreadyHasAccount ⇒ whenAlreadyHasAccount(Some(session.nSIUserInfo), session.accountNumber)
+          }
+
+        case (session: HtsSecureSession, roleType: Secure) ⇒
+          session.userInfo match {
+            case e: Eligible       ⇒ whenEligibleSecure(e, session.nino, session.nSIUserInfo, session.accountNumber)
+            case AlreadyHasAccount ⇒ whenAlreadyHasAccount(session.nSIUserInfo, session.accountNumber)
+            case i: Ineligible     ⇒ whenIneligibleSecure(i, session.nino, session.accountNumber)
+          }
+
+        case (session, roleType) ⇒
+          Forbidden
+      }
     )
 
 }
