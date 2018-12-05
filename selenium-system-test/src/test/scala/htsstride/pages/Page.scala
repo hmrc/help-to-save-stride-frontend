@@ -18,7 +18,6 @@ package htsstride.pages
 
 import htsstride.browser.Browser
 import org.openqa.selenium.{By, WebDriver}
-
 trait Page {
 
   val expectedURL: String
@@ -34,11 +33,8 @@ trait Page {
   def clickSubmitForManualAccount()(implicit driver: WebDriver): Unit =
     Browser.find(Browser.id("continue")).foreach(_.underlying.click())
 
-  def clickCancel()(implicit driver: WebDriver): Unit =
-    driver.findElement(By.linkText("Cancel application and end call")).click()
-
   def clickEndCall()(implicit driver: WebDriver): Unit =
-    driver.findElement(By.linkText("End call")).click()
+    driver.findElement(By.id("end-call")).click()
 
   def checkConfirmEligible()(implicit driver: WebDriver): Unit =
     driver.findElement(By.id("confirm_eligible")).click()
