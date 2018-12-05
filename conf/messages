@@ -56,6 +56,44 @@ hts.customer-eligible.enter-details.form.address.title.country.label=Country
 hts.customer-eligible.enter-details.form.submit=Continue
 hts.customer-eligible.enter-details.cancel-application=Cancel application and end call
 
+hts.customer-eligible.enter-details.error.title=There is a problem
+hts.customer-eligible.enter-details.error.forename.empty=Enter a first name
+hts.customer-eligible.enter-details.error.forename.too-long=First name must be {0} characters or less
+hts.customer-eligible.enter-details.error.surname.empty=Enter a last name
+hts.customer-eligible.enter-details.error.surname.too-long=Last name must be {0} characters or less
+hts.customer-eligible.enter-details.error.date-of-birth.enter-a-date-of-birth=Enter a date of birth
+hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth=Enter a real date of birth
+
+hts.customer-eligible.enter-details.error.date-of-birth.must-be-in-past=Date of birth must be in the past
+
+hts.customer-eligible.enter-details.error.date-of-birth.must-include-day=Date of birth must include a day
+hts.customer-eligible.enter-details.error.date-of-birth.must-include-month=Date of birth must include a month
+hts.customer-eligible.enter-details.error.date-of-birth.must-include-year=Date of birth must include a year
+hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-month=Date of birth must include a day and month
+hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-year=Date of birth must include a day and year
+hts.customer-eligible.enter-details.error.date-of-birth.must-include-month-year=Date of birth must include a month and year
+
+hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day=Enter a real date of the month
+hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month=Enter a real month
+hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year=Enter a real year
+
+hts.customer-eligible.enter-details.error.date-of-birth.enter-date-of-birth-and-include=Enter a date of birth and include a day, month and year
+
+hts.customer-eligible.enter-details.error.date-of-birth.day.too-early=Enter a year after 1900
+hts.customer-eligible.enter-details.error.date-of-birth.day.in-future=Date of birth must be in the past
+
+
+hts.customer-eligible.enter-details.error.address-1.empty=Enter an address line 1
+hts.customer-eligible.enter-details.error.address-1.too-long=Address line 1 must be {0} characters or less
+hts.customer-eligible.enter-details.error.address-2.empty=Enter an address line 2
+hts.customer-eligible.enter-details.error.address-2.too-long=Address line 2 must be {0} characters or less
+hts.customer-eligible.enter-details.error.address-3.too-long=Address line 3 must be {0} characters or less
+hts.customer-eligible.enter-details.error.address-4.too-long=Address line 4 must be {0} characters or less
+hts.customer-eligible.enter-details.error.address-5.too-long=Address line 5 must be {0} characters or less
+hts.customer-eligible.enter-details.error.postcode.empty=Enter a postcode, like AA1 1AA
+hts.customer-eligible.enter-details.error.postcode.too-long=Enter a real postcode
+
+
 hts.create.account.title=Create an account
 hts.create.account.h1=Create an account
 hts.create.account.p1=You need to:

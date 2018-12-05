@@ -56,7 +56,7 @@
 
     <p class="subsection flush--bottom">@messages("hts.you.are.eligible.h3")</p>
 
-    @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.handleDetailsConfirmed()) {
+    @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.customerEligibleSubmit()) {
       @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "soft-half--left") { @messages("hts.you.are.eligible.continue-button") }
       <a role="button" class="flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
     }

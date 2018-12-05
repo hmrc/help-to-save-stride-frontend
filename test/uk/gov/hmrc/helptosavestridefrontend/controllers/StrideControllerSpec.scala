@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
+import java.time.{Clock, Instant, ZoneId}
+
 import cats.data.EitherT
 import cats.instances.future._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
@@ -27,6 +29,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, HTSEvent, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
+import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsStandardSession
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
@@ -43,6 +46,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class StrideControllerSpec
   extends TestSupport with AuthSupport with CSRFSupport with TestData with GeneratorDrivenPropertyChecks { // scalastyle:off magic.number
+
+  implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
   val helpToSaveConnector = mock[HelpToSaveConnector]
 
@@ -101,6 +106,9 @@ class StrideControllerSpec
     (helpToSaveConnector.getAccount(_: String)(_: HeaderCarrier, _: ExecutionContext))
       .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
+
+  implicit lazy val applicantDetailsValidation: ApplicantDetailsValidation =
+    fakeApplication.injector.instanceOf[ApplicantDetailsValidation]
 
   lazy val controller =
     new StrideController(mockAuthConnector,
@@ -675,48 +683,51 @@ class StrideControllerSpec
 
     }
 
-    "handling detailsConfirmed" must {
+    "handling customer-eligible-submit" when {
 
-      "redirect to the eligibility page if there is no session data in mongo" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(None))
+      "the role type is standard" must {
+
+        "redirect to the eligibility page if there is no session data in mongo" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
+
+          val result = controller.customerEligibleSubmit(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
         }
 
-        val result = controller.handleDetailsConfirmed(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
-      }
+        "update the detailsConfirmed flag to true in mongo and show the terms and conditions" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+            mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Right(()))
+          }
 
-      "update the detailsConfirmed flag to true in mongo and show the terms and conditions" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
-          mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Right(()))
+          val result = controller.customerEligibleSubmit(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
         }
 
-        val result = controller.handleDetailsConfirmed(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
-      }
+        "handle errors in case of updating mongo session with detailsConfirmed flag" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+            mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Left("unexpected error during put"))
+          }
 
-      "handle errors in case of updating mongo session with detailsConfirmed flag" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
-          mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Left("unexpected error during put"))
+          val result = controller.customerEligibleSubmit(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
 
-        val result = controller.handleDetailsConfirmed(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
-      }
-
-      "redirect the user when they are not logged in" in {
-        mockAuthFail()
-        val result = controller.handleDetailsConfirmed(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save%2Fhmrc-internal%2Fdetails-confirmed&origin=help-to-save-stride-frontend")
+        "redirect the user when they are not logged in" in {
+          mockAuthFail()
+          val result = controller.customerEligibleSubmit(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save%2Fhmrc-internal%2Fcustomer-eligible&origin=help-to-save-stride-frontend")
+        }
       }
 
     }

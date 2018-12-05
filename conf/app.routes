@@ -18,8 +18,6 @@ POST       /allow-manual-account-creation              @uk.gov.hmrc.helptosavest
 
 GET       /customer-already-has-account               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 
-POST      /details-confirmed                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.handleDetailsConfirmed()
-
 GET       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getCreateAccountPage()
 
 POST      /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()

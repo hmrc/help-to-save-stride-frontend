@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
+import java.time.{Clock, LocalDate, ZoneId}
+
 import cats.data.EitherT
 import cats.instances.future._
 import com.google.inject.Inject
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -26,7 +29,7 @@ import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, ManualAccountCrea
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
-import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINOForm
+import uk.gov.hmrc.helptosavestridefrontend.forms.{ApplicantDetailsForm, ApplicantDetailsValidation, GiveNINOForm}
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
@@ -47,7 +50,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val auditor:             HTSAuditor,
                                   messageApi:              MessagesApi
 )(implicit val frontendAppConfig: FrontendAppConfig,
-  transformer: NINOLogMessageTransformer)
+  transformer:                NINOLogMessageTransformer,
+  applicantDetailsValidation: ApplicantDetailsValidation,
+  clock:                      Clock)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
@@ -231,28 +236,34 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       }, {
         // whenEligibleSecure
         (_, nino, _, _) ⇒
-          Ok(views.html.enter_customer_details(nino))
+          Ok(views.html.enter_customer_details(nino, ApplicantDetailsForm.applicantDetailsForm))
       }
     )
   }(routes.StrideController.customerEligible())
 
-  def customerEligibleSubmit: Action[AnyContent] = Action { implicit request ⇒
-    Ok
-  }
-
-  def handleDetailsConfirmed: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
+  def customerEligibleSubmit: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenEligible = (eligible, _, nsiUserInfo, _) ⇒
-        sessionStore.store(HtsStandardSession(eligible, nsiUserInfo, detailsConfirmed = true)).fold(
-          error ⇒ {
-            logger.warn(error)
-            SeeOther(routes.StrideController.getErrorPage().url)
-          },
-          _ ⇒ SeeOther(routes.StrideController.getCreateAccountPage().url)
-        )
+      { // when eligible
+        (eligible, _, nsiUserInfo, _) ⇒
+          sessionStore.store(HtsStandardSession(eligible, nsiUserInfo, detailsConfirmed = true)).fold(
+            error ⇒ {
+              logger.warn(error)
+              SeeOther(routes.StrideController.getErrorPage().url)
+            },
+            _ ⇒ SeeOther(routes.StrideController.getCreateAccountPage().url)
+          )
+      },
+      { // when eligible secure
+        case (_, nino, _, _) ⇒
+          ApplicantDetailsForm.applicantDetailsForm.bindFromRequest().fold(
+            withErrors ⇒ Ok(views.html.enter_customer_details(nino, withErrors)),
+            _ ⇒ Ok
+          )
+      }
+
     )
-  }(routes.StrideController.handleDetailsConfirmed())
+  }(routes.StrideController.customerEligible())
 
   def getCreateAccountPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(
