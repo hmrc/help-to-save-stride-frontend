@@ -18,8 +18,7 @@ package htsstride.pages
 
 import htsstride.browser.Browser
 import org.openqa.selenium.{By, WebDriver}
-import org.scalatest.selenium.WebBrowser
-trait Page extends WebBrowser {
+trait Page {
 
   val expectedURL: String
 
