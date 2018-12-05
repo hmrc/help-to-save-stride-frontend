@@ -22,7 +22,7 @@ import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, PersonalInformationDisplayedToOperator}
+import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
@@ -181,6 +181,27 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       }
     )
   }(routes.StrideController.customerNotEligible())
+
+  def allowManualAccountCreation(): Action[AnyContent] = authorisedFromStrideWithDetails { implicit request ⇒ operatorDetails ⇒ roleType ⇒
+    checkSession(roleType)(SeeOther(routes.StrideController.getEligibilityPage().url),
+                           whenIneligible       = { (ineligible, nSIUserInfo, _) ⇒
+        {
+          sessionStore.store(HtsStandardSession(ineligible.copy(manualCreationAllowed = true), nSIUserInfo)).fold({
+            e ⇒
+              logger.warn(s"Could not write session to mongo: $e")
+              SeeOther(routes.StrideController.getErrorPage().url)
+          }, { _ ⇒
+            auditor.sendEvent(ManualAccountCreationSelected(nSIUserInfo.nino, request.path, operatorDetails), nSIUserInfo.nino)
+            Ok(views.html.create_account())
+          })
+        }
+      },
+                           whenIneligibleSecure = {
+        case _ ⇒
+          Forbidden
+      }
+    )
+  }(routes.StrideController.allowManualAccountCreation())
 
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(

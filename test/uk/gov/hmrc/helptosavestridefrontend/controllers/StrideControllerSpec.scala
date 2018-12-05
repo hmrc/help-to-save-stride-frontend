@@ -308,6 +308,35 @@ class StrideControllerSpec
 
     }
 
+    "handling allowManualAccountCreation" must {
+
+      "return 200 and redirect to the create account page if retrieval of user info is successful" in {
+        inSequence {
+          mockSuccessfulAuthorisationWithDetails()
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Right(()))
+          mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email")), "AE123456C")
+        }
+
+        val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
+        status(result) shouldBe OK
+        contentAsString(result) should include("Create an account")
+      }
+
+      "redirect to the error page when retrieval of user info fails" in {
+        inSequence {
+          mockSuccessfulAuthorisationWithDetails()
+          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Left(""))
+        }
+
+        val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+      }
+    }
+
+
     "getting the account-already-exists page" must {
 
       "show the /check-eligibility when there is no session in mongo" in {
