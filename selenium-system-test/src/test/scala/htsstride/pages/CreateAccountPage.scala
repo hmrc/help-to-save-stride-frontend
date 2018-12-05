@@ -33,7 +33,7 @@ object CreateAccountPage extends Page {
 
   def cancelCreateAccount()(implicit driver: WebDriver): Unit = {
     navigate()
-    clickCancel()
+    clickEndCall()
     Browser.checkCurrentPageIs(ApplicationCancelledPage)
     clickSubmit()
   }

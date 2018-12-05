@@ -35,7 +35,7 @@ object CustomerEligiblePage extends Page {
 
   def cancelApplication()(implicit driver: WebDriver): Unit = {
     navigate()
-    clickCancel()
+    clickEndCall()
     Browser.checkCurrentPageIs(ApplicationCancelledPage)
   }
 
