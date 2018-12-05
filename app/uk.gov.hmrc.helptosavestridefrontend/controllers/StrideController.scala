@@ -45,8 +45,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
                                   val sessionStore:        SessionStore,
                                   val auditor:             HTSAuditor,
-                                  val frontendAppConfig:   FrontendAppConfig,
-                                  messageApi:              MessagesApi)(implicit val transformer: NINOLogMessageTransformer)
+                                  messageApi:              MessagesApi
+)(implicit val frontendAppConfig: FrontendAppConfig,
+  transformer: NINOLogMessageTransformer)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
@@ -172,7 +173,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       },
       whenIneligibleSecure = { (ineligible, nino, _) ⇒
         IneligibilityReason.fromIneligible(ineligible).fold {
-          logger.warn(s"Could not parse ineligiblity reason: $ineligible")
+          logger.warn(s"Could not parse ineligibility reason: $ineligible")
           SeeOther(routes.StrideController.getErrorPage().url)
         } { reason ⇒
           Ok(views.html.customer_not_eligible(reason, None, nino, roleType))

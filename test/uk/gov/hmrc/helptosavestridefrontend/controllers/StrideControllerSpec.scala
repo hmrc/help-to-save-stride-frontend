@@ -107,7 +107,6 @@ class StrideControllerSpec
                          helpToSaveConnector,
                          sessionStore,
                          mockAuditor,
-                         fakeApplication.injector.instanceOf[FrontendAppConfig],
                          fakeApplication.injector.instanceOf[MessagesApi])
 
   "The StrideController" when {
@@ -266,7 +265,7 @@ class StrideControllerSpec
         }
       }
 
-      "show the you-are-not-eligible page if session is found in mongo and but user is NOT eligible and the role type is secure" in {
+      "show the customer-are-not-eligible page if session is found in mongo and but user is NOT eligible and the role type is secure" in {
         ineligibleReasonCodes.foreach { code ⇒
           inSequence {
             mockSuccessfulSecureAuthorisationWithDetails()
