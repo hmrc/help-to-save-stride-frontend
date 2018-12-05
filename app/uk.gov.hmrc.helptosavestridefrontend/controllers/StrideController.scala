@@ -196,10 +196,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           })
         }
       },
-                           whenIneligibleSecure = {
-        case _ ⇒
-          Forbidden
-      }
+                           whenIneligibleSecure = { case _ ⇒ Forbidden }
     )
   }(routes.StrideController.allowManualAccountCreation())
 

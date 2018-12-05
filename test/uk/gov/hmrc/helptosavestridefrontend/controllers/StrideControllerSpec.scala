@@ -313,8 +313,8 @@ class StrideControllerSpec
       "return 200 and redirect to the create account page if retrieval of user info is successful" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Right(()))
+          mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Right(()))
           mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email")), "AE123456C")
         }
 
@@ -326,16 +326,26 @@ class StrideControllerSpec
       "redirect to the error page when retrieval of user info fails" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockSessionStoreInsert(HtsSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Left(""))
+          mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))(Left(""))
         }
 
         val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
-    }
 
+      "return a Forbidden if the role type is secure" in {
+        inSequence {
+          mockSuccessfulSecureAuthorisationWithDetails()
+          mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleManualOverrideStrideUserInfo, None, None))))
+        }
+
+        val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
+        status(result) shouldBe FORBIDDEN
+      }
+
+    }
 
     "getting the account-already-exists page" must {
 
