@@ -646,39 +646,55 @@ class StrideControllerSpec
       }
     }
 
-    "handling getCreateAccountPage" must {
+    "handling getCreateAccountPage" when {
 
-      "redirect to the eligibility page if there is no session data in mongo" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(None))
+      "the role type is standard" must {
+
+        "redirect to the eligibility page if there is no session data in mongo" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
+
+          val result = controller.getCreateAccountPage(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
         }
 
-        val result = controller.getCreateAccountPage(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
+        "show the create account page if the user is eligible and details are confirmed" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+          }
+
+          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          status(result) shouldBe OK
+          contentAsString(result) should include("Ask customer if they understand - and accept the terms and conditions")
+        }
+
+        "redirect to the eligible page if the user is eligible and details are NOT confirmed" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+          }
+
+          val result = controller.getCreateAccountPage(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
+        }
       }
 
-      "show the create account page if the user is eligible and details are confirmed" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+      "the role type is secure" must {
+
+        // TODO: implement
+        "redirect to the eligible page if there are no cusomter details in session" in {
+
         }
 
-        val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
-        status(result) shouldBe OK
-        contentAsString(result) should include("Ask customer if they understand - and accept the terms and conditions")
-      }
+        "show the create account page with customer details for the call handler to check" in {
 
-      "redirect to the eligible page if the user is eligible and details are NOT confirmed" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
         }
 
-        val result = controller.getCreateAccountPage(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
 
     }
@@ -722,12 +738,35 @@ class StrideControllerSpec
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
 
+      }
+
+      "the role type is secure" must {
+
+        // TODO: implement
+        "show the form with errors if the form data is invalid" in {
+
+        }
+
+        "write the data to mongo and redirect to the create account page if the data is valid" in {
+
+        }
+
+        "return a 500 if there is an error writing to mongo" in {
+
+        }
+
+      }
+
+      "the role type is either standard or secure" must {
+
         "redirect the user when they are not logged in" in {
           mockAuthFail()
+
           val result = controller.customerEligibleSubmit(FakeRequest())
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save%2Fhmrc-internal%2Fcustomer-eligible&origin=help-to-save-stride-frontend")
         }
+
       }
 
     }

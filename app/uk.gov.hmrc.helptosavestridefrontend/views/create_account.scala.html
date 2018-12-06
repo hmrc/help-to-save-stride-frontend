@@ -17,11 +17,24 @@
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
-@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
+
+@(detailsToConfirm: Option[NSIPayload])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
  title = Messages("hts.create.account.title"),
  bodyClasses = None) {
+
+ @detailsToConfirm match {
+   case Some(details) => {
+     <h1>Check customer’s details</h1>
+     <p>details.forename</p>
+   }
+
+   case None => { }
+  }
+
+
 
   <h1 class="heading-large">@Messages("hts.create.account.h1")</h1>
 

@@ -64,10 +64,9 @@ object PayePersonalDetails {
                                                           ppd.address.line5,
                                                           ppd.address.postcode,
                                                           ppd.address.countryCode,
-                                                          ppd.phoneNumber,
-        "00")
+                                                          ppd.phoneNumber)
 
-      NSIPayload(ppd.name.firstForenameOrInitial, ppd.name.surname, ppd.dateOfBirth, nino, contactDetails, "callCentre")
+      NSIPayload(ppd.name.firstForenameOrInitial, ppd.name.surname, ppd.dateOfBirth, nino, contactDetails)
     }
 
   }

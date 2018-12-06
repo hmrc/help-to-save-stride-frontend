@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
-import java.time.{Clock, LocalDate, ZoneId}
+import java.time.Clock
 
 import cats.data.EitherT
 import cats.instances.future._
 import com.google.inject.Inject
-import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -197,7 +196,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               SeeOther(routes.StrideController.getErrorPage().url)
           }, { _ ⇒
             auditor.sendEvent(ManualAccountCreationSelected(nSIUserInfo.nino, request.path, operatorDetails), nSIUserInfo.nino)
-            Ok(views.html.create_account())
+            SeeOther(routes.StrideController.createAccount().url)
           })
         }
       },
@@ -242,39 +241,43 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.customerEligible())
 
   def customerEligibleSubmit: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
+    def storeSessionAndContinue(session: HtsSession): Future[Result] =
+        sessionStore.store(session).fold(
+          error ⇒ {
+            logger.warn(error)
+            SeeOther(routes.StrideController.getErrorPage().url)
+          },
+          _ ⇒ SeeOther(routes.StrideController.getCreateAccountPage().url)
+        )
+
     checkSession(roleType)(
       SeeOther(routes.StrideController.getEligibilityPage().url),
       { // when eligible
         (eligible, _, nsiUserInfo, _) ⇒
-          sessionStore.store(HtsStandardSession(eligible, nsiUserInfo, detailsConfirmed = true)).fold(
-            error ⇒ {
-              logger.warn(error)
-              SeeOther(routes.StrideController.getErrorPage().url)
-            },
-            _ ⇒ SeeOther(routes.StrideController.getCreateAccountPage().url)
-          )
+          storeSessionAndContinue(HtsStandardSession(eligible, nsiUserInfo, detailsConfirmed = true))
       },
       { // when eligible secure
-        case (_, nino, _, _) ⇒
+        case (eligible, nino, _, _) ⇒
           ApplicantDetailsForm.applicantDetailsForm.bindFromRequest().fold(
             withErrors ⇒ Ok(views.html.enter_customer_details(nino, withErrors)),
-            _ ⇒ Ok
+            details ⇒ storeSessionAndContinue(HtsSecureSession(nino, eligible, Some(NSIPayload(details, nino)), None))
           )
       }
-
     )
   }(routes.StrideController.customerEligible())
 
   def getCreateAccountPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-
-      whenEligible = (_, detailsConfirmed, _, _) ⇒
+      whenEligible       = (_, detailsConfirmed, _, _) ⇒
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
-
         } else {
-          Ok(views.html.create_account())
+          Ok(views.html.create_account(None))
+        },
+      whenEligibleSecure = (_, _, nsiPayload, _) ⇒
+        nsiPayload.fold(SeeOther(routes.StrideController.customerEligible().url)){ details ⇒
+          Ok(views.html.create_account(Some(details)))
         }
     )
   }(routes.StrideController.getCreateAccountPage())
