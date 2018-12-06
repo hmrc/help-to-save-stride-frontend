@@ -49,4 +49,15 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
     val sortCode: String = getString("nsi-bank-transfer-details.sortcode")
     val accountNumber: String = getString("nsi-bank-transfer-details.accountNumber")
   }
+
+  object FormValidation {
+    val forenameMaxTotalLength: Int = getInt("applicant-details.forename.max-length")
+
+    val surnameMaxTotalLength: Int = getInt("applicant-details.surname.max-length")
+
+    val addressLineMaxTotalLength: Int = getInt("applicant-details.address-lines.max-length")
+
+    val postcodeMaxTotalLength: Int = getInt("applicant-details.postcode.max-length")
+  }
+
 }

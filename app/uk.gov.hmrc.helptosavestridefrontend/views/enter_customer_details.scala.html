@@ -22,184 +22,209 @@
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.models.CountryCode.countryCodes
 @import uk.gov.hmrc.helptosavestridefrontend.views.html.helpers
+@import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm
 
 @import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
 
+@import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetails
 
-@(nino: String)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
+@(nino: String, form: Form[ApplicantDetails])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig))
 
 @sectionBreak= { <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"> }
 
-@uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-    title = messages("hts.customer-eligible.enter-details.title"),
-    bodyClasses = None) {
+@defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>
+  @defining(errorMessages.errors.toMap){ errorMessagesMap: Map[String,String] =>      
+        
+    @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+        title = messages("hts.customer-eligible.enter-details.title"),
+        bodyClasses = None,
+        isErrorPage = errorMessages.errorExists) {
 
-    <h1>@messages("hts.customer-eligible.enter-details.title")</h1>
-    <p>@messages("hts.customer-eligible.enter-details.p1")</p>
+        @if(errorMessages.errorExists){
+            <div class="error-summary" role="alert" aria-labelledby="error-summary-give-nino" tabindex="-1">
+                <h2 class="heading-medium error-summary-heading" id="error-summary-give-nino">@messages("hts.customer-eligible.enter-details.error.title")</h2>
+                <ul class="error-summary-list">
+                @{errorMessages.errors.map{ case (fieldId, errorMessage) ⇒
+                    Html(s"""<li><a href= "#$fieldId">$errorMessage</a></li>""")
+                }}
+                </ul>
+            </div>
+        }
 
-    @helpers.form(routes.StrideController.customerEligibleSubmit(), 'id -> "userDetailsForm") {
 
-        <h2>@messages("hts.customer-eligible.enter-details.form.personal-details.title")</h2>
+        <h1>@messages("hts.customer-eligible.enter-details.title")</h1>
+        <p>@messages("hts.customer-eligible.enter-details.p1")</p>
 
-        @helpers.input_text(
-            id = "forename",
-            label = messages("hts.customer-eligible.enter-details.form.personal-details.forename.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "forename",
-            errorMessage = None
-        )
+        @helpers.form(routes.StrideController.customerEligibleSubmit(), 'id -> "userDetailsForm") {
 
-        @helpers.input_text(
-            id = "surname",
-            label = messages("hts.customer-eligible.enter-details.form.personal-details.surname.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "surname"
-        )
+            <h2>@messages("hts.customer-eligible.enter-details.form.personal-details.title")</h2>
 
-        @sectionBreak
+            @helpers.input_text(
+                id = Ids.forename,
+                label = messages("hts.customer-eligible.enter-details.form.personal-details.forename.label"),
+                value = form.data.get(Ids.forename).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.forename,
+                errorMessage = errorMessagesMap.get(Ids.forename).map(Html(_))
+            )
 
-        <fieldset class="form-group">
-            <div class="form-group  soft--ends" id="dob">
-                <legend><span class="form-label">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")</span></legend>
+            @helpers.input_text(
+                id = Ids.surname,
+                label = messages("hts.customer-eligible.enter-details.form.personal-details.surname.label"),
+                value = form.data.get(Ids.surname).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.surname,
+                errorMessage = errorMessagesMap.get(Ids.surname).map(Html(_))
+            )
 
-                <span class="form-hint">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.hint")</span>
-                <div class="form-date">
-                    <div class="form-group form-group-day">
-                        <label for="dob-day" class="form-label  ">
-                            <span>@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.day.label")</span>
-                            <input type="number" class="form-control" name="dob-day" id="dob-day" value="">
-                        </label>
+            @sectionBreak
+
+            @defining(errorMessagesMap.get(Ids.dateOfBirth)){ dobErrorMessage: Option[String] =>
+               @defining(dobErrorMessage.map(_ ⇒ "form-control-error")){ formControlError: Option[String] =>
+                <div class="form-group  soft--ends @if(dobErrorMessage.isDefined){ form-group-error }" id="@{Ids.dateOfBirth}" >
+
+                <fieldset class="form-group" aria-describedby="dob-hint @if(dobErrorMessage.isDefined){  dob-error }">
+                    <legend><span class="form-label">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")</span></legend>
+
+                    <span class="form-hint" id="dob-hint">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.hint")</span>
+                    @dobErrorMessage.map(e => <span class="error-message" id="dob-error">{e}</span>)
+
+                    <div class="form-date">
+                        <div class="form-group form-group-day">
+                            <label for="@Ids.dobDay" class="form-label  ">
+                                <span>@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.day.label")</span>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobDay" id="@Ids.dobDay" value=@form.data.get(Ids.dobDay).getOrElse("")>
+                            </label>
+                        </div>
+
+                        <div class="form-group form-group-month">
+                            <label for="@Ids.dobMonth" class="form-label">
+                                <span>  @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.month.label")</span>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobMonth" id="@Ids.dobMonth" value=@form.data.get(Ids.dobMonth).getOrElse("")>
+                            </label>
+                        </div>
+
+                        <div class="form-group form-group-year">
+                            <label for="@Ids.dobYear" class="form-label">
+                                <span>
+                                @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.year.label")
+                                </span>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobYear" id="@Ids.dobYear" value=@form.data.get(Ids.dobYear).getOrElse("")>
+                            </label>
+                        </div>
                     </div>
-
-                    <div class="form-group form-group-month">
-                        <label for="dob-month" class="form-label">
-                            <span>  @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.month.label")</span>
-                            <input type="number" class="form-control" name="dob-month" id="dob-month" value="">
-                        </label>
-                    </div>
-
-                    <div class="form-group form-group-year">
-                        <label for="dob-year" class="form-label">
-                            <span>
-                            @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.year.label")
-                            </span>
-                            <input type="number" class="form-control" name="dob-year" id="dob-year" value="">
-                        </label>
-                    </div>
+                </fieldset>
                 </div>
+            }
+            }
+
+            @sectionBreak
+
+            @helpers.input_text(
+                id = "nino",
+                label = messages("hts.customer-eligible.enter-details.form.personal-details.nino.label"),
+                value = nino,
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = "nino",
+                hint = Some(messages("hts.customer-eligible.enter-details.form.personal-details.nino.hint")),
+                readOnly = true
+            )
+
+            @sectionBreak
+
+            <h2>@messages("hts.customer-eligible.enter-details.form.address.title")</h2>
+
+            @helpers.input_text(
+                id = Ids.address1,
+                label = messages("hts.customer-eligible.enter-details.form.address.title.address1.label"),
+                value = form.data.get(Ids.address1).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.address1,
+                errorMessage = errorMessagesMap.get(Ids.address1).map(Html(_))
+            )
+
+            @helpers.input_text(
+                id = Ids.address2,
+                label = messages("hts.customer-eligible.enter-details.form.address.title.address2.label"),
+                value = form.data.get(Ids.address2).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.address2,
+                errorMessage = errorMessagesMap.get(Ids.address2).map(Html(_))
+            )
+
+            @helpers.input_text(
+                id = Ids.address3,
+                label = messages("hts.customer-eligible.enter-details.form.address.title.address3.label"),
+                value = form.data.get(Ids.address3).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.address3,
+                errorMessage = errorMessagesMap.get(Ids.address3).map(Html(_))
+            )
+
+            @helpers.input_text(
+                id = Ids.address4,
+                label = messages("hts.customer-eligible.enter-details.form.address.title.address4.label"),
+                value = form.data.get(Ids.address4).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.address4,
+                errorMessage = errorMessagesMap.get(Ids.address4).map(Html(_))
+            )
+
+            @helpers.input_text(
+                id = Ids.address5,
+                label = messages("hts.customer-eligible.enter-details.form.address.title.address5.label"),
+                value = form.data.get(Ids.address5).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.address5,
+                errorMessage = errorMessagesMap.get(Ids.address5).map(Html(_))
+            )
+
+            @helpers.input_text(
+                id = Ids.postcode,
+                label = messages("hts.customer-eligible.enter-details.form.address.title.postcode.label"),
+                value = form.data.get(Ids.postcode).getOrElse(""),
+                inputType = "text",
+                inputClass = Some("form-control-1-3"),
+                name = Ids.postcode,
+                errorMessage = errorMessagesMap.get(Ids.postcode).map(Html(_))
+            )
+
+            <div class=form-group">
+                <label class="form-label" for="countryCode">@messages("hts.customer-eligible.enter-details.form.address.title.country.label")</label>
+                <select class="form-control-1-3" id="countryCode" name="countryCode">
+                @countryCodes.sortBy(_._1).map{ case (countryName: String, countryCode: String) =>
+                <option value="@countryCode" @if(countryName.toUpperCase === "GREAT BRITAIN"){ selected }>
+                    @{countryName.toLowerCase.foldLeft("" → true){ case ((acc, captilize), c) ⇒
+                        val capitalizeNext = c === ' ' | c === '(' | c === '-'
+                        if(captilize){
+                            (acc + c.toUpper.toString) → capitalizeNext
+                        } else {
+                            (acc + c.toString) → capitalizeNext
+                        }
+                    }._1}
+                    </option>
+                }
+                </select>
             </div>
 
-        </fieldset>
+            <section class="subsection push--bottom">
+            @helpers.submit('_buttonClass -> "", 'id → "continue") { @messages("hts.customer-eligible.enter-details.form.submit") }
+            </section>
 
-        @sectionBreak
 
-        @helpers.input_text(
-            id = "nino",
-            label = messages("hts.customer-eligible.enter-details.form.personal-details.nino.label"),
-            value = nino,
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "nino",
-            hint = Some(messages("hts.customer-eligible.enter-details.form.personal-details.nino.hint")),
-            readOnly = true
-        )
+        }
 
-        @sectionBreak
-
-        <h2>@messages("hts.customer-eligible.enter-details.form.address.title")</h2>
-
-        @helpers.input_text(
-            id = "address1",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.address1.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "address1"
-        )
-
-        @helpers.input_text(
-            id = "address1",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.address1.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "address1"
-        )
-
-        @helpers.input_text(
-            id = "address2",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.address2.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "address2"
-        )
-
-        @helpers.input_text(
-            id = "address3",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.address3.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "address3"
-        )
-
-        @helpers.input_text(
-            id = "address4",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.address4.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "address4"
-        )
-
-        @helpers.input_text(
-            id = "address5",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.address5.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "address5"
-        )
-
-        @helpers.input_text(
-            id = "postcode",
-            label = messages("hts.customer-eligible.enter-details.form.address.title.postcode.label"),
-            value = "",
-            inputType = "text",
-            inputClass = Some("form-control-1-3"),
-            name = "postcode"
-        )
-
-        <div class=form-group">
-            <label class="form-label" for="countryCode">@messages("hts.customer-eligible.enter-details.form.address.title.country.label")</label>
-            <select class="form-control-1-3" id="countryCode" name="countryCode">
-            @countryCodes.sortBy(_._1).map{ case (countryName: String, countryCode: String) =>
-              <option value="@countryCode" @if(countryName.toUpperCase === "GREAT BRITAIN"){ selected }>
-                @{countryName.toLowerCase.foldLeft("" → true){ case ((acc, captilize), c) ⇒
-                    val capitalizeNext = c === ' ' | c === '(' | c === '-'
-                    if(captilize){
-                        (acc + c.toUpper.toString) → capitalizeNext
-                    } else {
-                        (acc + c.toString) → capitalizeNext
-                    }
-                }._1}
-                </option>
-            }
-            </select>
-        </div>
-
-        <section class="subsection push--bottom">
-        @helpers.submit('_buttonClass -> "", 'id → "continue") { @messages("hts.customer-eligible.enter-details.form.submit") }
-        </section>
-
+        <a href="@{routes.StrideController.getApplicationCancelledPage().url}" id="end-call">@messages("hts.customer-eligible.enter-details.cancel-application")</a>
 
     }
-
-    <a href="@{routes.StrideController.getApplicationCancelledPage().url}" id="end-call">@messages("hts.customer-eligible.enter-details.cancel-application")</a>
-
+  }
 }

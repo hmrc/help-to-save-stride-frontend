@@ -16,47 +16,45 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import cats.syntax.either._
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
-import play.api.Logger
-import play.api.data.FormError
 import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.{ErrorMessages, ninoFormatter}
 
 // scalastyle:off magic.number
-class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
+class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks with ValidationTestSupport {
 
   "EmailValidation" must {
 
       def genString(length: Int) = Gen.listOfN(length, Gen.alphaChar).map(_.mkString(""))
 
-      def test(value: String)(expectedResult: Either[Set[String], String], log: Boolean = false): Unit = {
-        val result: Either[Seq[FormError], String] = ninoFormatter.bind("key", Map("key" → value))
-        if (log) Logger.error(value + ": " + result.toString)
-        result.leftMap(_.toSet) shouldBe expectedResult.leftMap(_.map(s ⇒ FormError("key", s)))
-      }
+    val testNino = testValidation[String](ninoFormatter) _
 
     "validate against valid ninos" in {
-      test("AE123456C")(Right("AE123456C"))
-      test("AE 12 34 56 C")(Right("AE123456C"))
-      test("ae12 34 56c")(Right("AE123456C"))
+      testNino(Some("AE123456C"))(Right("AE123456C"))
+      testNino(Some("AE 12 34 56 C"))(Right("AE123456C"))
+      testNino(Some("ae12 34 56c"))(Right("AE123456C"))
     }
 
     "validate against blank strings" in {
-      test("")(Left(Set(ErrorMessages.blankNINO)))
+      testNino(Some(""))(Left(Set(ErrorMessages.blankNINO)))
     }
 
     "validate against in-valid patterns" in {
       forAll(genString(5), genString(5)) { (l, d) ⇒
-        test(s"$l@$d")(Left(Set(ErrorMessages.invalidNinoPattern)))
+        testNino(Some(s"$l@$d"))(Left(Set(ErrorMessages.invalidNinoPattern)))
       }
 
-      test("JF677211D")(Left(Set(ErrorMessages.invalidNinoPattern)))
-      test("jf677211d")(Left(Set(ErrorMessages.invalidNinoPattern)))
-      test("AE123456")(Left(Set(ErrorMessages.invalidNinoPattern)))
+      testNino(Some("JF677211D"))(Left(Set(ErrorMessages.invalidNinoPattern)))
+      testNino(Some("jf677211d"))(Left(Set(ErrorMessages.invalidNinoPattern)))
+      testNino(Some("AE123456"))(Left(Set(ErrorMessages.invalidNinoPattern)))
 
     }
+
+    "validate against non-existent NINO's" in {
+      testNino(None)(Left(Set(ErrorMessages.blankNINO)))
+    }
+
   }
 
 }
