@@ -83,6 +83,7 @@
             @sectionBreak
 
             @defining(errorMessagesMap.get(Ids.dateOfBirth)){ dobErrorMessage: Option[String] =>
+               @defining(dobErrorMessage.map(_ ⇒ "form-control-error")){ formControlError: Option[String] =>
                 <div class="form-group  soft--ends @if(dobErrorMessage.isDefined){ form-group-error }" id="@{Ids.dateOfBirth}" >
 
                 <fieldset class="form-group" aria-describedby="dob-hint @if(dobErrorMessage.isDefined){  dob-error }">
@@ -95,14 +96,14 @@
                         <div class="form-group form-group-day">
                             <label for="@Ids.dobDay" class="form-label  ">
                                 <span>@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.day.label")</span>
-                                <input type="number" class="form-control" name="@Ids.dobDay" id="@Ids.dobDay" value=@form.data.get(Ids.dobDay).getOrElse("")>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobDay" id="@Ids.dobDay" value=@form.data.get(Ids.dobDay).getOrElse("")>
                             </label>
                         </div>
 
                         <div class="form-group form-group-month">
                             <label for="@Ids.dobMonth" class="form-label">
                                 <span>  @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.month.label")</span>
-                                <input type="number" class="form-control" name="@Ids.dobMonth" id="@Ids.dobMonth" value=@form.data.get(Ids.dobMonth).getOrElse("")>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobMonth" id="@Ids.dobMonth" value=@form.data.get(Ids.dobMonth).getOrElse("")>
                             </label>
                         </div>
 
@@ -111,12 +112,13 @@
                                 <span>
                                 @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.year.label")
                                 </span>
-                                <input type="number" class="form-control" name="@Ids.dobYear" id="@Ids.dobYear" value=@form.data.get(Ids.dobYear).getOrElse("")>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobYear" id="@Ids.dobYear" value=@form.data.get(Ids.dobYear).getOrElse("")>
                             </label>
                         </div>
                     </div>
                 </fieldset>
                 </div>
+            }
             }
 
             @sectionBreak

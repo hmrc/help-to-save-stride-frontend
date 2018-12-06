@@ -39,7 +39,7 @@
 
     <div class="form-control-wrapper" data-type="@secondaryLabel">
         <input
-        class="form-control @inputClass"
+        class="form-control @inputClass @errorMessage.map(_ ⇒ "form-control-error")"
         type="@inputType"
         id="@id"
         name="@name"
