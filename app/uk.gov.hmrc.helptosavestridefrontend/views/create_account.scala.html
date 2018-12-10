@@ -16,32 +16,95 @@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
+@import uk.gov.hmrc.helptosavestridefrontend.util.browserDateFormat
 
 @import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 
 @(detailsToConfirm: Option[NSIPayload])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
- title = Messages("hts.create.account.title"),
- bodyClasses = None) {
+  title = Messages("hts.create.account.title"),
+  bodyClasses = None) {
 
- @detailsToConfirm match {
-   case Some(details) => {
-     <h1>Check customer’s details</h1>
-     <p>details.forename</p>
-   }
+  @detailsToConfirm match {
+    case Some(details) => {
+      <h1 class="heading-large">@Messages("hts.create.account.secure.title")</h1>
 
-   case None => { }
+      <h2 class="heading-medium">@Messages("hts.create.account.secure.h2")</h2>
+      <dl class="govuk-check-your-answers cya-questions-short">
+        <div>
+          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.name-label")</dt>
+          <dd class="cya-answer">@details.forename @details.surname</dd>
+        </div>
+        <div>
+          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.dob-label")</dt>
+          <dd class="cya-answer">@details.dateOfBirth.format(browserDateFormat)</dd>
+        </div>
+        <div>
+          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.nino-label")</dt>
+          <dd class="cya-answer">@{details.nino.grouped(2).mkString(" ")}</dd>
+        </div>
+      </dl>
+
+      <h2 class="heading-medium">@Messages("hts.create.account.secure.h3")</h2>
+      <dl class="govuk-check-your-answers cya-questions-short">
+        <div>
+          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.address-label-l1")</dt>
+          <dd class="cya-answer">@details.contactDetails.address1</dd>
+        </div>
+        <div>
+          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.address-label-l2")</dt>
+          <dd class="cya-answer">@details.contactDetails.address2</dd>
+        </div>
+        @{details.contactDetails.address3.map(a => {
+          <div>
+            <dt class="cya-question">{Messages("hts.you.are.eligible.user.details.address-label-l3")}</dt>
+            <dd class="cya-answer">{a}</dd>
+          </div>
+        })}
+        @{details.contactDetails.address4.map(a => {
+        <div>
+          <dt class="cya-question">{Messages("hts.you.are.eligible.user.details.address-label-l4")}</dt>
+          <dd class="cya-answer">{a}</dd>
+        </div>
+        })}
+        @{details.contactDetails.address5.map(a => {
+        <div>
+          <dt class="cya-question">{Messages("hts.you.are.eligible.user.details.address-label-l5")}</dt>
+          <dd class="cya-answer">{a}</dd>
+        </div>
+        })}
+        <div>
+          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.postcode")</dt>
+          <dd class="cya-answer">@details.contactDetails.postcode</dd>
+        </div>
+      </dl>
+    }
+    case None => {
+      <h1 class="heading-large">@Messages("hts.create.account.h1")</h1>
+    }
   }
 
 
+  <h2 class="heading-medium">@Messages("hts.create.account.terms.heading")</h2>
+  <p>@Messages("hts.create.account.terms.p1")</p>
 
-  <h1 class="heading-large">@Messages("hts.create.account.h1")</h1>
+  <ul class="list list-bullet">
+    <li>@Messages("hts.create.account.terms.ul1-li1")</li>
+    <li>@Messages("hts.create.account.terms.ul1-li2")</li>
+    <li>@Messages("hts.create.account.terms.ul1-li3")</li>
+    <li>@Messages("hts.create.account.terms.ul1-li4")</li>
+  </ul>
+
+  <p>@Messages("hts.create.account.terms.p2")</p>
+
+  <!-- TODO: Review Content -->
+  <h2>CONTENT BELOW TO BE REPLACED WITH THE ABOVE?</h2>
 
   <p>@Messages("hts.create.account.p1")</p>
   <ul class="list list-bullet">
-   <li>@Messages("hts.create.account.ul1-li1")</li>
-   <li>@Messages("hts.create.account.ul1-li2")</li>
+    <li>@Messages("hts.create.account.ul1-li1")</li>
+    <li>@Messages("hts.create.account.ul1-li2")</li>
   </ul>
 
   @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {

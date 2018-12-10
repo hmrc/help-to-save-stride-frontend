@@ -29,6 +29,12 @@ hts.you.are.eligible.user.details.name-label=Name
 hts.you.are.eligible.user.details.nino-label=National Insurance number
 hts.you.are.eligible.user.details.dob-label=Date of birth
 hts.you.are.eligible.user.details.address-label=Address
+hts.you.are.eligible.user.details.address-label-l1=Address line 1
+hts.you.are.eligible.user.details.address-label-l2=Address line 2
+hts.you.are.eligible.user.details.address-label-l3=Address line 3
+hts.you.are.eligible.user.details.address-label-l4=Address line 4
+hts.you.are.eligible.user.details.address-label-l5=Address line 5
+hts.you.are.eligible.user.details.postcode=Postcode
 hts.you.are.eligible.h3=Tell the customer that, by continuing, they are confirming they are eligible.
 hts.you.are.eligible.continue-button=Customer’s details are correct
 hts.you.are.eligible.end-call.button=Cancel application and end call
@@ -101,6 +107,18 @@ hts.create.account.ul1-li1=read the customer the terms and conditions
 hts.create.account.ul1-li2=tell them they only have until the end of each calendar month to pay in money - even if they opened their account towards the end of the month
 hts.create.account.p2=Ask customer if they understand - and accept the terms and conditions - and want to open an account.
 
+hts.create.account.secure.title=Check customer’s details
+hts.create.account.secure.h2=Personal Details
+hts.create.account.secure.h3=Address
+
+hts.create.account.terms.heading=Terms and conditions
+hts.create.account.terms.p1=The customer must agree that:
+hts.create.account.terms.ul1-li1=their details are correct
+hts.create.account.terms.ul1-li2=they have understood the eligibility criteria and are eligible for a Help to Save account
+hts.create.account.terms.ul1-li3=they will tell us each time they leave the UK for 8 weeks or more
+hts.create.account.terms.ul1-li4=they are creating a Help to Save account for the first time
+hts.create.account.terms.p2=Ask the customer if they understand and agree to the terms and conditions, and want to create a Help to Save account.
+
 hts.account.exists.title=Customer already has an account
 hts.account.exists.h1=Customer already has an account
 hts.account.exists.p1=Customer can pay in by bank transfer or standing order. They will need to set up the payment through their bank.
@@ -168,4 +186,4 @@ hts.error.page.button.start-again=Start again
 
 
 hts.restart.journey=Restart Journey
-hts.create-account.continue-button=Create account
+hts.create-account.continue-button=Agree and create account
