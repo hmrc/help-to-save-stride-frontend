@@ -84,7 +84,7 @@
 
             @defining(errorMessagesMap.get(Ids.dateOfBirth)){ dobErrorMessage: Option[String] =>
                @defining(dobErrorMessage.map(_ ⇒ "form-control-error")){ formControlError: Option[String] =>
-                <div class="form-group  soft--ends @if(dobErrorMessage.isDefined){ form-group-error }" id="@{Ids.dateOfBirth}" >
+                <div class="form-group  soft--ends @if(dobErrorMessage.isDefined){ form-group-error }" id="@{Ids.dateOfBirth}">
 
                 <fieldset class="form-group" aria-describedby="dob-hint @if(dobErrorMessage.isDefined){  dob-error }">
                     <legend><span class="form-label">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")</span></legend>
