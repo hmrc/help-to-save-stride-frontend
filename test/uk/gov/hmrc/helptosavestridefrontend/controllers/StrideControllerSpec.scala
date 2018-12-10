@@ -27,7 +27,6 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, HTSEvent, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
-import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsStandardSession
@@ -39,6 +38,7 @@ import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheck
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
+import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.helptosavestridefrontend.{models, _}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -144,7 +144,7 @@ class StrideControllerSpec
       }
     }
 
-    "the cusomter eligible page" must {
+    "the customer eligible page" must {
 
       "show the /check-eligibility when there is no session in mongo" in {
         inSequence {
@@ -174,7 +174,7 @@ class StrideControllerSpec
 
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
           mockAudit(auditEvent, "AE123456C")
         }
 
@@ -187,7 +187,7 @@ class StrideControllerSpec
       "show the enter details page if session is found in mongo and user is eligible and the role type is secure" in {
         inSequence {
           mockSuccessfulSecureAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleStrideUserInfo, None, None))))
+          mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
@@ -221,7 +221,7 @@ class StrideControllerSpec
       "redirect to the enter-customer-details page if the stride operator has a Secure role type and the caller is eligible" in {
         inSequence {
           mockSuccessfulSecureAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleStrideUserInfo, Some(nsiUserInfo)))))
+          mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleResult, Some(nsiUserInfo)))))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
@@ -249,7 +249,7 @@ class StrideControllerSpec
       "redirect to the you-are-eligible page if session is found in mongo and user is eligible" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
         }
 
         val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -318,7 +318,7 @@ class StrideControllerSpec
 
     "handling allowManualAccountCreation" must {
 
-      "return 200 and redirect to the create account page if retrieval of user info is successful" in {
+      "redirect to the create account page if retrieval of user info is successful" in {
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
           mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
@@ -327,8 +327,8 @@ class StrideControllerSpec
         }
 
         val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
-        status(result) shouldBe OK
-        contentAsString(result) should include("Create an account")
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
       }
 
       "redirect to the error page when retrieval of user info fails" in {
@@ -371,7 +371,7 @@ class StrideControllerSpec
       "redirect to the you-are-eligible page if session is found in mongo and user is eligible" in {
         inSequence {
           mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
         }
 
         val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
@@ -664,18 +664,18 @@ class StrideControllerSpec
         "show the create account page if the user is eligible and details are confirmed" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
           }
 
           val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
           status(result) shouldBe OK
-          contentAsString(result) should include("Ask customer if they understand - and accept the terms and conditions")
+          contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
         }
 
         "redirect to the eligible page if the user is eligible and details are NOT confirmed" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
           }
 
           val result = controller.getCreateAccountPage(FakeRequest())
@@ -686,13 +686,38 @@ class StrideControllerSpec
 
       "the role type is secure" must {
 
-        // TODO: implement
-        "redirect to the eligible page if there are no cusomter details in session" in {
+        "redirect to the eligible page if there is no session" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
 
+          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
+        }
+
+        "redirect to the eligible page if there is no customer data in the session" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
+          }
+
+          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
         }
 
         "show the create account page with customer details for the call handler to check" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, Some(nsiUserInfo), None))))
+          }
 
+          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          status(result) shouldBe OK
+          contentAsString(result) should include(nsiUserInfo.forename)
+          contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
         }
 
       }
@@ -717,8 +742,8 @@ class StrideControllerSpec
         "update the detailsConfirmed flag to true in mongo and show the terms and conditions" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
-            mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Right(()))
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
+            mockSessionStoreInsert(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))(Right(()))
           }
 
           val result = controller.customerEligibleSubmit(FakeRequest())
@@ -729,8 +754,8 @@ class StrideControllerSpec
         "handle errors in case of updating mongo session with detailsConfirmed flag" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
-            mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))(Left("unexpected error during put"))
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
+            mockSessionStoreInsert(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))(Left("unexpected error during put"))
           }
 
           val result = controller.customerEligibleSubmit(FakeRequest())
@@ -742,17 +767,64 @@ class StrideControllerSpec
 
       "the role type is secure" must {
 
-        // TODO: implement
+        val formBody = Map(
+          Ids.forename → nsiUserInfo.forename,
+          Ids.surname → nsiUserInfo.surname,
+          Ids.dobDay → nsiUserInfo.dateOfBirth.getDayOfMonth.toString,
+          Ids.dobMonth → nsiUserInfo.dateOfBirth.getMonthValue.toString,
+          Ids.dobYear → nsiUserInfo.dateOfBirth.getYear.toString,
+          Ids.address1 → nsiUserInfo.contactDetails.address1,
+          Ids.address2 → nsiUserInfo.contactDetails.address2,
+          Ids.address3 → nsiUserInfo.contactDetails.address3.getOrElse(""),
+          Ids.address4 → nsiUserInfo.contactDetails.address4.getOrElse(""),
+          Ids.address5 → nsiUserInfo.contactDetails.address5.getOrElse(""),
+          Ids.postcode → nsiUserInfo.contactDetails.postcode,
+          Ids.countryCode → "GB"
+        )
+
+        val expectedSession =
+          HtsSecureSession(nino, eligibleResult, Some(nsiUserInfo.copy(contactDetails = nsiUserInfo.contactDetails.copy(phoneNumber = None))), None)
+
         "show the form with errors if the form data is invalid" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
+          }
+
+          val result = controller.customerEligibleSubmit(fakeRequestWithCSRFToken.withFormUrlEncodedBody())
+          status(result) shouldBe OK
+
+          val content = contentAsString(result)
+
+          content should include("There is a problem")
+          content should include("Customer is eligible for an account")
+          content should include ("enter their details")
 
         }
 
         "write the data to mongo and redirect to the create account page if the data is valid" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
+            mockSessionStoreInsert(expectedSession)(Right(()))
+          }
 
+          val result = controller.customerEligibleSubmit(fakeRequestWithCSRFToken.withFormUrlEncodedBody(formBody.toList: _*))
+
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
         }
 
         "return a 500 if there is an error writing to mongo" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
+            mockSessionStoreInsert(expectedSession)(Left("uh oh"))
+          }
 
+          val result = controller.customerEligibleSubmit(fakeRequestWithCSRFToken.withFormUrlEncodedBody(formBody.toList: _*))
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
 
       }
@@ -771,208 +843,419 @@ class StrideControllerSpec
 
     }
 
-    "handling createAccount" must {
+    "handling createAccount" when {
 
-      "redirect to the eligibility page if there is no session data in mongo" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(None))
+      "the roleType is standard" must {
+
+        "redirect to the eligibility page if there is no session data in mongo" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
         }
 
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
-      }
+        "redirect to the eligible page if session data found in mongo but details are not confirmed" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
+          }
 
-      "redirect to the eligible page if session data found in mongo but details are not confirmed" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
         }
 
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
-      }
+        "show the account created page if session data found and details are confirmed" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockSessionStoreInsert(HtsStandardSession(eligibleResult, nsiUserInfo, true, Some("123456789")))(Right(()))
+          }
 
-      "show the account created page if session data found and details are confirmed" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
-          mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Right(()))
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
         }
 
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
+        "redirect to the account already exists page" when {
+
+          "the session indicates that the applicant is already enrolled into HTS" in {
+            inSequence {
+              mockSuccessfulAuthorisation()
+              mockSessionStoreGet(Right(Some(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo))))
+            }
+
+            val result = controller.createAccount(FakeRequest())
+            redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+          }
+
+          "NS&I indicate that the account already exists" in {
+            val accountNumber = "account"
+            inSequence {
+              mockSuccessfulAuthorisation()
+              mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
+              mockSessionStoreInsert(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, true, Some(accountNumber)))(Right(()))
+            }
+
+            val result = controller.createAccount(FakeRequest())
+            status(result) shouldBe SEE_OTHER
+            redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+          }
+
+          "NS&I indicate that the account already exists and the account number cannot be retrieved" in {
+            inSequence {
+              mockSuccessfulAuthorisation()
+              mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockGetAccount(nsiUserInfo.nino)(Left("oh no"))
+              mockSessionStoreInsert(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, true, None))(Right(()))
+            }
+
+            val result = controller.createAccount(FakeRequest())
+            status(result) shouldBe SEE_OTHER
+            redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+          }
+        }
+
+        "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Left("error occured creating an account"))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+        }
+
+        "handle manual account creation requests when there is userInfo passed in" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated("123456789")))
+            mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
+        }
+
+        "show an error page if the mongo write fails after account has been created successfully" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockSessionStoreInsert(HtsStandardSession(eligibleResult, nsiUserInfo, true, Some("123456789")))(Left(""))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+        }
+
       }
 
-      "redirect to the account already exists page" when {
+      "the roleType is secure" must {
 
-        "the session indicates that the applicant is already enrolled into HTS" in {
+        val secureSession = HtsSecureSession(nino, eligibleResult, Some(nsiUserInfo), None)
+
+        "redirect to the eligibility page if there is no session data in mongo" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
+        }
+
+        "redirect to the eligible page if session data found in mongo but there are no customer details" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession.copy(nSIUserInfo = None))))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
+        }
+
+        "show the account created page if session data found and details are confirmed" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession)))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockSessionStoreInsert(secureSession.copy(accountNumber = Some("123456789")))(Right(()))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
+        }
+
+        "redirect to the account already exists page" when {
+
+          "the session indicates that the applicant is already enrolled into HTS" in {
+            inSequence {
+              mockSuccessfulSecureAuthorisation()
+              mockSessionStoreGet(Right(Some(HtsSecureSession(nino, accountExistsStrideUserInfo, None, None))))
+            }
+
+            val result = controller.createAccount(FakeRequest())
+            redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+          }
+
+          "NS&I indicate that the account already exists" in {
+            val accountNumber = "account"
+            inSequence {
+              mockSuccessfulSecureAuthorisation()
+              mockSessionStoreGet(Right(Some(secureSession)))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
+              mockSessionStoreInsert(HtsSecureSession(nino, AlreadyHasAccount, Some(nsiUserInfo), Some(accountNumber)))(Right(()))
+            }
+
+            val result = controller.createAccount(FakeRequest())
+            status(result) shouldBe SEE_OTHER
+            redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+          }
+
+          "NS&I indicate that the account already exists and the account number cannot be retrieved" in {
+            inSequence {
+              mockSuccessfulSecureAuthorisation()
+              mockSessionStoreGet(Right(Some(secureSession)))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockGetAccount(nsiUserInfo.nino)(Left("Uh oh!"))
+              mockSessionStoreInsert(HtsSecureSession(nino, AlreadyHasAccount, Some(nsiUserInfo), None))(Right(()))
+            }
+
+            val result = controller.createAccount(FakeRequest())
+            status(result) shouldBe SEE_OTHER
+            redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
+          }
+        }
+
+        "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession)))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Left("error ocurred creating an account"))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+        }
+
+        "show an error page if the mongo write fails after account has been created successfully" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession)))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockSessionStoreInsert(secureSession.copy(accountNumber = Some("123456789")))(Left(""))
+          }
+
+          val result = controller.createAccount(FakeRequest())
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+        }
+      }
+
+    }
+
+    "handling getAccountCreatedPage" when {
+
+        def doRequest(): Future[Result] = controller.getAccountCreatedPage()(FakeRequest())
+
+      "the roleType is standard" must {
+
+        "redirect to the eligibility page if there is no session data in mongo" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
+        }
+
+        "redirect to the not eligible page if the session data indicates ineligibility" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleStrideUserInfo, nsiUserInfo))))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
+        }
+
+        "redirect the account created page if the session data indicates ineligibility" in {
           inSequence {
             mockSuccessfulAuthorisation()
             mockSessionStoreGet(Right(Some(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo))))
           }
 
-          val result = controller.createAccount(FakeRequest())
-          redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
-        }
-
-        "NS&I indicate that the account already exists" in {
-          val accountNumber = "account"
-          inSequence {
-            mockSuccessfulAuthorisation()
-            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
-            mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
-            mockSessionStoreInsert(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, true, Some(accountNumber)))(Right(()))
-          }
-
-          val result = controller.createAccount(FakeRequest())
+          val result = doRequest()
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
         }
 
-        "NS&I indicate that the account already exists and the account number cannot be retrieved" in {
+        "redirect to the eligible page if the user is eligible and the details have not been confirmed" in {
           inSequence {
             mockSuccessfulAuthorisation()
-            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
-            mockGetAccount(nsiUserInfo.nino)(Left("oh no"))
-            mockSessionStoreInsert(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, true, None))(Right(()))
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
           }
 
-          val result = controller.createAccount(FakeRequest())
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
+        }
+
+        "write an 'already has account' status to mongo and then show the account created page" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true, Some("123456789")))))
+            mockSessionStoreInsert(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Right(()))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe OK
+          contentAsString(result) should include("Help to Save account created")
+        }
+
+        "show an error page if the mongo write fails" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true, Some("123456789")))))
+            mockSessionStoreInsert(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Left(""))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+        }
+
+        "show an error page if there is no account number in the session" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
+        }
+
+        "redirect the account created page if the session data indicates ineligibility but the stride operator creates account manually" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))))
+            mockSessionStoreInsert(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
+
+          }
+
+          val result = doRequest()
+          status(result) shouldBe OK
+          contentAsString(result) should include("Help to Save account created")
+        }
+      }
+
+      "the roleType is secure" must {
+
+        val accountNumber = "12345"
+        val secureSession = HtsSecureSession(nino, eligibleResult, Some(nsiUserInfo), Some(accountNumber))
+
+        "redirect to the eligibility page if there is no session data in mongo" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(None))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
+        }
+
+        "redirect to the not eligible page if the session data indicates ineligibility" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession.copy(userInfo = ineligibleStrideUserInfo))))
+          }
+
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
+        }
+
+        "redirect the account created page if the session data indicates ineligibility" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession.copy(userInfo = accountExistsStrideUserInfo))))
+          }
+
+          val result = doRequest()
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
         }
 
-      }
+        "redirect to the eligible page if the user is eligible and there are no user details" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession.copy(nSIUserInfo = None))))
+          }
 
-      "return an Internal Server Error when the back-end returns a status other than 201 or 409" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Left("error occured creating an account"))
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
         }
 
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
-      }
+        "write an 'already has account' status to mongo and then show the account created page" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession)))
+            mockSessionStoreInsert(secureSession.copy(userInfo = accountExistsStrideUserInfo))(Right(()))
+          }
 
-      "handle manual account creation requests when there is userInfo passed in" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated("123456789")))
-          mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
+          val result = doRequest()
+          status(result) shouldBe OK
+          contentAsString(result) should include("Help to Save account created")
         }
 
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getAccountCreatedPage().url)
-      }
+        "show an error page if the mongo write fails" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession)))
+            mockSessionStoreInsert(secureSession.copy(userInfo = accountExistsStrideUserInfo))(Left("Oh no!"))
+          }
 
-      "show an error page if the mongo write fails after account has been created successfully" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleStrideUserInfo.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
-          mockSessionStoreInsert(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Left(""))
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
 
-        val result = controller.createAccount(FakeRequest())
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
-      }
-    }
+        "show an error page if there is no account number" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisation()
+            mockSessionStoreGet(Right(Some(secureSession.copy(accountNumber = None))))
+          }
 
-    "handling getAccountCreatedPage" must {
-
-        def doRequest(): Future[Result] = controller.getAccountCreatedPage()(FakeRequest())
-
-      "redirect to the eligibility page if there is no session data in mongo" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(None))
+          val result = doRequest()
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
 
-        val result = doRequest()
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
-      }
-
-      "redirect to the not eligible page if the session data indicates ineligibility" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleStrideUserInfo, nsiUserInfo))))
-        }
-
-        val result = doRequest()
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
-      }
-
-      "redirect the account created page if the session data indicates ineligibility" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo))))
-        }
-
-        val result = doRequest()
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
-      }
-
-      "redirect to the eligible page if the user is eligible and the details have not been confirmed" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo))))
-        }
-
-        val result = doRequest()
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
-      }
-
-      "write an 'already has account' status to mongo and then show the account created page" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true, Some("123456789")))))
-          mockSessionStoreInsert(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo, true, Some("123456789")))(Right(()))
-        }
-
-        val result = doRequest()
-        status(result) shouldBe OK
-        contentAsString(result) should include("Help to Save account created")
-      }
-
-      "show an error page if the mongo write fails" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleStrideUserInfo, nsiUserInfo, detailsConfirmed = true))))
-          mockSessionStoreInsert(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo, true))(Left(""))
-        }
-
-        val result = doRequest()
-        status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
-      }
-
-      "redirect the account created page if the session data indicates ineligibility but the stride operator creates account manually" in {
-        inSequence {
-          mockSuccessfulAuthorisation()
-          mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))))
-          mockSessionStoreInsert(HtsStandardSession(accountExistsStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
-
-        }
-
-        val result = doRequest()
-        status(result) shouldBe OK
-        contentAsString(result) should include("Help to Save account created")
       }
 
     }

@@ -309,7 +309,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with GeneratorDrivenPro
         "they are non empty and their length are within the configured maximum length" in {
           testPostcode(Some("a"))(Right("a"))
           testPostcode(Some(" abc "))(Right("abc"))
-          testPostcode(Some(" ab c "))(Right("abc"))
+          testPostcode(Some(" ab c "))(Right("ab c"))
         }
 
       }

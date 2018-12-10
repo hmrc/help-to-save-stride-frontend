@@ -98,7 +98,7 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
       val tooLongCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.length <= postcodeMaxTotalLength, ErrorMessages.postcodeTooLong)
       val tooShortCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.postCodeEmpty)
 
-      (tooLongCheck, tooShortCheck).mapN{ case _ ⇒ trimmed }
+      (tooLongCheck, tooShortCheck).mapN{ case _ ⇒ postcode.trim }
     },
     ErrorMessages.postCodeEmpty
   )

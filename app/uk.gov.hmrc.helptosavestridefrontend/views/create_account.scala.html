@@ -98,20 +98,8 @@
 
   <p>@Messages("hts.create.account.terms.p2")</p>
 
-  <!-- TODO: Review Content -->
-  <h2>CONTENT BELOW TO BE REPLACED WITH THE ABOVE?</h2>
-
-  <p>@Messages("hts.create.account.p1")</p>
-  <ul class="list list-bullet">
-    <li>@Messages("hts.create.account.ul1-li1")</li>
-    <li>@Messages("hts.create.account.ul1-li2")</li>
-  </ul>
-
   @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
-    <section class="subsection divider--top">
-      <p class="subsection">@Messages("hts.create.account.p2")</p>
       @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "soft-half--left") { @messages("hts.create-account.continue-button") }
       <a role="button" class="flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
-    </section>
   }
 }
