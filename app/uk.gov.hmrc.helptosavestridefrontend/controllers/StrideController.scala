@@ -308,6 +308,11 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
     )
   }(routes.StrideController.createAccount())
 
+  private def userDetailsManuallyEntered(roleType: RoleType): Boolean = roleType match {
+    case Standard(_) ⇒ false
+    case Secure(_)   ⇒ true
+  }
+
   private def createAccountAndUpdateSession(roleType:          RoleType,
                                             nsiUserInfo:       NSIPayload,
                                             eligibilityResult: SessionEligibilityCheckResult,
@@ -315,7 +320,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
                                             reasonCode:        Int,
                                             source:            String)(implicit hc: HeaderCarrier, request: Request[_]) = {
     val result = for {
-      createAccountResult ← helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source))
+      createAccountResult ← helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source, userDetailsManuallyEntered(roleType)))
       sessionToStore ← createAccountResult match {
         case AccountCreated(accountNumber) ⇒ roleType match {
           case Standard(_) ⇒ EitherT.pure(HtsStandardSession(eligibilityResult, nsiUserInfo, detailsConfirmed, Some(accountNumber)))

@@ -176,7 +176,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
 
     "createAccount" must {
 
-      val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride")
+      val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride", false)
 
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
         mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Some(Json.parse("""{"accountNumber":"123456789"}""")))))

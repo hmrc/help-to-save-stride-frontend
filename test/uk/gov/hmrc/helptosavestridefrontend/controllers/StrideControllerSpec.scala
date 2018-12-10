@@ -873,7 +873,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulAuthorisation()
             mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", false))(Right(AccountCreated("123456789")))
             mockSessionStoreInsert(HtsStandardSession(eligibleResult, nsiUserInfo, true, Some("123456789")))(Right(()))
           }
 
@@ -899,7 +899,7 @@ class StrideControllerSpec
             inSequence {
               mockSuccessfulAuthorisation()
               mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
-              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", false))(Right(AccountAlreadyExists))
               mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
               mockSessionStoreInsert(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, true, Some(accountNumber)))(Right(()))
             }
@@ -913,7 +913,7 @@ class StrideControllerSpec
             inSequence {
               mockSuccessfulAuthorisation()
               mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
-              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", false))(Right(AccountAlreadyExists))
               mockGetAccount(nsiUserInfo.nino)(Left("oh no"))
               mockSessionStoreInsert(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, true, None))(Right(()))
             }
@@ -928,7 +928,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulAuthorisation()
             mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Left("error occured creating an account"))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", false))(Left("error occured creating an account"))
           }
 
           val result = controller.createAccount(FakeRequest())
@@ -940,7 +940,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulAuthorisation()
             mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual"))(Right(AccountCreated("123456789")))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, ineligibleManualOverrideStrideUserInfo.response.reasonCode, "Stride-Manual", false))(Right(AccountCreated("123456789")))
             mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo, false, Some("123456789")))(Right(()))
           }
 
@@ -953,7 +953,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulAuthorisation()
             mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", false))(Right(AccountCreated("123456789")))
             mockSessionStoreInsert(HtsStandardSession(eligibleResult, nsiUserInfo, true, Some("123456789")))(Left(""))
           }
 
@@ -994,7 +994,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulSecureAuthorisation()
             mockSessionStoreGet(Right(Some(secureSession)))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", true))(Right(AccountCreated("123456789")))
             mockSessionStoreInsert(secureSession.copy(accountNumber = Some("123456789")))(Right(()))
           }
 
@@ -1020,7 +1020,7 @@ class StrideControllerSpec
             inSequence {
               mockSuccessfulSecureAuthorisation()
               mockSessionStoreGet(Right(Some(secureSession)))
-              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", true))(Right(AccountAlreadyExists))
               mockGetAccount(nsiUserInfo.nino)(Right(AccountDetails(accountNumber)))
               mockSessionStoreInsert(HtsSecureSession(nino, AlreadyHasAccount, Some(nsiUserInfo), Some(accountNumber)))(Right(()))
             }
@@ -1034,7 +1034,7 @@ class StrideControllerSpec
             inSequence {
               mockSuccessfulSecureAuthorisation()
               mockSessionStoreGet(Right(Some(secureSession)))
-              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountAlreadyExists))
+              mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", true))(Right(AccountAlreadyExists))
               mockGetAccount(nsiUserInfo.nino)(Left("Uh oh!"))
               mockSessionStoreInsert(HtsSecureSession(nino, AlreadyHasAccount, Some(nsiUserInfo), None))(Right(()))
             }
@@ -1049,7 +1049,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulSecureAuthorisation()
             mockSessionStoreGet(Right(Some(secureSession)))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Left("error ocurred creating an account"))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", true))(Left("error ocurred creating an account"))
           }
 
           val result = controller.createAccount(FakeRequest())
@@ -1061,7 +1061,7 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulSecureAuthorisation()
             mockSessionStoreGet(Right(Some(secureSession)))
-            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride"))(Right(AccountCreated("123456789")))
+            mockCreateAccount(CreateAccountRequest(nsiUserInfo, eligibleResult.response.reasonCode, "Stride", true))(Right(AccountCreated("123456789")))
             mockSessionStoreInsert(secureSession.copy(accountNumber = Some("123456789")))(Left(""))
           }
 
