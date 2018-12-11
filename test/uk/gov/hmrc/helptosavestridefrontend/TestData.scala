@@ -33,7 +33,7 @@ trait TestData { // scalastyle:off magic.number
               "firstForenameOrInitial": "A",
               "surname": "Smith"
             },
-            "dateOfBirth": "1980-01-01",
+            "dateOfBirth": "1960-01-01",
             "address": {
               "line1": "1 Station Road",
               "line2": "Town Centre",
@@ -46,9 +46,9 @@ trait TestData { // scalastyle:off magic.number
             "phoneNumber": "07841097845"
      }""".stripMargin
 
-  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("GB"), Some("07841097845"), "00")
+  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("GB"), Some("07841097845"))
 
-  val nsiUserInfo = NSIPayload("A", "Smith", LocalDate.parse("1980-01-01"), "AE123456C", contactDetails, "callCentre")
+  val nsiUserInfo = NSIPayload("A", "Smith", LocalDate.parse("1960-01-01"), "AE123456C", contactDetails)
 
   val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
 
@@ -58,7 +58,7 @@ trait TestData { // scalastyle:off magic.number
 
   val cacheKey = UUID.randomUUID().toString
 
-  val eligibleStrideUserInfo = SessionEligibilityCheckResult.Eligible(eligibleResponse.value)
+  val eligibleResult = SessionEligibilityCheckResult.Eligible(eligibleResponse.value)
 
   val ineligibleStrideUserInfo = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, false)
 

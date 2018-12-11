@@ -40,7 +40,6 @@ class ApplicantDetailsFormSpec extends WordSpec with Matchers with MockFactory {
       .returning(result)
   val binder = mock[TestBinder]
 
-
   implicit val testValidation: ApplicantDetailsValidation = new ApplicantDetailsValidation {
     def dummyFormatter[A]: Formatter[A] = new Formatter[A] {
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], A] = binder.bind(key, data)
