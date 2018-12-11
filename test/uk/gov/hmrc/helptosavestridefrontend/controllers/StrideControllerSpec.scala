@@ -682,6 +682,29 @@ class StrideControllerSpec
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
         }
+
+        "show the create account page if the user is ineligible and manual account creation has been selected" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideStrideUserInfo, nsiUserInfo))))
+          }
+
+          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          status(result) shouldBe OK
+          contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
+        }
+
+        "redirect to the ineligible page if the user is ineligible and manual account creation has not been selected" in {
+          inSequence {
+            mockSuccessfulAuthorisation()
+            mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleStrideUserInfo, nsiUserInfo))))
+          }
+
+          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          status(result) shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
+        }
+
       }
 
       "the role type is secure" must {
