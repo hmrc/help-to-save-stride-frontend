@@ -79,7 +79,7 @@ hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-month=D
 hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-year=Date of birth must include a day and year
 hts.customer-eligible.enter-details.error.date-of-birth.must-include-month-year=Date of birth must include a month and year
 
-hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day=Enter a real date of the month
+hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day=Enter a real day of the month
 hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month=Enter a real month
 hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year=Enter a real year
 
