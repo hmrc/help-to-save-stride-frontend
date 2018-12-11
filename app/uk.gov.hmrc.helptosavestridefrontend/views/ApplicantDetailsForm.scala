@@ -66,7 +66,7 @@ object ApplicantDetailsForm {
     val errorExists: Boolean = errors.nonEmpty
   }
 
-  def errorMessages(form: Form[ApplicantDetails])(implicit appConfig: FrontendAppConfig, messages: Messages): ErrorMessages = { // scalastyle:ignore method.length
+  def errorMessages(form: Form[ApplicantDetails])(implicit appConfig: FrontendAppConfig, messages: Messages): ErrorMessages = { // scalastyle:ignore
     import appConfig.FormValidation._
 
     val forenameErrorMessage =
@@ -109,7 +109,8 @@ object ApplicantDetailsForm {
       )
 
     val dateOfBirthErrorMessage = {
-      val hasInvalidField = form.hasDayOfMonthInvalid || form.hasMonthInvalid || form.hasYearInvalid
+      val hasInvalidField =
+        form.hasDayOfMonthInvalid || form.hasMonthInvalid || form.hasYearInvalid || form.hasYearTooEarly || form.hasDateOfBirthInFuture
 
       val nullFieldErrorMessage: Option[String] = (hasInvalidField, form.hasDayOfMonthEmpty, form.hasMonthEmpty, form.hasYearEmpty) match {
         case (true, false, false, false) ⇒ None // error message will be defined below
@@ -124,13 +125,14 @@ object ApplicantDetailsForm {
         case (_, false, false, false)    ⇒ None
       }
 
-      val invalidFieldErrorMessage: Option[String] = (form.hasDayOfMonthInvalid, form.hasMonthInvalid, form.hasYearInvalid) match {
-        case (false, false, false) ⇒ None
-        case (true, false, false)  ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day"))
-        case (false, true, false)  ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month"))
-        case (false, false, true)  ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year"))
-        case (_, _, _)             ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth"))
-      }
+      val invalidFieldErrorMessage: Option[String] =
+        (form.hasDayOfMonthInvalid, form.hasMonthInvalid, form.hasYearInvalid, form.hasYearTooEarly || form.hasDateOfBirthInFuture) match {
+          case (false, false, false, _)    ⇒ None
+          case (true, false, false, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day"))
+          case (false, true, false, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month"))
+          case (false, false, true, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year"))
+          case (_, _, _, _)                ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth"))
+        }
 
       val dateInvalidErrorMessage =
         errorMessageKey(
