@@ -77,8 +77,8 @@ class EligibilitySteps extends Steps with NINOGenerator {
 
   When("^the internal operator chooses to create an account manually on behalf of the applicant$") {
     NotEligibleReason5Page.clickSubmitForManualAccount()
-    Browser.checkCurrentPageIs(AllowManualAccountCreationPage)
-    AllowManualAccountCreationPage.clickSubmit()
+    Browser.checkCurrentPageIs(CreateAccountPage)
+    CreateAccountPage.clickSubmit()
   }
 
   Then("^the account is successfully created$") {
