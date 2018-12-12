@@ -248,8 +248,9 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           Ok(views.html.customer_eligible(nsiUserInfo))
       }, {
         // whenEligibleSecure
-        (_, nino, _, _) ⇒
-          Ok(views.html.enter_customer_details(nino, ApplicantDetailsForm.applicantDetailsForm))
+        (_, nino, nsiPayload, _) ⇒
+          val form = nsiPayload.fold(ApplicantDetailsForm.applicantDetailsForm)(ApplicantDetailsForm.apply)
+          Ok(views.html.enter_customer_details(nino, form))
       }
     )
   }(routes.StrideController.customerEligible())

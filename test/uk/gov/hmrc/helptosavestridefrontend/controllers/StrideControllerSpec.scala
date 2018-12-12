@@ -233,16 +233,29 @@ class StrideControllerSpec
         redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
 
-      "redirect to the enter-customer-details page if the stride operator has a Secure role type and the caller is eligible" in {
+      "show the enter-customer-details page if the stride operator has a Secure role type and the caller is eligible" in {
         inSequence {
           mockSuccessfulSecureAuthorisationWithDetails()
-          mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleResult, Some(nsiUserInfo)))))
+          mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleResult, None))))
         }
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
         contentAsString(result) should include("enter their details")
       }
+
+      "show the enter-customer-details page with the customer's details if the stride operator has a Secure role type and the caller is eligible " +
+        "and there are customer details in the session" in {
+          inSequence {
+            mockSuccessfulSecureAuthorisationWithDetails()
+            mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleResult, Some(nsiUserInfo)))))
+          }
+
+          val result = controller.customerEligible(fakeRequestWithCSRFToken)
+          status(result) shouldBe OK
+          contentAsString(result) should include("enter their details")
+          contentAsString(result) should include(nsiUserInfo.forename)
+        }
     }
 
     "getting the customer-not-eligible page" must {
