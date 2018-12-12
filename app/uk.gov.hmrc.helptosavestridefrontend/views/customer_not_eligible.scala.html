@@ -20,79 +20,102 @@
 @import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
 @import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 @import uk.gov.hmrc.helptosavestridefrontend.models.RoleType
+@import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.helpers
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.enter_customer_details_form_body
 @import cats.syntax.eq._
 
-@(ineligibilityReason: IneligibilityReason, foreNameAndSurname: Option[(String,String)], nino: String, roleType: RoleType)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetails
+@(ineligibilityReason: IneligibilityReason, foreNameAndSurname: Option[(String,String)], nino: String, maybeForm: Option[Form[ApplicantDetails]])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
-@uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-    title = messages("hts.eligibility.not.eligible.title"),
-    bodyClasses = None) {
 
-    <h1 class="heading-large">@messages("hts.eligibility.not.eligible.h1")</h1>
+ @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+        title = messages("hts.eligibility.not.eligible.title"),
+        bodyClasses = None) {
 
-    <p>@messages("hts.eligibility.not.eligible.p1")</p>
-
-    <div class="divider--bottom subsection">
-        <p>
-            @foreNameAndSurname.map{ case (forename, surname) =>
-            <span class="bold">@Messages("hts.eligibility.not.eligible.name")</span> @forename @surname<br />
+    @maybeForm.map{ form =>
+            @defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>
+                    @if(errorMessages.errorExists) {
+                        <div class="error-summary" role="alert" aria-labelledby="error-summary-give-nino" tabindex="-1">
+                            <h2 class="heading-medium error-summary-heading" id="error-summary-give-nino">@messages("hts.customer-eligible.enter-details.error.title")</h2>
+                            <ul class="error-summary-list">
+                            @{
+                                errorMessages.errors.map { case (fieldId, errorMessage) ⇒
+                                    Html(s"""<li><a href= "#$fieldId">$errorMessage</a></li>""")
+                                }
+                            }
+                            </ul>
+                        </div>
+                    }
             }
-            <span class="bold">@Messages("hts.eligibility.not.eligible.nino")</span> @{nino.grouped(2).mkString(" ")}<br />
-        </p>
-    </div>
-
-    @ineligibilityReason match {
-
-        case EntitledToWTCNoTCAndNoUC => {
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p1")</p>
-
-            <ul class="list list-bullet">
-                <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li1")</li>
-                <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li2")</li>
-            </ul>
-
-            <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.wtc.h2")</h2>
-
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p2")</p>
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p3")</p>
-        }
-
-        case NotEntitledToWTCAndUCInsufficient => {
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p1")</p>
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p2")</p>
-
-            <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.uc.h2")</h2>
-
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p3")</p>
-            <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p4")</p>
-        }
-
-        case EntitledToWTCNoTCAndInsufficientUC | NotEntitledToWTCAndNoUC => {
-            <p>@messages("hts.eligibility.not.eligible.no.benefits.p1")</p>
-
-            <ul class="list list-bullet">
-                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li1")</li>
-                <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li2")</li>
-            </ul>
-
-            <p>@messages("hts.eligibility.not.eligible.no.benefits.p2")</p>
-
-            <p>@messages("hts.eligibility.not.eligible.no.benefits.p3")</p>
-
-            <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.no.benefits.h2")</h2>
-
-            <p>@Messages("hts.eligibility.not.eligible.no.benefits.p4")</p>
-            <p>@Messages("hts.eligibility.not.eligible.no.benefits.p5")</p>
-            <p>@Messages("hts.eligibility.not.eligible.no.benefits.p6")</p>
-
-        }
     }
 
-    <a role="button" class="button subsection--wide push--bottom" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.eligibility.not.eligible.end-call")</a>
+        <h1 class="heading-large">@messages("hts.eligibility.not.eligible.h1")</h1>
 
-    @roleType match {
+        <p>@messages("hts.eligibility.not.eligible.p1")</p>
 
-    case RoleType.Standard(_) => {
+        <div class="divider--bottom subsection">
+            <p>
+                @foreNameAndSurname.map { case (forename, surname) =>
+                <span class="bold">@Messages("hts.eligibility.not.eligible.name")</span> @forename @surname <br />
+                }
+                <span class="bold">@Messages("hts.eligibility.not.eligible.nino")</span>
+                @{
+                    nino.grouped(2).mkString(" ")
+                } <br />
+            </p>
+        </div>
+
+        @ineligibilityReason match {
+
+            case EntitledToWTCNoTCAndNoUC => {
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p1")</p>
+
+                <ul class="list list-bullet">
+                    <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li1")</li>
+                    <li>@messages("hts.eligibility.not.eligible.not.entitled.wtc.ul1-li2")</li>
+                </ul>
+
+                <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.wtc.h2")</h2>
+
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p2")</p>
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.wtc.p3")</p>
+            }
+
+            case NotEntitledToWTCAndUCInsufficient => {
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p1")</p>
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p2")</p>
+
+                <h2 class="heading-medium">@messages("hts.eligibility.not.eligible.not.entitled.uc.h2")</h2>
+
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p3")</p>
+                <p>@messages("hts.eligibility.not.eligible.not.entitled.uc.p4")</p>
+            }
+
+            case EntitledToWTCNoTCAndInsufficientUC | NotEntitledToWTCAndNoUC => {
+                <p>@messages("hts.eligibility.not.eligible.no.benefits.p1")</p>
+
+                <ul class="list list-bullet">
+                    <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li1")</li>
+                    <li>@Messages("hts.eligibility.not.eligible.no.benefits.ul1-li2")</li>
+                </ul>
+
+                <p>@messages("hts.eligibility.not.eligible.no.benefits.p2")</p>
+
+                <p>@messages("hts.eligibility.not.eligible.no.benefits.p3")</p>
+
+                <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.no.benefits.h2")</h2>
+
+                <p>@Messages("hts.eligibility.not.eligible.no.benefits.p4")</p>
+                <p>@Messages("hts.eligibility.not.eligible.no.benefits.p5")</p>
+                <p>@Messages("hts.eligibility.not.eligible.no.benefits.p6")</p>
+
+            }
+        }
+
+        <a role="button" class="button subsection--wide push--bottom" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.eligibility.not.eligible.end-call")</a>
+
+
         <div class="divider--top subsection--wide push--bottom">
             <h2 class="heading-medium">@Messages("hts.eligibility.not.eligible.manually.create.title")</h2>
             <p>@Messages("hts.eligibility.not.eligible.manually.create.p1")</p>
@@ -108,9 +131,23 @@
                 <div class="form-group">
                     <fieldset>
                         <div class="multiple-choice">
-                            <input id="confirm_eligible" name="confirm_eligible" type="checkbox" value="yes" class="button-disable-binding" />
+                            <input id="confirm_eligible" name="confirm_eligible" type="checkbox" value="yes" class="button-disable-binding"/>
                             <label class="form-label-bold" for="confirm_eligible">@Messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")</label>
                         </div>
+                        <br>
+                        @maybeForm.map { form =>
+                            <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+                            <h1>Manual account creation</h1>
+
+                            @defining(ApplicantDetailsForm.errorMessages(form)) { errorMessages: ApplicantDetailsForm.ErrorMessages =>
+                                @enter_customer_details_form_body(
+                                    "userDetailsForm",
+                                    errorMessages,
+                                    nino,
+                                    form
+                                )
+                            }
+                        }
                     </fieldset>
                 </div>
                 @helpers.submit('_buttonClass -> "checkbox-disable-binding", 'id → "continue", 'role → "button", '_modifierClass -> "", 'disabled → "disabled") {
@@ -118,9 +155,5 @@
                 }
             }
         </div>
-    }
-
-    case RoleType.Secure(_) => { }
-    }
 
 }
