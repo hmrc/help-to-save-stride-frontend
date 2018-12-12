@@ -303,7 +303,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       whenIneligibleSecure = { (ineligible, _, nsiPayload, _) ⇒
         if (ineligible.manualCreationAllowed) {
           nsiPayload.fold(SeeOther(routes.StrideController.customerNotEligible().url)) { details ⇒
-            Ok(views.html.create_account(Some(details)))
+            Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerNotEligible().url)))
           }
         } else {
           SeeOther(routes.StrideController.customerNotEligible().url)
