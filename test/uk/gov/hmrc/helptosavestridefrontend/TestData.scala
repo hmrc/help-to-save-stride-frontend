@@ -60,9 +60,9 @@ trait TestData { // scalastyle:off magic.number
 
   val eligibleResult = SessionEligibilityCheckResult.Eligible(eligibleResponse.value)
 
-  val ineligibleStrideUserInfo = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, false)
+  val ineligibleEligibilityResult = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, false)
 
-  val ineligibleManualOverrideStrideUserInfo = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, true)
+  val ineligibleManualOverrideEligibilityResult = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, true)
 
-  val accountExistsStrideUserInfo = SessionEligibilityCheckResult.AlreadyHasAccount
+  val accountExistsEligibilityResult = SessionEligibilityCheckResult.AlreadyHasAccount
 }

@@ -43,15 +43,6 @@ object HttpClient {
                 headers: Map[String, String] = Map.empty[String, String]
     )(implicit w: Writes[A], hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
       http.POST(url, body, headers.toSeq)(w, rawHttpReads, hc, ec)
-
-    def put[A](url:     String,
-               body:    A,
-               headers: Map[String, String] = Map.empty[String, String]
-    )(implicit w: Writes[A], hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
-      http.PUT(url, body)(w, rawHttpReads, hc.withExtraHeaders(headers.toSeq: _*), ec)
-
-    def delete[A](url: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
-      http.DELETE(url)(rawHttpReads, hc, ec)
   }
 
 }
