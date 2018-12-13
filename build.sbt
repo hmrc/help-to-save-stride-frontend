@@ -153,7 +153,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     // concatenate js
     Concat.groups := Seq(
-      "javascripts/h2s-app.js" -> group(Seq("javascripts/extendPreventDoubleClick.js", "javascripts/overrideIneligibleCheckboxButtonBind.js"))
+      "javascripts/h2s-app.js" -> group(Seq("javascripts/extendPreventDoubleClick.js", "javascripts/overrideIneligibleCheckboxButtonBind.js", "javascripts/hts.js"))
     ),
     // prevent removal of unused code which generates warning errors due to use of third-party libs
     Import.uglifyCompressOptions := Seq("unused=false", "dead_code=false"),

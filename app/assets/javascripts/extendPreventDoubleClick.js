@@ -5,7 +5,7 @@
     <a data-button="submit-disabled"> ...
 */
 
-(function preventSubmitAfterCancel() {
+;(function preventSubmitAfterCancel() {
   var disableOnSubmit = document.querySelectorAll('[data-button=submit-disabled]')[0]
 
   // On cancel click, disable the cancel & submit buttons
@@ -16,7 +16,7 @@
 })();
 
 
-(function preventCancelAfterSubmit() {
+;(function preventCancelAfterSubmit() {
   var disableOnSubmit = document.querySelectorAll('[data-button=submit-disabled]')[0]
 
   /**
@@ -29,4 +29,6 @@
     $(disableOnSubmit).attr('disabled', true)
   })
 })();
+
+
 
