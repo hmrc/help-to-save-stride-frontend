@@ -94,13 +94,13 @@ object ApplicantDetailsForm {
       )
 
     val address3ErrorMessage =
-      errorMessageKey(form.hasAddress1TooLong → messages("hts.customer-eligible.enter-details.error.address-3.too-long", addressLineMaxTotalLength))
+      errorMessageKey(form.hasAddress3TooLong → messages("hts.customer-eligible.enter-details.error.address-3.too-long", addressLineMaxTotalLength))
 
     val address4ErrorMessage =
-      errorMessageKey(form.hasAddress1TooLong → messages("hts.customer-eligible.enter-details.error.address-4.too-long", addressLineMaxTotalLength))
+      errorMessageKey(form.hasAddress4TooLong → messages("hts.customer-eligible.enter-details.error.address-4.too-long", addressLineMaxTotalLength))
 
     val address5ErrorMessage =
-      errorMessageKey(form.hasAddress1TooLong → messages("hts.customer-eligible.enter-details.error.address-5.too-long", addressLineMaxTotalLength))
+      errorMessageKey(form.hasAddress5TooLong → messages("hts.customer-eligible.enter-details.error.address-5.too-long", addressLineMaxTotalLength))
 
     val postcodeErrorMessage =
       errorMessageKey(
