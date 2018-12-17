@@ -29,4 +29,4 @@
       .prop('disabled', false)
   }
 
-})()
+})();
