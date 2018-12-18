@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.bootstrap.controller.ActionWithMdc
 class ForbiddenController @Inject() (implicit messagesApi: MessagesApi, appConfig: FrontendAppConfig)
   extends StrideFrontendController(messagesApi, appConfig) {
 
-  def forbidden: Action[AnyContent] = ActionWithMdc {
+  def forbidden: Action[AnyContent] = Action {
     Forbidden("Please ask the HtS Dev team for permissions to access this site")
   }
 

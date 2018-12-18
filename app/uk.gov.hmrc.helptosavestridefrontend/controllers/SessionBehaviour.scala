@@ -26,7 +26,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait SessionBehaviour extends StrideAuth {
   this: StrideFrontendController with Logging ⇒
@@ -40,7 +40,7 @@ trait SessionBehaviour extends StrideAuth {
   private def checkSessionInternal(noSessionData: ⇒ Future[Result],
                                    whenSession:   HtsSession ⇒ Future[Result])(
       implicit
-      hc: HeaderCarrier, request: Request[_]
+      hc: HeaderCarrier, request: Request[_], ec: ExecutionContext
   ): Future[Result] =
     sessionStore
       .get
@@ -58,7 +58,7 @@ trait SessionBehaviour extends StrideAuth {
                                        whenIneligible:        (Ineligible, NSIPayload, Option[AccountReferenceNumber]) ⇒ Future[Result]               = (_, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
                                        whenIneligibleSecure:  (Ineligible, NINO, Option[NSIPayload], Option[AccountReferenceNumber]) ⇒ Future[Result] = (_, _, _, _) ⇒ SeeOther(routes.StrideController.customerNotEligible().url),
                                        whenAlreadyHasAccount: (Option[NSIPayload], Option[AccountReferenceNumber]) ⇒ Future[Result]                   = (_, _) ⇒ SeeOther(routes.StrideController.accountAlreadyExists().url)
-  )(implicit request: Request[_]): Future[Result] =
+  )(implicit request: Request[_], ec: ExecutionContext): Future[Result] =
     checkSessionInternal(
       noSessionData, htsSession ⇒
 

@@ -18,13 +18,18 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import com.google.inject.Singleton
 import play.api.i18n.MessagesApi
-import play.api.mvc.{Request, Result}
+import play.api.mvc.{Request, RequestHeader, Result}
 import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 @Singleton
 class StrideFrontendController(messagesApi: MessagesApi, appConfig: FrontendAppConfig)
-  extends ErrorHandler(messagesApi, appConfig) with FrontendController {
+  extends ErrorHandler(messagesApi, appConfig) with BaseController {
+
+  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
+    HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
 
   def internalServerError()(implicit request: Request[_]): Result =
     InternalServerError(internalServerErrorTemplate(request))
