@@ -84,4 +84,9 @@ class EligibilitySteps extends Steps with NINOGenerator {
   Then("^the account is successfully created$") {
     Browser.checkCurrentPageIs(AccountCreatedPage)
   }
+
+  And("^the SCR applicant is eligible$") {
+    IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
+    Browser.checkCurrentPageIs(SCRCustomerEligiblePage)
+  }
 }
