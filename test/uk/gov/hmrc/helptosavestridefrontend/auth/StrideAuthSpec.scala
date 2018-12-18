@@ -20,6 +20,7 @@ import java.net.URLEncoder
 import java.util.Base64
 
 import play.api.Configuration
+import play.api.i18n.MessagesApi
 import play.api.mvc.AnyContentAsEmpty
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
@@ -32,9 +33,9 @@ import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, _}
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuthSpec.NotLoggedInException
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
 import uk.gov.hmrc.helptosavestridefrontend.models.OperatorDetails
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -54,7 +55,7 @@ class StrideAuthSpec extends TestSupport {
       .returning(result.fold(Future.failed, Future.successful))
 
   class TestStrideAuth(roles:                 List[String],
-                       val frontendAppConfig: FrontendAppConfig) extends StrideAuth with FrontendController {
+                       val frontendAppConfig: FrontendAppConfig) extends StrideFrontendController(stub[MessagesApi], frontendAppConfig) with StrideAuth {
 
     val authConnector: AuthConnector = mockAuthConnector
 

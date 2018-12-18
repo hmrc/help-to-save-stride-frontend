@@ -41,7 +41,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransfo
 import uk.gov.hmrc.helptosavestridefrontend.views
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class StrideController @Inject() (val authConnector:       AuthConnector,
                                   val helpToSaveConnector: HelpToSaveConnector,
@@ -51,7 +51,8 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 )(implicit val frontendAppConfig: FrontendAppConfig,
   transformer:                NINOLogMessageTransformer,
   applicantDetailsValidation: ApplicantDetailsValidation,
-  clock:                      Clock)
+  clock:                      Clock,
+  ec:                         ExecutionContext)
   extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒

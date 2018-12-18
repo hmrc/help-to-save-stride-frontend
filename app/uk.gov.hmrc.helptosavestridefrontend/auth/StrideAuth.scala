@@ -26,16 +26,19 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
 import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
-  this: FrontendController ⇒
+  this: StrideFrontendController ⇒
 
   val frontendAppConfig: FrontendAppConfig
 
@@ -59,7 +62,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
     case (_, c) ⇒ c.url
   }
 
-  def authorisedFromStride(action: Request[AnyContent] ⇒ RoleType ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
+  def authorisedFromStride(action: Request[AnyContent] ⇒ RoleType ⇒ Future[Result])(redirectCall: Call)(implicit ec: ExecutionContext): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
         enrolments ⇒
@@ -73,7 +76,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
       }
     }
 
-  def authorisedFromStrideWithDetails(action: Request[AnyContent] ⇒ OperatorDetails ⇒ RoleType ⇒ Future[Result])(redirectCall: Call): Action[AnyContent] =
+  def authorisedFromStrideWithDetails(action: Request[AnyContent] ⇒ OperatorDetails ⇒ RoleType ⇒ Future[Result])(redirectCall: Call)(implicit ec: ExecutionContext): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments and credentials and name and email) {
         case enrolments ~ creds ~ name ~ email ⇒
