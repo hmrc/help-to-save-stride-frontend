@@ -42,7 +42,7 @@ object StrideSignInPage extends Page {
     navigate()
     fillInSecureStrideDetails()
     clickSubmit()
-    Browser.checkCurrentPageIs(IntroductionHelpToSavePage)
+    Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 
   private def fillInStrideDetails()(implicit driver: WebDriver): Unit = {

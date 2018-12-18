@@ -1,4 +1,4 @@
-@check-test
+@test
 Feature: SCR personal detail validation
 
   Scenario: Internal operator manually creates account on behalf of eligible SCR applicant

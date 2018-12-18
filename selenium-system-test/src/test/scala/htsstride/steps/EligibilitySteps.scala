@@ -86,7 +86,7 @@ class EligibilitySteps extends Steps with NINOGenerator {
   }
 
   And("^the SCR applicant is eligible$") {
-    IntroductionHelpToSavePage.checkEligibility(generateEligibleNINO())
+    CheckEligibilityPage.checkEligibility(generateEligibleNINO())
     Browser.checkCurrentPageIs(SCRCustomerEligiblePage)
   }
 }

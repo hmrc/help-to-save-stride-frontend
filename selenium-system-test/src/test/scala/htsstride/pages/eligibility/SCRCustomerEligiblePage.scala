@@ -17,7 +17,6 @@
 package htsstride.pages.eligibility
 
 import htsstride.browser.Browser
-import htsstride.pages.eligibility.CustomerEligiblePage.{clickCancel, clickSubmit, navigate}
 import htsstride.pages.{ApplicationCancelledPage, CreateAccountPage, Page}
 import htsstride.utils.{Configuration, CustomerDetails}
 import org.openqa.selenium.WebDriver
@@ -32,12 +31,6 @@ object SCRCustomerEligiblePage extends Page {
     navigate()
     clickSubmit()
     Browser.checkCurrentPageIs(CreateAccountPage)
-  }
-
-  def cancelApplication()(implicit driver: WebDriver): Unit = {
-    navigate()
-    clickCancel()
-    Browser.checkCurrentPageIs(ApplicationCancelledPage)
   }
 
   def fillInSCRDetails(customerDetails: CustomerDetails)(implicit driver: WebDriver): Unit = {
