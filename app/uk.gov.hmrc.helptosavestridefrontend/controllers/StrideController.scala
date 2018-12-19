@@ -284,19 +284,19 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def getCreateAccountPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenEligible         = (_, detailsConfirmed, _, _) ⇒
+      whenEligible         = (eligible, detailsConfirmed, _, _) ⇒
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          Ok(views.html.create_account(None, None))
+          Ok(views.html.create_account(None, None, Some(eligible)))
         },
-      whenEligibleSecure   = (_, _, nsiPayload, _) ⇒
+      whenEligibleSecure   = (eligible, _, nsiPayload, _) ⇒
         nsiPayload.fold(SeeOther(routes.StrideController.customerEligible().url)){ details ⇒
-          Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerEligible().url)))
+          Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerEligible().url), Some(eligible)))
         },
       whenIneligible       = { (ineligible, _, _) ⇒
         if (ineligible.manualCreationAllowed) {
-          Ok(views.html.create_account(None, None))
+          Ok(views.html.create_account(None, None, None))
         } else {
           SeeOther(routes.StrideController.customerNotEligible().url)
         }
@@ -304,7 +304,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       whenIneligibleSecure = { (ineligible, _, nsiPayload, _) ⇒
         if (ineligible.manualCreationAllowed) {
           nsiPayload.fold(SeeOther(routes.StrideController.customerNotEligible().url)) { details ⇒
-            Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerNotEligible().url)))
+            Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerNotEligible().url), None))
           }
         } else {
           SeeOther(routes.StrideController.customerNotEligible().url)

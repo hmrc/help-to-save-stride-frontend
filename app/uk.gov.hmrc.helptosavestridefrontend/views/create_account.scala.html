@@ -14,13 +14,17 @@
  * limitations under the License.
  *@
 
+@import cats.syntax.eq._
+@import cats.instances.int._
+
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.util.browserDateFormat
 
 @import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 
-@(detailsToConfirm: Option[NSIPayload], backUrl: Option[String])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.Eligible
+@(detailsToConfirm: Option[NSIPayload], backUrl: Option[String], eligible: Option[Eligible])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
   title = Messages("hts.create.account.title"),
@@ -94,7 +98,7 @@
   <ul class="list list-bullet">
     <li>@Messages("hts.create.account.terms.ul1-li1")</li>
     <li>@Messages("hts.create.account.terms.ul1-li2")</li>
-    <li>@Messages("hts.create.account.terms.ul1-li3")</li>
+    <li>@Messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r ⇒ if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" }))</li>
     <li>@Messages("hts.create.account.terms.ul1-li4")</li>
   </ul>
 

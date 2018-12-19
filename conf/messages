@@ -104,9 +104,7 @@ hts.customer-eligible.enter-details.error.postcode.too-long=Enter a real postcod
 hts.create.account.title=Create an account
 hts.create.account.h1=Create an account
 hts.create.account.p1=You need to:
-hts.create.account.ul1-li1=read the customer the terms and conditions
-hts.create.account.ul1-li2=tell them they only have until the end of each calendar month to pay in money - even if they opened their account towards the end of the month
-hts.create.account.p2=Ask customer if they understand - and accept the terms and conditions - and want to open an account.
+
 
 hts.create.account.secure.title=Check customer’s details
 hts.create.account.secure.h2=Personal Details
@@ -116,7 +114,9 @@ hts.create.account.terms.heading=Terms and conditions
 hts.create.account.terms.p1=The customer must agree that:
 hts.create.account.terms.ul1-li1=their details are correct
 hts.create.account.terms.ul1-li2=they have understood the eligibility criteria and are eligible for a Help to Save account
-hts.create.account.terms.ul1-li3=they will tell us each time they leave the UK for 8 weeks or more
+hts.create.account.terms.ul1-li3-wtc=they will tell us each time they leave the UK for 8 weeks or more
+hts.create.account.terms.ul1-li3-uc=they will tell us each time they leave the UK for 4 weeks or more
+hts.create.account.terms.ul1-li3-unknown=they will tell us each time they leave the UK for 4 weeks or more
 hts.create.account.terms.ul1-li4=they are creating a Help to Save account for the first time
 hts.create.account.terms.p2=Ask the customer if they understand and agree to the terms and conditions, and want to create a Help to Save account.
 
