@@ -39,4 +39,8 @@ object CustomerEligiblePage extends Page {
     Browser.checkCurrentPageIs(ApplicationCancelledPage)
   }
 
+  def findErrorMessageList()(implicit driver: WebDriver): Option[String] = {
+    Browser.find(Browser.className("error-summary-list")).map(_.underlying.getText)
+  }
+
 }

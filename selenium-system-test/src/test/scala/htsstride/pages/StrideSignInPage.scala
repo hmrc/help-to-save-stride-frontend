@@ -33,36 +33,25 @@ object StrideSignInPage extends Page {
 
   def authenticateOperator()(implicit driver: WebDriver): Unit = {
     navigate()
-    fillInStrideDetails()
+    fillInStrideDetails("hts helpdesk advisor")
     clickSubmit()
     Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 
   def authenticateSCROperator()(implicit driver: WebDriver): Unit = {
     navigate()
-    fillInSecureStrideDetails()
+    fillInStrideDetails("hts helpdesk advisor secure")
     clickSubmit()
     Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 
-  private def fillInStrideDetails()(implicit driver: WebDriver): Unit = {
+  private def fillInStrideDetails(role: String)(implicit driver: WebDriver): Unit = {
     setFieldByName("pid", "pid1234")
     setFieldByName("usersGivenName", "test-given-name")
     setFieldByName("usersSurname", "test-surname")
     setFieldByName("emailAddress", "test@hmrc-hts.com")
     setFieldByName("status", "true")
     setFieldByName("signature", "valid")
-    setFieldByName("roles", "hts helpdesk advisor")
+    setFieldByName("roles", role)
   }
-
-  private def fillInSecureStrideDetails()(implicit driver: WebDriver): Unit = {
-    setFieldByName("pid", "pid1234")
-    setFieldByName("usersGivenName", "test-given-name")
-    setFieldByName("usersSurname", "test-surname")
-    setFieldByName("emailAddress", "test@hmrc-hts.com")
-    setFieldByName("status", "true")
-    setFieldByName("signature", "valid")
-    setFieldByName("roles", "hts helpdesk advisor secure")
-  }
-
 }
