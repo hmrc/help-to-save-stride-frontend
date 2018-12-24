@@ -24,7 +24,7 @@ hts.eligibility.blank.nino=Enter the customer’s National Insurance number
 hts.eligibility.check-availability.continue-button=Check eligibility
 
 hts.you.are.eligible.title=Customer is eligible for a Help to Save account
-hts.you.are.eligible.h1=Customer is eligible for a Help to Save account
+hts.you.are.eligible.h1=Customer is eligible for an account
 hts.you.are.eligible.h2=Ask the customer if these details are correct:
 hts.you.are.eligible.user.details.name-label=Name
 hts.you.are.eligible.user.details.nino-label=National Insurance number
