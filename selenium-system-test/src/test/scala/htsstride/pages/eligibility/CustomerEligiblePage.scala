@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ object CustomerEligiblePage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/customer-eligible"
 
   override val expectedPageTitle: Option[String] = Some("Customer is eligible for a Help to Save account")
-  override val expectedPageHeader: Option[String] = Some("Customer is eligible for a Help to Save account")
+  override val expectedPageHeader: Option[String] = Some("Customer is eligible for an account")
 
   def continue()(implicit driver: WebDriver): Unit = {
     navigate()
