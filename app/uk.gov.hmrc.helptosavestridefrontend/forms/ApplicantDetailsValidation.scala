@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import java.time.{Clock, ZoneId}
+import java.time.{Clock, LocalDate, ZoneId}
 
 import cats.data.Validated.Valid
 import cats.data.{NonEmptyList, Validated}
@@ -30,6 +30,7 @@ import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.util.Validation.{ValidOrErrorStrings, _}
 import uk.gov.hmrc.helptosavestridefrontend.util.TryOps._
+import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 import scala.util.Try
 
@@ -40,6 +41,7 @@ trait ApplicantDetailsValidation {
   val dayOfMonthFormatter: Formatter[Int]
   val monthFormatter: Formatter[Int]
   val yearFormatter: Formatter[Int]
+  val dateOfBirthFormatter: Formatter[LocalDate]
   val addressLine1Formatter: Formatter[String]
   val addressLine2Formatter: Formatter[String]
   val addressLine3Formatter: Formatter[Option[String]]
@@ -85,6 +87,21 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
   val yearFormatter: Formatter[Int] =
     intFormatter(1900, () ⇒ clock.instant().atZone(ZoneId.of("Z")).getYear, // scalastyle:ignore magic.number
       ErrorMessages.dateOfBirthInFuture, ErrorMessages.yearTooEarly, ErrorMessages.yearInvalid, ErrorMessages.yearEmpty)
+
+  val dateOfBirthFormatter: Formatter[LocalDate] = new Formatter[LocalDate] {
+    override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], LocalDate] = {
+      val dob: Option[LocalDate] = for {
+        day ← data.get(Ids.dobDay).map(_.trim)
+        month ← data.get(Ids.dobMonth).map(_.trim)
+        year ← data.get(Ids.dobYear).map(_.trim)
+        dob ← Try(LocalDate.of(year.toInt, month.toInt, day.toInt)).toOption
+      } yield dob
+
+      Either.fromOption(dob, Seq(FormError(Ids.dateOfBirth, ErrorMessages.dateOfBirthInvalid)))
+    }
+
+    override def unbind(key: String, value: LocalDate): Map[String, String] = Map.empty[String, String]
+  }
 
   val addressLine1Formatter: Formatter[String] = mandatoryAddressLineValidator(ErrorMessages.address1TooLong, ErrorMessages.address1Empty)
   val addressLine2Formatter: Formatter[String] = mandatoryAddressLineValidator(ErrorMessages.address2TooLong, ErrorMessages.address2Empty)
@@ -192,6 +209,7 @@ object ApplicantDetailsValidation {
     val yearTooEarly: String = "year_too_early"
 
     val dateOfBirthInFuture: String = "date_of_birth_in_future"
+    val dateOfBirthInvalid: String = "date_of_birth_invalid"
 
     val address1TooLong: String = "address_1_too_long"
     val address1Empty: String = "address_1_empty"

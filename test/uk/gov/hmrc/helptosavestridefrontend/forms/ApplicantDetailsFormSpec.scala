@@ -52,6 +52,7 @@ class ApplicantDetailsFormSpec extends WordSpec with Matchers with MockFactory {
     override val dayOfMonthFormatter: Formatter[Int] = dummyFormatter[Int]
     override val monthFormatter: Formatter[Int] = dummyFormatter[Int]
     override val yearFormatter: Formatter[Int] = dummyFormatter[Int]
+    override val dateOfBirthFormatter: Formatter[LocalDate] = dummyFormatter[LocalDate]
     override val addressLine1Formatter: Formatter[String] = dummyFormatter[String]
     override val addressLine2Formatter: Formatter[String] = dummyFormatter[String]
     override val addressLine3Formatter: Formatter[Option[String]] = dummyFormatter[Option[String]]
@@ -74,6 +75,7 @@ class ApplicantDetailsFormSpec extends WordSpec with Matchers with MockFactory {
           mockBind[Int](Ids.dobDay)(Right(dateOfBirth.getDayOfMonth))
           mockBind[Int](Ids.dobMonth)(Right(dateOfBirth.getMonthValue))
           mockBind[Int](Ids.dobYear)(Right(dateOfBirth.getYear))
+          mockBind[LocalDate](Ids.dateOfBirth)(Right(dateOfBirth))
           mockBind[String](Ids.address1)(Right(""))
           mockBind[String](Ids.address2)(Right(""))
           mockBind[Option[String]](Ids.address3)(Right(None))
@@ -159,6 +161,11 @@ class ApplicantDetailsFormSpec extends WordSpec with Matchers with MockFactory {
       "a date of birth which is in the future" in {
         test(Ids.dobYear, ErrorMessages.dateOfBirthInFuture)(_.hasDateOfBirthInFuture)
         test("", ErrorMessages.dateOfBirthInFuture)(_.hasDateOfBirthInFuture)
+      }
+
+      "a date of birth which is invalid" in {
+        test(Ids.dateOfBirth, ErrorMessages.dateOfBirthInvalid)(_.hasDateOfBirthInvalid)
+        test("", ErrorMessages.dateOfBirthInvalid)(_.hasDateOfBirthInvalid)
       }
 
       "an address line 1 which is too long" in {

@@ -16,13 +16,16 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import java.time.{Clock, Instant, ZoneId}
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 
+import cats.syntax.either._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import play.api.data.FormError
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
+import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 class ApplicantDetailsValidationSpec extends TestSupport with GeneratorDrivenPropertyChecks with ValidationTestSupport {
 
@@ -211,6 +214,48 @@ class ApplicantDetailsValidationSpec extends TestSupport with GeneratorDrivenPro
 
         "the year is not an int" in {
           testYear(Some("hullo"))(Left(Set(ErrorMessages.yearInvalid)))
+        }
+
+      }
+
+    }
+
+    "validating date of births" must {
+
+      val data = Map(Ids.dobDay → "1", Ids.dobMonth → "2", Ids.dobYear → "1990")
+
+      "mark years as valid" when {
+
+        "the day, month and year values form a valid date" in {
+          val result = validation.dateOfBirthFormatter.bind("", data)
+
+          result.map(_.getDayOfMonth) shouldBe Right(1)
+          result.map(_.getMonthValue) shouldBe Right(2)
+          result.map(_.getYear) shouldBe Right(1990)
+        }
+
+      }
+
+      "mark years as invalid" when {
+
+          def testDateOfBirthInvalid(data: Map[String, String]): Unit =
+            validation.dateOfBirthFormatter.bind("", data) shouldBe Left(Seq(FormError(Ids.dateOfBirth, ErrorMessages.dateOfBirthInvalid)))
+
+        "the day is missing" in {
+          testDateOfBirthInvalid(data - Ids.dobDay)
+        }
+
+        "the month is missing" in {
+          testDateOfBirthInvalid(data - Ids.dobMonth)
+        }
+
+        "the year is missing" in {
+          testDateOfBirthInvalid(data - Ids.dobYear)
+        }
+
+        "the day, month and year values together do not form a valid date" in {
+          // 31st February doesn't exist
+          testDateOfBirthInvalid(Map(Ids.dobDay → "31", Ids.dobMonth → "2", Ids.dobYear → "1990"))
         }
 
       }
