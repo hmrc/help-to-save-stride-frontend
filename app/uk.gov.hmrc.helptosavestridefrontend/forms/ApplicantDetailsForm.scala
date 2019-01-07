@@ -25,6 +25,7 @@ import play.api.data.Forms._
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
+
 case class ApplicantDetails(forename:    String,
                             surname:     String,
                             dateOfBirth: LocalDate,
@@ -68,6 +69,7 @@ object ApplicantDetailsForm {
       Ids.dobDay → of(applicantDetailsValidation.dayOfMonthFormatter),
       Ids.dobMonth → of(applicantDetailsValidation.monthFormatter),
       Ids.dobYear → of(applicantDetailsValidation.yearFormatter),
+      Ids.dateOfBirth → of(applicantDetailsValidation.dateOfBirthFormatter),
       Ids.address1 → of(applicantDetailsValidation.addressLine1Formatter),
       Ids.address2 → of(applicantDetailsValidation.addressLine2Formatter),
       Ids.address3 → of(applicantDetailsValidation.addressLine3Formatter),
@@ -76,13 +78,11 @@ object ApplicantDetailsForm {
       Ids.postcode → of(applicantDetailsValidation.postcodeFormatter),
       Ids.countryCode → text
     ){
-        case (forename, surname, day, month, year, address1, address2, address3, address4, address5, postcode, countryCode) ⇒
-          val dob = LocalDate.of(year, month, day)
+        case (forename, surname, _, _, _, dob, address1, address2, address3, address4, address5, postcode, countryCode) ⇒
           ApplicantDetails(forename, surname, dob, address1, address2, address3, address4, address5, postcode, countryCode)
       }{ details ⇒
-        val dob = details.dateOfBirth
-        Some((details.forename, details.surname, dob.getDayOfMonth, dob.getMonthValue, dob.getYear,
-          details.address1, details.address2, details.address3, details.address4, details.address5,
+        Some((details.forename, details.surname, details.dateOfBirth.getDayOfMonth, details.dateOfBirth.getMonthValue,
+          details.dateOfBirth.getYear, details.dateOfBirth, details.address1, details.address2, details.address3, details.address4, details.address5,
           details.postcode, details.countryCode))
       } verifying (ErrorMessages.dateOfBirthInFuture, _.dateOfBirth.isBefore(LocalDate.now(clock)))
   )
@@ -113,6 +113,8 @@ object ApplicantDetailsForm {
     def hasYearInvalid: Boolean = hasErrorMessage(Ids.dobYear, ErrorMessages.yearInvalid)
 
     def hasYearTooEarly: Boolean = hasErrorMessage(Ids.dobYear, ErrorMessages.yearTooEarly)
+
+    def hasDateOfBirthInvalid: Boolean = a.errors.exists(_.message === ErrorMessages.dateOfBirthInvalid)
 
     def hasDateOfBirthInFuture: Boolean = a.errors.exists(_.message === ErrorMessages.dateOfBirthInFuture)
 

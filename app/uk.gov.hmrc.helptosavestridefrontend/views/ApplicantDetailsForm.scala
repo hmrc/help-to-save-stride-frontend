@@ -137,7 +137,8 @@ object ApplicantDetailsForm {
       val dateInvalidErrorMessage =
         errorMessageKey(
           form.hasDateOfBirthInFuture → messages("hts.customer-eligible.enter-details.error.date-of-birth.must-be-in-past"),
-          form.hasYearTooEarly → messages("hts.customer-eligible.enter-details.error.date-of-birth.day.too-early")
+          form.hasYearTooEarly → messages("hts.customer-eligible.enter-details.error.date-of-birth.day.too-early"),
+          form.hasDateOfBirthInvalid → messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth")
         )
 
       nullFieldErrorMessage.orElse(invalidFieldErrorMessage).orElse(dateInvalidErrorMessage)
