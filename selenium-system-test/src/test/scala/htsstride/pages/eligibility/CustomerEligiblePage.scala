@@ -24,7 +24,7 @@ import org.openqa.selenium.WebDriver
 object CustomerEligiblePage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/customer-eligible"
 
-  override val expectedPageTitle: Option[String] = Some("Customer is eligible for a Help to Save account")
+  override val expectedPageTitle: Option[String] = Some("Customer is eligible for an account")
   override val expectedPageHeader: Option[String] = Some("Customer is eligible for an account")
 
   def continue()(implicit driver: WebDriver): Unit = {
