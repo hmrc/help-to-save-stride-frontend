@@ -1,7 +1,7 @@
 
 Feature: SCR personal detail validation
 
-  Scenario: Internal operator manually creates account on behalf of eligible SCR applicant
+  Scenario: Internal operator creates account on behalf of eligible SCR applicant
     Given the operator is logged in with SCR clearance
     And the SCR applicant is eligible
     When the operator fills in the applicant's details
