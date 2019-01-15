@@ -122,7 +122,6 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
       }
 
     val errorPrefix: String = if (isError) "Error: " else ""
-    //    val expectedPageTitle = s"$errorPrefix + ${page.expectedPageTitle}"
 
     val urlMatches = isActualUrlExpectedUrl(page.expectedURL)
     val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
