@@ -1,3 +1,4 @@
+
 Feature: Internal operator goes through the create account journey
   @check-test
   Scenario: Internal operator creates an account for an eligible applicant

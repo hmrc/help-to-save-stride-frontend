@@ -18,10 +18,10 @@ package htsstride.pages.eligibility
 
 import htsstride.browser.Browser
 import htsstride.pages.{ApplicationCancelledPage, CreateAccountPage, Page}
-import htsstride.utils.Configuration
+import htsstride.utils.{Configuration, CustomerDetails}
 import org.openqa.selenium.WebDriver
 
-object CustomerEligiblePage extends Page {
+object SCRCustomerEligiblePage extends Page {
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/customer-eligible"
 
   override val expectedPageTitle: Option[String] = Some("Customer is eligible for an account")
@@ -33,14 +33,18 @@ object CustomerEligiblePage extends Page {
     Browser.checkCurrentPageIs(CreateAccountPage)
   }
 
-  def cancelApplication()(implicit driver: WebDriver): Unit = {
-    navigate()
-    clickEndCall()
-    Browser.checkCurrentPageIs(ApplicationCancelledPage)
+  def fillInSCRDetails(customerDetails: CustomerDetails)(implicit driver: WebDriver): Unit = {
+    customerDetails.firstName.foreach(setFieldByName("forename", _))
+    customerDetails.lastName.foreach(setFieldByName("surname", _))
+    customerDetails.dobDay.foreach(setFieldByName("dob-day", _))
+    customerDetails.dobMonth.foreach(setFieldByName("dob-month", _))
+    customerDetails.dobYear.foreach(setFieldByName("dob-year", _))
+    customerDetails.addressLine1.foreach(setFieldByName("address1", _))
+    customerDetails.addressLine2.foreach(setFieldByName("address2", _))
+    customerDetails.addressLine3.foreach(setFieldByName("address3", _))
+    customerDetails.addressLine4.foreach(setFieldByName("address4", _))
+    customerDetails.addressLine5.foreach(setFieldByName("address5", _))
+    customerDetails.postcode.foreach(setFieldByName("postcode", _))
+    clickSubmit()
   }
-
-  def findErrorMessageList()(implicit driver: WebDriver): Option[String] = {
-    Browser.find(Browser.className("error-summary-list")).map(_.underlying.getText)
-  }
-
 }

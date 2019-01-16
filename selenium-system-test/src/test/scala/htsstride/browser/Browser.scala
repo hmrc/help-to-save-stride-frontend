@@ -104,7 +104,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
     }
   }
 
-  def checkCurrentPageIs(page: Page)(implicit driver: WebDriver): Unit = {
+  def checkCurrentPageIs(page: Page, isError: Boolean = false)(implicit driver: WebDriver): Unit = {
       def isActualUrlExpectedUrl(expectedUrl: String)(implicit driver: WebDriver): Boolean = {
         try {
           val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
@@ -121,11 +121,13 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
         }
       }
 
+    val errorPrefix: String = if (isError) "Error: " else ""
+
     val urlMatches = isActualUrlExpectedUrl(page.expectedURL)
     val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
     result shouldBe Right(())
 
-    page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$t - Help to Save - HMRC")
+    page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$errorPrefix$t - Help to Save - HMRC")
     page.expectedPageHeader.foreach(getPageHeading shouldBe _)
   }
 
