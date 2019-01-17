@@ -38,7 +38,7 @@ hts.you.are.eligible.h3=Tell the customer that, by continuing, they are confirmi
 hts.you.are.eligible.continue-button=Customer’s details are correct
 hts.you.are.eligible.end-call.button=Cancel application and end call
 
-hts.customer-eligible.enter-details.title=Customer is eligible for an account
+hts.customer-eligible.enter-details.title.h1=Customer is eligible for an account
 hts.customer-eligible.enter-details.p1=If the customer wants to create a Help to Save account, enter their details
 hts.customer-eligible.enter-details.form.personal-details.title=Personal details
 hts.customer-eligible.enter-details.form.personal-details.forename.label=First name
@@ -120,7 +120,7 @@ hts.create.account.terms.p2=Ask the customer if they understand and agree to the
 hts.account.exists.title.h1=Customer already has an account
 hts.account.exists.p1=Customer can pay in by bank transfer or standing order. They will need to set up the payment through their bank.
 
-hts.account-created.title=Help to Save account created
+hts.account-created.title.h1=Help to Save account created
 hts.account-created.customer-account-number.title=Customer’s account number
 hts.account-created.tell-customer.heading=Tell the customer:
 hts.account.created.tell-customer.ul1-li1=their account lasts for 4 years and this time starts now
