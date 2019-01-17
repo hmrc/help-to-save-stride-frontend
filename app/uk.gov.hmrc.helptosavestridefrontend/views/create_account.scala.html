@@ -26,8 +26,10 @@
 @import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.Eligible
 @(detailsToConfirm: Option[NSIPayload], backUrl: Option[String], eligible: Option[Eligible])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
+@title = @{Messages("hts.create.account.title.h1")}
+
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-  title = Messages("hts.create.account.title"),
+  title = title,
   bodyClasses = None) {
 
   @backUrl.map(url =>  <a href={url} class="link-back">{messages("hts.global.link.back")}</a>)
@@ -87,7 +89,7 @@
       </dl>
     }
     case None => {
-      <h1 class="heading-large">@Messages("hts.create.account.h1")</h1>
+      <h1 class="heading-large">@title</h1>
     }
   }
 

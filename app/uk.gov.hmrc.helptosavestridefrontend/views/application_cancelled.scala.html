@@ -19,11 +19,13 @@
 
 @()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
+@title = @{Messages("hts.application.cancelled.title.h1")}
+
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-  title = Messages("hts.application.cancelled.title"),
+  title = title,
   bodyClasses = None) {
 
-  <h1 class="heading-large">@messages("hts.application.cancelled.h1")</h1>
+  <h1 class="heading-large">@title</h1>
 
   <a role="button" class="button" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
 }

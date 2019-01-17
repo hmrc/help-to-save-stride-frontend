@@ -19,10 +19,12 @@
 
 @(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, frontendAppConfig: FrontendAppConfig)
 
+@title = @{messages("hts.error.page.title.h1")}
+
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-  title = messages("hts.error.page.title"),
+  title = title,
   bodyClasses = None) {
-  <h1 class="heading-large">@messages("hts.error.page.h1")</h1>
+  <h1 class="heading-large">@title</h1>
   <p>@messages("hts.error.page.p1")</p>
   <a href=@routes.StrideController.getEligibilityPage().url class="button">@messages("hts.error.page.button.start-again")</a>
 }

@@ -19,12 +19,14 @@
 
 @(accountNumber: String)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
+@title = @{Messages("hts.account-created.title")}
+
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-title = Messages("hts.account-created.title"),
+title = title,
 bodyClasses = None) {
 
 <div class="govuk-box-highlight">
-    <h1 class="heading-xlarge">@Messages("hts.account-created.title")</h1>
+    <h1 class="heading-xlarge">@title</h1>
     <p class="font-large">
       @Html(Messages("hts.account-created.customer-account-number.title"))
       <br />

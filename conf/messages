@@ -11,8 +11,7 @@ hts.payment-details.account-number.text=account number:
 hts.payment-details.payment-reference-number.text=payment reference number:
 hts.payment-details.monthly-deadline.message=To help make sure payments reach the customer’s account by the end of the month, they’ll need to go out before the 26th.
 
-hts.eligibility.title=Check the customer’s eligibility
-hts.eligibility.h1=Check the customer’s eligibility
+hts.eligibility.title.h1=Check the customer’s eligibility
 hts.eligibility.p1=You need to:
 hts.eligibility.ul1-li1=confirm the customer’s identity
 hts.eligibility.ul1-li2=explain Help to Save to the customer
@@ -23,8 +22,7 @@ hts.eligibility.invalid.nino=Enter a valid National Insurance number, for exampl
 hts.eligibility.blank.nino=Enter the customer’s National Insurance number
 hts.eligibility.check-availability.continue-button=Check eligibility
 
-hts.you.are.eligible.title=Customer is eligible for a Help to Save account
-hts.you.are.eligible.h1=Customer is eligible for an account
+hts.you.are.eligible.title.h1=Customer is eligible for an account
 hts.you.are.eligible.h2=Ask the customer if these details are correct:
 hts.you.are.eligible.user.details.name-label=Name
 hts.you.are.eligible.user.details.nino-label=National Insurance number
@@ -101,8 +99,7 @@ hts.customer-eligible.enter-details.error.postcode.empty=Enter a postcode, like 
 hts.customer-eligible.enter-details.error.postcode.too-long=Enter a real postcode
 
 
-hts.create.account.title=Create an account
-hts.create.account.h1=Create an account
+hts.create.account.title.h1=Create an account
 hts.create.account.p1=You need to:
 
 
@@ -120,8 +117,7 @@ hts.create.account.terms.ul1-li3-unknown=they will tell us each time they leave 
 hts.create.account.terms.ul1-li4=they are creating a Help to Save account for the first time
 hts.create.account.terms.p2=Ask the customer if they understand and agree to the terms and conditions, and want to create a Help to Save account.
 
-hts.account.exists.title=Customer already has an account
-hts.account.exists.h1=Customer already has an account
+hts.account.exists.title.h1=Customer already has an account
 hts.account.exists.p1=Customer can pay in by bank transfer or standing order. They will need to set up the payment through their bank.
 
 hts.account-created.title=Help to Save account created
@@ -138,11 +134,9 @@ hts.account.created.tell-customer.what-happens-next.ul1-li2=password
 hts.account.created.tell-customer.start-saving=The customer can start saving now through a bank transfer or standing order. Or they will need to wait until they get their password and Welcome pack in the post.
 hts.account-created.tell-customer.bank-transfer-details.header=Bank transfer and standing order details
 
-hts.application.cancelled.title=Application cancelled
-hts.application.cancelled.h1=Application cancelled
+hts.application.cancelled.title.h1=Application cancelled
 
-hts.eligibility.not.eligible.title=Customer is not eligible for an account
-hts.eligibility.not.eligible.h1=Customer is not eligible for an account
+hts.eligibility.not.eligible.title.h1=Customer is not eligible for an account
 hts.eligibility.not.eligible.p1=Customer is not eligible for a Help to Save account.
 hts.eligibility.not.eligible.name=Name:
 hts.eligibility.not.eligible.nino=National Insurance number:
@@ -180,8 +174,7 @@ hts.eligibility.not.eligible.manually.create.ul1.li2=the approval of a manager
 hts.eligibility.not.eligible.manually.create.ul1.li3=set the ITMP Help to Save indicator
 hts.eligibility.not.eligible.manually.create.confirm.eligible.label=I confirm I have met these conditions.
 
-hts.error.page.title=Something went wrong
-hts.error.page.h1=Something went wrong
+hts.error.page.title.h1=Something went wrong
 hts.error.page.p1=You’ll need to start again.
 hts.error.page.button.start-again=Start again
 
