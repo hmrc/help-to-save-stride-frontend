@@ -21,6 +21,8 @@
 
 @(form: Form[GiveNINO])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig )
 
+@title = @{messages("hts.eligibility.title.h1")}
+
 @defining({
  if(form.hasBlankNINO) {
     Some("hts.eligibility.blank.nino")
@@ -32,7 +34,7 @@
 }){ errorMessage =>
 
     @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-      title = messages("hts.eligibility.title"),
+      title = title,
       sidebarLinks = None,
       bodyClasses = None,
       isErrorPage = errorMessage.isDefined
@@ -50,7 +52,7 @@
      }
     }
 
-    <h1 class="heading-large">@messages("hts.eligibility.h1")</h1>
+    <h1 class="heading-large">@title</h1>
     <p>@messages("hts.eligibility.p1")</p>
 
     <ul class="list list-bullet">

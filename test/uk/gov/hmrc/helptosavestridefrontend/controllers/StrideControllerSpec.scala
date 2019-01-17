@@ -195,7 +195,7 @@ class StrideControllerSpec
 
         val result = controller.customerEligible(fakeRequestWithCSRFToken)
         status(result) shouldBe OK
-        contentAsString(result) should include("Customer is eligible for a Help to Save account")
+        contentAsString(result) should include("Customer is eligible for an account")
         contentAsString(result) should not include ("enter their details")
       }
 

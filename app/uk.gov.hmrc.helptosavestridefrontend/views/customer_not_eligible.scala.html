@@ -28,9 +28,10 @@
 @import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetails
 @(ineligibilityReason: IneligibilityReason, foreNameAndSurname: Option[(String,String)], nino: String, maybeForm: Option[Form[ApplicantDetails]])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
+@title = @{messages("hts.eligibility.not.eligible.title.h1")}
 
 @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
-    title = messages("hts.eligibility.not.eligible.title"),
+    title = title,
     bodyClasses = None) {
 
     @maybeForm.map{ form =>
@@ -50,7 +51,7 @@
         }
     }
 
-    <h1 class="heading-large">@messages("hts.eligibility.not.eligible.h1")</h1>
+    <h1 class="heading-large">@title</h1>
 
     <p>@messages("hts.eligibility.not.eligible.p1")</p>
 
