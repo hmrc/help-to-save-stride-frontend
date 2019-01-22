@@ -32,6 +32,10 @@ class SCRCustomerJourneySteps extends Steps with NINOGenerator {
     SCRCustomerEligiblePage.fillInSCRDetails(validCustomerDetails)
   }
 
+  When("^the operator fills in the ineligible applicant's details$") {
+    NotEligibleSCRPage.fillInSCRDetails(validCustomerDetails)
+  }
+
   And("^verifies the applicant's details are correct$") {
     CheckCustomersDetailsPage.submitAndCheck()
   }
@@ -43,6 +47,15 @@ class SCRCustomerJourneySteps extends Steps with NINOGenerator {
   And("^the SCR applicant is eligible$") {
     CheckEligibilityPage.checkEligibility(generateEligibleNINO())
     Browser.checkCurrentPageIs(SCRCustomerEligiblePage)
+  }
+
+  And("the SCR applicant is ineligible$") {
+    CheckEligibilityPage.checkEligibility(generateIneligibleNINO())
+    Browser.checkCurrentPageIs(NotEligibleSCRPage)
+  }
+
+  And("the operator ticks the 'I confirm I have met these conditions' button") {
+    NotEligibleSCRPage.checkTheConditionBox()
   }
 
   Then("^the enter a first name error message appears$") {
@@ -121,6 +134,29 @@ class SCRCustomerJourneySteps extends Steps with NINOGenerator {
   Then("^the enter a real postcode error message appears$") {
     Browser.checkCurrentPageIs(CustomerEligiblePage, true)
     CustomerEligiblePage.findErrorMessageList() shouldBe Some("Enter a real postcode")
+    ()
+  }
+
+  When("^the operator enters invalid input$"){
+    NotEligibleSCRPage.inputIncorrectDetails()
+  }
+
+  Then("^the appropriate error messages appear$") {
+    Browser.checkCurrentPageIs(NotEligibleSCRPage)
+
+    val errorListHtml: Option[String] = NotEligibleSCRPage.findErrorMessageList()
+
+    List(
+      "Enter a first name",
+      "Last name must be 300 characters or less",
+      "Date of birth must be in the past",
+      "Address line 1 must be 35 characters or less",
+      "Enter an address line 2",
+      "Enter a real postcode"
+    ).foreach(expectedErrorMessage ⇒
+        withClue(s"For error '$expectedErrorMessage' "){
+          assert(errorListHtml.exists(_.contains(expectedErrorMessage)) == true)
+        })
     ()
   }
 }
