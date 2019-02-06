@@ -18,18 +18,18 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.22.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.27.0-play-25",
   "uk.gov.hmrc" %% "mongo-caching" % "5.6.0",
-  "uk.gov.hmrc" %% "play-ui" % "7.27.0-play-25",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.6.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.18.0-play-25",
+  "uk.gov.hmrc" %% "play-ui" % "7.31.0-play-25",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.8.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25",
   "uk.gov.hmrc" %% "domain" % "5.3.0",
   "org.typelevel" %% "cats-core" % "1.5.0",
   "com.github.kxbmap" %% "configs" % "0.4.4"
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.3.0" % test,
+  "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % test,
   "org.scalatest" %% "scalatest" % "3.0.5" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
