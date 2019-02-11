@@ -36,7 +36,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
   val connector = new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, environment)
 
   private val eligibilityUrl: String = "http://localhost:7001/help-to-save/eligibility-check"
-  private val payePersonalDetailsUrl: String = "http://localhost:7001/help-to-save/stride/paye-personal-details"
+  private val payePersonalDetailsUrl: String = "http://localhost:7001/help-to-save/paye-personal-details"
   private val createAccountUrl: String = "http://localhost:7001/help-to-save/create-account"
   private val enrolmentStatusUrl: String = "http://localhost:7001/help-to-save/enrolment-status"
   private def getAccountUrl(nino: String): String = s"http://localhost:7001/help-to-save/$nino/account"

@@ -68,7 +68,7 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
 
   private val eligibilityUrl: String = s"$htsUrl/help-to-save/eligibility-check"
 
-  private val payePersonalDetailsUrl: String = s"$htsUrl/help-to-save/stride/paye-personal-details"
+  private val payePersonalDetailsUrl: String = s"$htsUrl/help-to-save/paye-personal-details"
 
   private val createAccountUrl: String = s"$htsUrl/help-to-save/create-account"
 
