@@ -112,10 +112,10 @@ Endpoints
 | ------------------------------------------------------------| ------ | ------------ |
 | /mdtp-internal/check-eligibility                            | GET    | Shows a page where call handlers can enter in a customer's NINO to check their eligibility for HTS|   
 | /mdtp-internal/check-eligibility                            | POST   | Submits the customer's NINO to check their eligibility for HTS  |
-| /mdtp-internal/customer-eligible                            | GET    | Informs the call handler that the customer is eligible is the customer is eligible for HTS |
+| /mdtp-internal/customer-eligible                            | GET    | Informs the call handler that the customer is eligible if the customer is eligible for HTS |
 | /mdtp-internal/customer-eligible                            | POST   | Continues on the journey from the customer-eligible page  |
-| /mdtp-internal/not-eligible                                 | GET    | Informs the call handler that the customer is ineligible is the customer is ineligible for HTS  |
-| /mdtp-internal/not-eligible                                 | POST   | Allows the call handler to manually override an ineligible eligibility check result and continue to create a HTS for the customer |
+| /mdtp-internal/not-eligible                                 | GET    | Informs the call handler that the customer is ineligible if the customer is ineligible for HTS  |
+| /mdtp-internal/not-eligible                                 | POST   | Allows the call handler to manually override an ineligible eligibility check result and continue to create a HTS account for the customer |
 | /mdtp-internal/customer-already-has-account                 | GET    | Informs the call handler that the customer already has a HTS account  |
 | /mdtp-internal/create-account                               | GET    | Shows a page to the call handler to confirm the customer's details and to read the HTS terms and conditions to the customer |
 | /mdtp-internal/create-account                               | POST   | Allows the call handler to create a HTS account for a customer  |
