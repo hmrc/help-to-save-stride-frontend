@@ -66,13 +66,13 @@ class HelpToSaveConnectorImpl @Inject() (http:                              Http
 
   private val htsUrl = baseUrl("help-to-save")
 
-  private val eligibilityUrl: String = s"$htsUrl/help-to-save/stride/eligibility-check"
+  private val eligibilityUrl: String = s"$htsUrl/help-to-save/eligibility-check"
 
-  private val payePersonalDetailsUrl: String = s"$htsUrl/help-to-save/stride/paye-personal-details"
+  private val payePersonalDetailsUrl: String = s"$htsUrl/help-to-save/paye-personal-details"
 
   private val createAccountUrl: String = s"$htsUrl/help-to-save/create-account"
 
-  private val enrolmentStatusUrl: String = s"$htsUrl/help-to-save/stride/enrolment-status"
+  private val enrolmentStatusUrl: String = s"$htsUrl/help-to-save/enrolment-status"
 
   private def getAccountUrl(nino: String): String = s"$htsUrl/help-to-save/$nino/account"
 
