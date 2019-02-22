@@ -23,12 +23,9 @@ import htsstride.utils.NINOGenerator
 
 class DifferentNINOSuffixSteps extends Steps with NINOGenerator {
 
-  val ninoForSuffixTest = generateEligibleNINO()
-  val ninoWithSuffixC = ninoForSuffixTest.take(8).toString + "C"
-  val ninoWithSuffixD = ninoWithSuffixC.take(8).toString + "D"
-
   And("^the operator creates an account on behalf of the user with NINO suffix C$") { () ⇒
-    CheckEligibilityPage.checkEligibility(ninoWithSuffixC)
+    defineNINO(generateEligibleNINO().take(8) + "C")
+    CheckEligibilityPage.checkEligibility(currentNINO())
     Browser.checkCurrentPageIs(CustomerEligiblePage)
     CustomerEligiblePage.continue()
     Browser.checkCurrentPageIs(CreateAccountPage)
@@ -36,6 +33,6 @@ class DifferentNINOSuffixSteps extends Steps with NINOGenerator {
   }
 
   When("^the operator attempts to create an account on behalf of the user with NINO suffix D$") { () ⇒
-    CheckEligibilityPage.checkEligibility(ninoWithSuffixD)
+    CheckEligibilityPage.checkEligibility(currentNINO().take(8) + "D")
   }
 }
