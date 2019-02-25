@@ -27,3 +27,10 @@ Feature: Internal operator goes through the create account journey
     When the internal operator attempts to create an account on behalf of the applicant
     Then they see a technical error
     And there was a button to go back
+
+  @HTS-1614
+  Scenario: Operator attempts to create an account for an account holder using a different NINO suffix
+    Given the operator is logged in
+    And the operator creates an account on behalf of the user with NINO suffix C
+    When the operator attempts to create an account on behalf of the user with NINO suffix D
+    Then they see account already exists message
