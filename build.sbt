@@ -19,7 +19,7 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 lazy val dependencies = Seq(
   ws,
   "uk.gov.hmrc" %% "govuk-template" % "5.27.0-play-25",
-  "uk.gov.hmrc" %% "mongo-caching" % "5.6.0",
+  "uk.gov.hmrc" %% "mongo-caching" % "5.7.0",
   "uk.gov.hmrc" %% "play-ui" % "7.31.0-play-25",
   "uk.gov.hmrc" %% "bootstrap-play-25" % "4.8.0",
   "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25",
@@ -43,7 +43,7 @@ lazy val testDependencies = Seq(
   "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0" % test,
   "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test,
   "com.google.guava" % "guava" % "25.1-jre" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % test
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.8.0-play-25" % test
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
