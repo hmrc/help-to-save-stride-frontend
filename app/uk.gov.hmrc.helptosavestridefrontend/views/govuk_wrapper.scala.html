@@ -71,8 +71,6 @@
   <script src='@controllers.routes.Assets.versioned("javascripts/h2s-app.min.js")'> </script>
 }
 
-@footerTop = {}
-@footerLinks = {}
 
 @serviceInfo = {
 @uiLayouts.serviceInfo(
@@ -100,4 +98,4 @@
     sidebar = sidebar)
 }
 
-@helpers.govuk_template(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
+@helpers.govuk_template(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, true)(content)
