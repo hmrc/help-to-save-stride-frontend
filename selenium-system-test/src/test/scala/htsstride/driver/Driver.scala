@@ -16,17 +16,18 @@
 
 package htsstride.driver
 
+import cats.syntax.either._
+import cats.syntax.eq._
+import cats.instances.string._
+
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-import cats.instances.string._
-import cats.syntax.either._
-import cats.syntax.eq._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import org.openqa.selenium.WebDriver
-import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
+import org.openqa.selenium.chrome.{ChromeDriver, ChromeDriverService, ChromeOptions}
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxOptions}
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import htsstride.utils.Configuration.environment
@@ -103,14 +104,13 @@ class Driver {
   private def createChromeDriver(headless: Boolean): WebDriver = {
     setChromeDriver()
 
-    val capabilities = DesiredCapabilities.chrome()
     val options = new ChromeOptions()
     options.addArguments("test-type")
     options.addArguments("--disable-gpu")
     if (headless) options.addArguments("--headless")
-    capabilities.setJavascriptEnabled(isJsEnabled)
-    capabilities.setCapability(ChromeOptions.CAPABILITY, options)
-    new ChromeDriver(capabilities)
+
+    val services = ChromeDriverService.createDefaultService()
+    new ChromeDriver(services, options)
   }
 
   private def createBrowserStackDriver: WebDriver = {
