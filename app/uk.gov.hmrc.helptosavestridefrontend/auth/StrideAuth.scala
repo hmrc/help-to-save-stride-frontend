@@ -30,10 +30,7 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
 import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -94,11 +91,13 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
 
   private def necessaryRoles(enrolments: Enrolments): Option[RoleType] = {
     val enrolmentKeys = enrolments.enrolments.map(_.key).toList
-    if (secureRoles.diff(enrolmentKeys).isEmpty) {
+    if (enrolmentKeys.exists(secureRoles.contains(_))) {
       Some(Secure(enrolmentKeys))
-    } else if (requiredRoles.diff(enrolmentKeys).isEmpty) {
+    } else if (enrolmentKeys.exists(requiredRoles.contains(_))) {
       Some(Standard(enrolmentKeys))
-    } else None
+    } else {
+      None
+    }
   }
 
   private def getName(name: Option[Name]): String =
