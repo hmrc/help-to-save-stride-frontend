@@ -13,7 +13,6 @@ Table of Contents
 * [Endpoints](#endpoints)
 * [License](#license)
 
-
 About Help to Save
 ==================
 Please click [here](https://github.com/hmrc/help-to-save#about-help-to-save) for more information.
