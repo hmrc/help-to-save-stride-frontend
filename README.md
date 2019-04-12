@@ -3,6 +3,7 @@ help-to-save-stride-frontend
 Frontend microservice which handles requests from browsers on the internal HMRC call handler journey. This journey allows
 call handlers to create a HTS account for a customer over the phone.
 
+
 Table of Contents
 =================
 * [About Help to Save](#about-help-to-save)
