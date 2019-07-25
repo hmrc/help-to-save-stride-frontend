@@ -185,7 +185,7 @@ class StrideControllerSpec
                  contactDetails.address5.getOrElse(""),
                  contactDetails.postcode
             )),
-          OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email"), "/")
+          OperatorDetails(List("hts helpdesk advisor", "hts_helpdesk_advisor"), Some("PID"), "name", "email"), "/")
 
         inSequence {
           mockSuccessfulAuthorisationWithDetails()
@@ -290,7 +290,8 @@ class StrideControllerSpec
           inSequence {
             mockSuccessfulAuthorisationWithDetails()
             mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), nsiUserInfo))))
-            mockAudit(PersonalInformationDisplayedToOperator(PersonalInformationDisplayed("AE123456C", "A Smith", None, List.empty[String]), OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email"), "/"), "AE123456C")
+            mockAudit(PersonalInformationDisplayedToOperator(PersonalInformationDisplayed("AE123456C", "A Smith", None, List.empty[String]),
+                                                             OperatorDetails(List("hts helpdesk advisor", "hts_helpdesk_advisor"), Some("PID"), "name", "email"), "/"), "AE123456C")
           }
 
           val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
@@ -392,7 +393,8 @@ class StrideControllerSpec
             mockSuccessfulAuthorisationWithDetails()
             mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideEligibilityResult, nsiUserInfo))))
             mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideEligibilityResult, nsiUserInfo))(Right(()))
-            mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor"), Some("PID"), "name", "email")), "AE123456C")
+            mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor", "hts_helpdesk_advisor"),
+                                                                                      Some("PID"), "name", "email")), "AE123456C")
           }
 
           val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
