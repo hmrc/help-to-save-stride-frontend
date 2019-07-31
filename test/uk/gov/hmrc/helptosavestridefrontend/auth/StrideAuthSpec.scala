@@ -87,7 +87,7 @@ class StrideAuthSpec extends TestSupport {
 
       "returns an Unauthorised status" when {
 
-        "the requester does not any the necessary roles" in {
+        "the requester does not have any of the necessary roles" in {
           List(
             Set("aa"),
             Set("aa", "bb"),
