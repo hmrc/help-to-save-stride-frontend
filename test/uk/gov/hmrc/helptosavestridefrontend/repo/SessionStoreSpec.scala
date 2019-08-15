@@ -26,7 +26,6 @@ import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import scala.concurrent.duration._
 
 class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
 
