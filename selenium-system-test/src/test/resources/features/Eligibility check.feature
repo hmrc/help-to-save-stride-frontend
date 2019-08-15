@@ -1,12 +1,16 @@
 Feature: Operator performs an eligibility check on behalf of an applicant
 
-  Scenario: Applicant is entitled to WTC but NOT in receipt of WTC and NOT in receipt of UC and so is NOT eligible
-    Given the operator is logged in
+  Scenario Outline: Applicant is entitled to WTC but NOT in receipt of WTC and NOT in receipt of UC and so is NOT eligible
+    Given the operator is logged in with <role>
     And the applicant has NINO ZX368514A
     When the internal operator does an eligibility check on behalf of the applicant
     Then they see that the applicant is NOT eligible for Help to Save with reason code 3
     When they choose to finish the call
     Then they have the option to enter a new applicant's NINO on the opening screen
+    Examples:
+      | role                 |
+      | hts helpdesk advisor |
+      | hts_helpdesk_advisor |
 
   Scenario: Applicant is entitled to WTC but NOT in receipt of WTC and in receipt of UC but income is insufficient and so is NOT eligible
     Given the operator is logged in
@@ -38,7 +42,11 @@ Feature: Operator performs an eligibility check on behalf of an applicant
     Then they see a technical error
     And there was a button to go back
 
-  Scenario: Account already exists
-    Given the operator is logged in
+  Scenario Outline: Account already exists
+    Given the operator is logged in with <role>
     When the operator does an eligibility check for an existing account holder
     Then they see account already exists message
+    Examples:
+      | role                 |
+      | hts helpdesk advisor |
+      | hts_helpdesk_advisor |

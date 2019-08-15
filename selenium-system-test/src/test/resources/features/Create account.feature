@@ -1,11 +1,15 @@
-
 Feature: Internal operator goes through the create account journey
+
   @check-test
-  Scenario: Internal operator creates an account for an eligible applicant
-    Given the operator is logged in
+  Scenario Outline:  Internal operator creates an account for an eligible applicant
+    Given the operator is logged in with <role>
     And an applicant is eligible
     When the internal operator chooses to create an account on behalf of the applicant
     Then an account is successfully created
+    Examples:
+      | role                 |
+      | hts helpdesk advisor |
+      | hts_helpdesk_advisor |
 
   Scenario: Internal operator cancels out of creating an account for an eligible applicant on the create-account screen
     Given the operator is logged in
@@ -29,8 +33,12 @@ Feature: Internal operator goes through the create account journey
     And there was a button to go back
 
   @HTS-1614
-  Scenario: Operator attempts to create an account for an account holder using a different NINO suffix
-    Given the operator is logged in
+  Scenario Outline: Operator attempts to create an account for an account holder using a different NINO suffix
+    Given the operator is logged in with <role>
     And the operator creates an account on behalf of the user with NINO suffix C
     When the operator attempts to create an account on behalf of the user with NINO suffix D
     Then they see account already exists message
+    Examples:
+      | role                 |
+      | hts helpdesk advisor |
+      | hts_helpdesk_advisor |

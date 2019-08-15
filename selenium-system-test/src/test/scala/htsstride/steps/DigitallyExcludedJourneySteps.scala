@@ -28,6 +28,10 @@ class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
     StrideSignInPage.authenticateOperator()
   }
 
+  Given("^the operator is logged in with (.*)$") { role: String ⇒
+    StrideSignInPage.authenticateOperator(role)
+  }
+
   When("^the internal operator chooses to create an account on behalf of the applicant$") {
     CustomerEligiblePage.continue()
     Browser.checkCurrentPageIs(CreateAccountPage)

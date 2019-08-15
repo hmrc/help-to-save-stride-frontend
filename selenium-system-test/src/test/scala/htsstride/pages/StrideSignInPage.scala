@@ -31,16 +31,16 @@ object StrideSignInPage extends Page {
 
   val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"
 
-  def authenticateOperator()(implicit driver: WebDriver): Unit = {
+  def authenticateOperator(role: String = "hts helpdesk advisor")(implicit driver: WebDriver): Unit = {
     navigate()
-    fillInStrideDetails("hts helpdesk advisor")
+    fillInStrideDetails(role)
     clickSubmit()
     Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 
-  def authenticateSCROperator()(implicit driver: WebDriver): Unit = {
+  def authenticateSCROperator(role: String = "hts helpdesk advisor secure")(implicit driver: WebDriver): Unit = {
     navigate()
-    fillInStrideDetails("hts helpdesk advisor secure")
+    fillInStrideDetails(role)
     clickSubmit()
     Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
@@ -54,4 +54,5 @@ object StrideSignInPage extends Page {
     setFieldByName("signature", "valid")
     setFieldByName("roles", role)
   }
+
 }

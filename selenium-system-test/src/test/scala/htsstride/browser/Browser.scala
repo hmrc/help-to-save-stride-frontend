@@ -124,7 +124,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
     val errorPrefix: String = if (isError) "Error: " else ""
 
     val urlMatches = isActualUrlExpectedUrl(page.expectedURL)
-    val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl())
+    val result: Either[String, Unit] = if (urlMatches) Right(()) else Left(s"Expected URL was ${page.expectedURL}, but actual URL was " + driver.getCurrentUrl)
     result shouldBe Right(())
 
     page.expectedPageTitle.foreach(t ⇒ pageTitle shouldBe s"$errorPrefix$t - Help to Save - HMRC")
@@ -166,7 +166,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
   }
 
   def checkForOldQuotes()(implicit driver: WebDriver): Unit = {
-    val bodyText: String = driver.findElement(By.tagName("body")).getText()
+    val bodyText: String = driver.findElement(By.tagName("body")).getText
     bodyText.isEmpty shouldBe false
     bodyText should not contain "'"
     bodyText should not contain '"'
