@@ -447,7 +447,9 @@ class StrideControllerSpec
             mockSuccessfulSecureAuthorisationWithDetails()
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult, None, None))))
             mockSessionStoreInsert(expectedSession)(Right(()))
-            mockAudit(ManualAccountCreationSelected("AE123456C", "/", OperatorDetails(List("hts helpdesk advisor secure"), Some("PID"), "name", "email")), "AE123456C")
+            mockAudit(ManualAccountCreationSelected("AE123456C", "/",
+              OperatorDetails(List("hts helpdesk advisor secure", "hts_helpdesk_advisor_secure"),
+                              Some("PID"), "name", "email")), "AE123456C")
           }
 
           val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))

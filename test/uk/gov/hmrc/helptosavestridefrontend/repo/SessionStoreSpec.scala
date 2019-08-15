@@ -26,6 +26,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import scala.concurrent.duration._
 
 class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
 
@@ -42,10 +43,10 @@ class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty 
       val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
       val result = sessionStore.store(htsSession)(format, hc)
 
-      result.value.futureValue should be(Right(()))
+      await(result.value) should be(Right(()))
 
       val getResult = sessionStore.get(format, hc)
-      getResult.value.futureValue should be(Right(Some(htsSession)))
+      await(getResult.value) should be(Right(Some(htsSession)))
     }
 
     "be able to insert a HtsSecureSession into and read from mongo" in {
