@@ -2,7 +2,7 @@
 Feature: SCR Manual Account Creation
 
   Scenario Outline: Call handler creates account
-    Given the operator is logged with SCR clearance <role>
+    Given the secure operator is logged in with <role>
     And the SCR applicant is ineligible
     And the operator ticks the 'I confirm I have met these conditions' button
     When the operator fills in the ineligible applicant's details
@@ -14,7 +14,7 @@ Feature: SCR Manual Account Creation
       | hts_helpdesk_advisor_secure |
 
   Scenario: Invalid inputs
-    Given the operator is logged with SCR clearance
+    Given the secure operator is logged in
     And the SCR applicant is ineligible
     And the operator ticks the 'I confirm I have met these conditions' button
     When the operator enters invalid input
