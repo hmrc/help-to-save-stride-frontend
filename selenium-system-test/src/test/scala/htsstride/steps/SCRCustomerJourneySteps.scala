@@ -24,8 +24,12 @@ import htsstride.utils.CustomerDetails.validCustomerDetails
 
 class SCRCustomerJourneySteps extends Steps with NINOGenerator {
 
-  Given("^the operator is logged in with SCR clearance$") {
+  Given("^the secure operator is logged in$") {
     StrideSignInPage.authenticateSCROperator()
+  }
+
+  Given("^the secure operator is logged in with (.*)$") { role: String ⇒
+    StrideSignInPage.authenticateSCROperator(role)
   }
 
   When("^the operator fills in the applicant's details$") {
