@@ -24,7 +24,7 @@ import com.google.inject.{Inject, Singleton}
 import scala.annotation.tailrec
 
 @Singleton
-class Metrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
+class HTSMetrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
 
   protected def timer(name: String): Timer = metrics.defaultRegistry.timer(name)
 

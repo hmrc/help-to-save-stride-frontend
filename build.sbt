@@ -18,23 +18,26 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.27.0-play-25",
-  "uk.gov.hmrc" %% "mongo-caching" % "6.1.0-play-25",
-  "uk.gov.hmrc" %% "play-ui" % "7.31.0-play-25",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25",
-  "uk.gov.hmrc" %% "domain" % "5.3.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.40.0-play-26",
+  "uk.gov.hmrc" %% "mongo-caching" % "6.6.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "8.1.0-play-26",
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.29.0-play-26",
+  "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
   "org.typelevel" %% "cats-core" % "1.5.0",
   "com.github.kxbmap" %% "configs" % "0.4.4"
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % test,
+  "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % test,
+  "org.scalatest" %% "scalatest" % "3.0.8" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.6" % test,
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0" % test,
+//  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % test,
 // below for selenium tests
   "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
   "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
@@ -139,8 +142,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(
     retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    routesGenerator := StaticRoutesGenerator
+    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
   .settings(resolvers ++= Seq(
     Resolver.bintrayRepo("hmrc", "releases"),

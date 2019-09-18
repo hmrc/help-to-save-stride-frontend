@@ -26,13 +26,16 @@
 @import cats.syntax.eq._
 
 @import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetails
+
+@this(main: main_template)
+
 @(ineligibilityReason: IneligibilityReason, foreNameAndSurname: Option[(String,String)], nino: String, maybeForm: Option[Form[ApplicantDetails]])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @title = @{messages("hts.eligibility.not.eligible.title.h1")}
 
-@uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+@main(
     title = title,
-    bodyClasses = None) {
+    bodyClassesOption = None) {
 
     @maybeForm.map{ form =>
         @defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>

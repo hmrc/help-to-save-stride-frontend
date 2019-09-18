@@ -21,9 +21,9 @@ import java.time.{Clock, Instant, ZoneId}
 import cats.data.EitherT
 import cats.instances.future._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import play.api.i18n.MessagesApi
 import play.api.libs.json.{Reads, Writes}
 import play.api.mvc._
+import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, HTSEvent, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
@@ -41,6 +41,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.helptosavestridefrontend.{models, _}
 import uk.gov.hmrc.http.HeaderCarrier
+import views.html._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,6 +49,8 @@ class StrideControllerSpec
   extends TestSupport with AuthSupport with CSRFSupport with TestData with GeneratorDrivenPropertyChecks { // scalastyle:off magic.number
 
   implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
+
+  private val fakeRequest = FakeRequest("GET", "/")
 
   val helpToSaveConnector = mock[HelpToSaveConnector]
 
@@ -115,7 +118,17 @@ class StrideControllerSpec
                          helpToSaveConnector,
                          sessionStore,
                          mockAuditor,
-                         fakeApplication.injector.instanceOf[MessagesApi])
+                         testMcc,
+                         errorHandler,
+                         injector.instanceOf[get_eligibility_page],
+                         injector.instanceOf[customer_not_eligible],
+                         injector.instanceOf[account_already_exists],
+                         injector.instanceOf[customer_eligible],
+                         injector.instanceOf[enter_customer_details],
+                         injector.instanceOf[create_account],
+                         injector.instanceOf[account_created],
+                         injector.instanceOf[application_cancelled]
+    )
 
   val validEnterDetailsFormBody = Map(
     Ids.forename → nsiUserInfo.forename,
@@ -142,7 +155,7 @@ class StrideControllerSpec
           mockSessionStoreDelete(Right(()))
         }
 
-        val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
+        val result = controller.getEligibilityPage(request)
         status(result) shouldBe OK
         contentAsString(result) should include("explain Help to Save to the customer")
       }
@@ -153,7 +166,7 @@ class StrideControllerSpec
           mockSessionStoreDelete(Left("error during session delete"))
         }
 
-        val result = controller.getEligibilityPage(fakeRequestWithCSRFToken)
+        val result = controller.getEligibilityPage(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
       }
@@ -167,7 +180,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(None))
         }
 
-        val result = controller.customerEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
@@ -193,7 +206,7 @@ class StrideControllerSpec
           mockAudit(auditEvent, "AE123456C")
         }
 
-        val result = controller.customerEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(request)
         status(result) shouldBe OK
         contentAsString(result) should include("Customer is eligible for an account")
         contentAsString(result) should not include ("enter their details")
@@ -205,7 +218,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
         }
 
-        val result = controller.customerEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(request)
         status(result) shouldBe OK
         contentAsString(result) should include("Customer is eligible")
         contentAsString(result) should include("enter their details")
@@ -217,7 +230,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleEligibilityResult, nsiUserInfo))))
         }
 
-        val result = controller.customerEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
@@ -228,7 +241,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(accountExistsEligibilityResult, nsiUserInfo))))
         }
 
-        val result = controller.customerEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
@@ -239,7 +252,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleResult, None))))
         }
 
-        val result = controller.customerEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerEligible(request)
         status(result) shouldBe OK
         contentAsString(result) should include("enter their details")
       }
@@ -251,7 +264,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession("AE123456C", eligibleResult, Some(nsiUserInfo)))))
           }
 
-          val result = controller.customerEligible(fakeRequestWithCSRFToken)
+          val result = controller.customerEligible(request)
           status(result) shouldBe OK
           contentAsString(result) should include("enter their details")
           contentAsString(result) should include(nsiUserInfo.forename)
@@ -269,7 +282,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(None))
         }
 
-        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
@@ -280,7 +293,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
         }
 
-        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
@@ -294,7 +307,7 @@ class StrideControllerSpec
                                                              OperatorDetails(List("hts helpdesk advisor", "hts_helpdesk_advisor"), Some("PID"), "name", "email"), "/"), "AE123456C")
           }
 
-          val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+          val result = controller.customerNotEligible(request)
           status(result) shouldBe OK
           contentAsString(result) should include("Customer is not eligible for a Help to Save account")
           contentAsString(result) should include("Name:")
@@ -309,7 +322,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), None, None))))
           }
 
-          val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+          val result = controller.customerNotEligible(request)
           status(result) shouldBe OK
 
           val content = contentAsString(result)
@@ -328,7 +341,7 @@ class StrideControllerSpec
               mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), Some(nsiUserInfo), None))))
             }
 
-            val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+            val result = controller.customerNotEligible(request)
             status(result) shouldBe OK
 
             val content = contentAsString(result)
@@ -348,7 +361,7 @@ class StrideControllerSpec
               mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), nsiUserInfo))))
             }
 
-            val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+            val result = controller.customerNotEligible(request)
             status(result) shouldBe SEE_OTHER
             redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
           }
@@ -364,7 +377,7 @@ class StrideControllerSpec
                 mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), None, None))))
               }
 
-              val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+              val result = controller.customerNotEligible(request)
               status(result) shouldBe SEE_OTHER
               redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
             }
@@ -377,7 +390,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(accountExistsEligibilityResult, nsiUserInfo))))
         }
 
-        val result = controller.customerNotEligible(fakeRequestWithCSRFToken)
+        val result = controller.customerNotEligible(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.accountAlreadyExists().url)
       }
@@ -397,7 +410,7 @@ class StrideControllerSpec
                                                                                       Some("PID"), "name", "email")), "AE123456C")
           }
 
-          val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
+          val result = controller.allowManualAccountCreation()(request)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
         }
@@ -409,7 +422,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(HtsStandardSession(ineligibleManualOverrideEligibilityResult, nsiUserInfo))(Left(""))
           }
 
-          val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken)
+          val result = controller.allowManualAccountCreation()(request)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
@@ -431,7 +444,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult, None, None))))
           }
 
-          val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken.withFormUrlEncodedBody())
+          val result = controller.allowManualAccountCreation()(request)
           status(result) shouldBe OK
 
           val content = contentAsString(result)
@@ -452,7 +465,7 @@ class StrideControllerSpec
                               Some("PID"), "name", "email")), "AE123456C")
           }
 
-          val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.allowManualAccountCreation())(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
 
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
@@ -465,7 +478,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(expectedSession)(Left("uh oh"))
           }
 
-          val result = controller.allowManualAccountCreation()(fakeRequestWithCSRFToken.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.allowManualAccountCreation())(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
@@ -482,7 +495,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(None))
         }
 
-        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        val result = controller.accountAlreadyExists(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
       }
@@ -493,7 +506,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo))))
         }
 
-        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        val result = controller.accountAlreadyExists(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
       }
@@ -504,7 +517,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleEligibilityResult, nsiUserInfo))))
         }
 
-        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        val result = controller.accountAlreadyExists(request)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
       }
@@ -515,7 +528,7 @@ class StrideControllerSpec
           mockSessionStoreGet(Right(Some(HtsStandardSession(accountExistsEligibilityResult, nsiUserInfo))))
         }
 
-        val result = controller.accountAlreadyExists(fakeRequestWithCSRFToken)
+        val result = controller.accountAlreadyExists(request)
         status(result) shouldBe OK
         contentAsString(result) should include("Customer already has an account")
       }
@@ -524,7 +537,7 @@ class StrideControllerSpec
     "checking the eligibility and retrieving paye details" must {
 
         def doRequest(nino: String) =
-          controller.checkEligibilityAndGetPersonalInfo(fakeRequestWithCSRFToken.withFormUrlEncodedBody("nino" → nino))
+          controller.checkEligibilityAndGetPersonalInfo(FakeRequest().withFormUrlEncodedBody("nino" → nino).withCSRFToken)
 
       "handle the forms with invalid input" in {
         inSequence {
@@ -786,7 +799,8 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsStandardSession(eligibleResult, nsiUserInfo, detailsConfirmed = true))))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
+
           status(result) shouldBe OK
           contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
         }
@@ -808,7 +822,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleManualOverrideEligibilityResult, nsiUserInfo))))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
           status(result) shouldBe OK
           contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
         }
@@ -819,7 +833,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleEligibilityResult, nsiUserInfo))))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
         }
@@ -834,7 +848,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(None))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getEligibilityPage().url)
         }
@@ -845,7 +859,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.customerEligible().url)
         }
@@ -856,7 +870,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, Some(nsiUserInfo), None))))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
           status(result) shouldBe OK
           contentAsString(result) should include(nsiUserInfo.forename)
           contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
@@ -868,7 +882,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(manualCreationAllowed = true), None, None))))
           }
 
-          val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+          val result = controller.getCreateAccountPage(request)
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
         }
@@ -880,7 +894,7 @@ class StrideControllerSpec
               mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(manualCreationAllowed = false), Some(nsiUserInfo), None))))
             }
 
-            val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+            val result = controller.getCreateAccountPage(request)
             status(result) shouldBe SEE_OTHER
             redirectLocation(result) shouldBe Some(routes.StrideController.customerNotEligible().url)
           }
@@ -892,7 +906,7 @@ class StrideControllerSpec
               mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(manualCreationAllowed = true), Some(nsiUserInfo), None))))
             }
 
-            val result = controller.getCreateAccountPage(fakeRequestWithCSRFToken)
+            val result = controller.getCreateAccountPage(request)
             status(result) shouldBe OK
             contentAsString(result) should include(nsiUserInfo.forename)
             contentAsString(result) should include("Ask the customer if they understand and agree to the terms and conditions")
@@ -954,7 +968,7 @@ class StrideControllerSpec
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, eligibleResult, None, None))))
           }
 
-          val result = controller.customerEligibleSubmit(fakeRequestWithCSRFToken.withFormUrlEncodedBody())
+          val result = controller.customerEligibleSubmit(request)
           status(result) shouldBe OK
 
           val content = contentAsString(result)
@@ -972,7 +986,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(expectedSession)(Right(()))
           }
 
-          val result = controller.customerEligibleSubmit(fakeRequestWithCSRFToken.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.customerEligibleSubmit)(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
 
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
@@ -985,7 +999,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(expectedSession)(Left("uh oh"))
           }
 
-          val result = controller.customerEligibleSubmit(fakeRequestWithCSRFToken.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.customerEligibleSubmit)(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
@@ -999,7 +1013,7 @@ class StrideControllerSpec
 
           val result = controller.customerEligibleSubmit(FakeRequest())
           status(result) shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2F%2Fhelp-to-save%2Fhmrc-internal%2Fcustomer-eligible&origin=help-to-save-stride-frontend")
+          redirectLocation(result) shouldBe Some("/stride/sign-in?successURL=http%3A%2F%2Flocalhost%2Fhelp-to-save%2Fhmrc-internal%2Fcustomer-eligible&origin=help-to-save-stride-frontend")
         }
 
       }
