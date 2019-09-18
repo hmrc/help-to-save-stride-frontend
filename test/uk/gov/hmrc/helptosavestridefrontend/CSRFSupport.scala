@@ -16,16 +16,11 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
+import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
-import play.filters.csrf.CSRF.{Token, TokenProvider}
 
-trait CSRFSupport { this: TestSupport ⇒
+trait CSRFSupport {
 
-  lazy val tokenProvider: TokenProvider =
-    fakeApplication.injector.instanceOf[TokenProvider]
-
-  lazy val fakeRequestWithCSRFToken = FakeRequest().copyFakeRequest(tags = Map(
-    Token.NameRequestTag → "csrfToken",
-    Token.RequestTag → tokenProvider.generateToken))
+  val request = FakeRequest("GET", "/").withCSRFToken
 
 }

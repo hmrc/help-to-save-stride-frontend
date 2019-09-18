@@ -39,7 +39,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
 
   val frontendAppConfig: FrontendAppConfig
 
-  val config: Configuration = frontendAppConfig.runModeConfiguration
+  val config: Configuration = frontendAppConfig.config
 
   val env: Environment = frontendAppConfig.environment
 

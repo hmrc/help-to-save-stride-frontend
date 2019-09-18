@@ -19,6 +19,8 @@
 @import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.FormOps
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
+@this(main: main_template)
+
 @(form: Form[GiveNINO])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig )
 
 @title = @{messages("hts.eligibility.title.h1")}
@@ -33,10 +35,10 @@
   }
 }){ errorMessage =>
 
-    @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+    @main(
       title = title,
       sidebarLinks = None,
-      bodyClasses = None,
+      bodyClassesOption = None,
       isErrorPage = errorMessage.isDefined
     ) {
 

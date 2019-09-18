@@ -18,61 +18,72 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import java.util.UUID
 
+import akka.stream.Materializer
 import com.codahale.metrics._
 import com.kenshoo.play.metrics.{Metrics ⇒ PlayMetrics}
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Suite}
-import play.api.i18n.MessagesApi
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.MessagesControllerComponents
 import play.api.{Application, Configuration, Environment, Play}
-import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
+import play.filters.csrf.CSRFAddToken
+import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
+import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
+import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext
 
-trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures {
+trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport {
   this: Suite ⇒
 
   lazy val additionalConfig = Configuration()
 
-  lazy val fakeApplication: Application =
+  implicit lazy val fakeApplication: Application =
     new GuiceApplicationBuilder()
       .configure(Configuration(
         ConfigFactory.parseString(
           """
-            | metrics.enabled       = false
-            |  mongodb.session.expireAfter = 5 seconds
+            | metrics.enabled = true
+            | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
       ) ++ additionalConfig)
       .build()
 
-  lazy implicit val environment: Environment = fakeApplication.injector.instanceOf[Environment]
+  lazy val injector: Injector = fakeApplication.injector
 
-  lazy implicit val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]
+  lazy implicit val environment: Environment = injector.instanceOf[Environment]
 
-  implicit lazy val ec: ExecutionContext = fakeApplication.injector.instanceOf[ExecutionContext]
+  lazy implicit val configuration: Configuration = injector.instanceOf[Configuration]
 
-  implicit lazy val ninoLogMessageTransfromer: NINOLogMessageTransformer = fakeApplication.injector.instanceOf[NINOLogMessageTransformer]
+  lazy implicit val runMode: RunMode = injector.instanceOf[RunMode]
+
+  lazy implicit val servicesConfig: ServicesConfig = injector.instanceOf[ServicesConfig]
+
+  implicit lazy val ec: ExecutionContext = injector.instanceOf[ExecutionContext]
+
+  implicit lazy val ninoLogMessageTransfromer: NINOLogMessageTransformer = injector.instanceOf[NINOLogMessageTransformer]
 
   implicit val headerCarrier: HeaderCarrier =
     HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
+  implicit val mat: Materializer = mock[Materializer]
+
   val nino = "AE123456C"
 
-  val mockMetrics = new Metrics(stub[PlayMetrics]) {
+  val mockMetrics = new HTSMetrics(stub[PlayMetrics]) {
     override def timer(name: String): Timer = new Timer()
 
     override def counter(name: String): Counter = new Counter()
   }
-
-  implicit lazy val frontendAppConfig: FrontendAppConfig =
-    fakeApplication.injector.instanceOf[FrontendAppConfig]
 
   override def beforeAll() {
     Play.start(fakeApplication)
@@ -84,5 +95,12 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     super.afterAll()
   }
 
-  implicit lazy val messagesApi: MessagesApi = fakeApplication.injector.instanceOf[MessagesApi]
+  lazy val messagesApi: MessagesApi = injector.instanceOf(classOf[MessagesApi])
+
+  implicit lazy val frontendAppConfig: FrontendAppConfig = injector.instanceOf[FrontendAppConfig]
+  lazy val errorHandler = new ErrorHandler(testMcc.messagesApi, injector.instanceOf[error_template], frontendAppConfig)
+
+  lazy val csrfAddToken: CSRFAddToken = injector.instanceOf[play.filters.csrf.CSRFAddToken]
+
+  lazy val testMcc: MessagesControllerComponents = injector.instanceOf[MessagesControllerComponents]
 }

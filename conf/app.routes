@@ -1,32 +1,32 @@
 GET       /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
 
-GET       /                                           @controllers.Default.redirect(to = "/help-to-save/hmrc-internal/check-eligibility")
+GET       /                                           controllers.Default.redirect(to = "/help-to-save/hmrc-internal/check-eligibility")
 
-GET       /check-eligibility                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
+GET       /check-eligibility                          uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getEligibilityPage()
 
-POST      /check-eligibility                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
+POST      /check-eligibility                          uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.checkEligibilityAndGetPersonalInfo()
 
-GET       /introduction-help-to-save                  @controllers.Default.redirect(to = "/help-to-save/hmrc-internal/check-eligibility")
+GET       /introduction-help-to-save                  controllers.Default.redirect(to = "/help-to-save/hmrc-internal/check-eligibility")
 
-GET       /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligible()
+GET       /customer-eligible                          uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligible()
 
-POST      /customer-eligible                          @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligibleSubmit()
+POST      /customer-eligible                          uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerEligibleSubmit()
 
-GET       /not-eligible                               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerNotEligible()
+GET       /not-eligible                               uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.customerNotEligible()
 
-POST      /not-eligible                               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.allowManualAccountCreation()
+POST      /not-eligible                               uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.allowManualAccountCreation()
 
-GET       /customer-already-has-account               @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
+GET       /customer-already-has-account               uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.accountAlreadyExists()
 
-GET       /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getCreateAccountPage()
+GET       /create-account                             uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getCreateAccountPage()
 
-POST      /create-account                             @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
+POST      /create-account                             uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.createAccount()
 
-GET       /account-created                            @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()
+GET       /account-created                            uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getAccountCreatedPage()
 
-GET       /error                                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getErrorPage()
+GET       /error                                      uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getErrorPage()
 
-GET       /application-cancelled                      @uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getApplicationCancelledPage()
+GET       /application-cancelled                      uk.gov.hmrc.helptosavestridefrontend.controllers.StrideController.getApplicationCancelledPage()
 
 
-GET        /forbidden                                 @uk.gov.hmrc.helptosavestridefrontend.controllers.ForbiddenController.forbidden
+GET        /forbidden                                 uk.gov.hmrc.helptosavestridefrontend.controllers.ForbiddenController.forbidden
