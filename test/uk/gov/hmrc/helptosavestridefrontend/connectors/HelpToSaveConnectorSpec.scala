@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.HttpResponse
 
 class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with GeneratorDrivenPropertyChecks with TestData with HttpSupport {
 
-  val connector = new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, environment)
+  val connector = new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, runMode, configuration, servicesConfig, environment)
 
   private val eligibilityUrl: String = "http://localhost:7001/help-to-save/eligibility-check"
   private val payePersonalDetailsUrl: String = "http://localhost:7001/help-to-save/paye-personal-details"

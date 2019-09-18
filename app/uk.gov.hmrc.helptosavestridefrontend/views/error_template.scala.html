@@ -17,13 +17,15 @@
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
+@this(main: main_template)
+
 @()(implicit request: Request[_], messages: Messages, frontendAppConfig: FrontendAppConfig)
 
 @title = @{messages("hts.error.page.title.h1")}
 
-@uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+@main(
   title = title,
-  bodyClasses = None) {
+  bodyClassesOption = None) {
   <h1 class="heading-large">@title</h1>
   <p>@messages("hts.error.page.p1")</p>
   <a href=@routes.StrideController.getEligibilityPage().url class="button">@messages("hts.error.page.button.start-again")</a>
