@@ -18,7 +18,7 @@ package htsstride.pages
 
 import htsstride.utils.Configuration
 
-object AccountAlreadyExistsPage extends Page {
+object AccountAlreadyExistsPage extends BasePage {
 
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/customer-already-has-account"
 

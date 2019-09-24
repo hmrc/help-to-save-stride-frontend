@@ -20,9 +20,8 @@ import htsstride.browser.Browser
 import htsstride.pages._
 import htsstride.pages.eligibility._
 import htsstride.utils.NINOGenerator
-import htsstride.utils.CustomerDetails.validCustomerDetails
 
-class DigitallyExcludedJourneySteps extends Steps with NINOGenerator {
+class DigitallyExcludedJourneySteps extends BasePage with NINOGenerator {
 
   Given("^the operator is logged in$") {
     StrideSignInPage.authenticateOperator()

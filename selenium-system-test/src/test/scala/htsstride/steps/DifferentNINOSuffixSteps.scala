@@ -17,11 +17,11 @@
 package htsstride.steps
 
 import htsstride.browser.Browser
-import htsstride.pages.{CheckEligibilityPage, CreateAccountPage}
 import htsstride.pages.eligibility.CustomerEligiblePage
+import htsstride.pages.{BasePage, CheckEligibilityPage, CreateAccountPage}
 import htsstride.utils.NINOGenerator
 
-class DifferentNINOSuffixSteps extends Steps with NINOGenerator {
+class DifferentNINOSuffixSteps extends BasePage with NINOGenerator {
 
   And("^the operator creates an account on behalf of the user with NINO suffix C$") { () ⇒
     defineNINO(generateEligibleNINO().take(8) + "C")

@@ -18,9 +18,11 @@ package htsstride.pages
 
 import htsstride.utils.Configuration
 
-object AccountCreatedPage extends Page {
+object AccountCreatedPage extends BasePage {
+
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/account-created"
 
   override val expectedPageTitle: Option[String] = Some("Help to Save account created")
   override val expectedPageHeader: Option[String] = Some("Help to Save account created")
+
 }

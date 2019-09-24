@@ -17,12 +17,11 @@
 package htsstride.pages.eligibility
 
 import htsstride.browser.Browser
-import htsstride.pages.eligibility.SCRCustomerEligiblePage.{clickSubmit, setFieldByName}
-import htsstride.pages.{ApplicationCancelledPage, CreateAccountPage, Page}
+import htsstride.pages.BasePage
 import htsstride.utils.{Configuration, CustomerDetails}
 import org.openqa.selenium.WebDriver
 
-object NotEligibleSCRPage extends Page {
+object NotEligibleSCRPage extends BasePage {
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/not-eligible"
 
   override val expectedPageTitle: Option[String] = Some("Customer is not eligible for an account")
