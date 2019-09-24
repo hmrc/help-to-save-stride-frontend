@@ -16,10 +16,10 @@
 
 package htsstride.pages.eligibility
 
-import htsstride.pages.Page
+import htsstride.pages.BasePage
 import htsstride.utils.Configuration
 
-trait NotEligiblePage extends Page {
+trait NotEligiblePage extends BasePage {
 
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/not-eligible"
 
@@ -27,4 +27,5 @@ trait NotEligiblePage extends Page {
   override val expectedPageHeader: Option[String] = Some("Customer is not eligible for an account")
 
   val notEligibleText: List[String]
+
 }

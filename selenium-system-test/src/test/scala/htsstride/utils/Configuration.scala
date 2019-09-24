@@ -60,4 +60,7 @@ object Configuration {
       case _ ⇒ sys.error(s"Environment '$environment' not known")
     }
   }
+
+  var scenarioLoop: Boolean = true
+
 }

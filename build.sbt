@@ -30,20 +30,16 @@ lazy val dependencies = Seq(
 
 lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % test,
-  "org.scalatest" %% "scalatest" % "3.0.5" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.6" % test,
 // below for selenium tests
-  "info.cukes" % "cucumber-junit" % "1.2.5" % test,
-  "info.cukes" % "cucumber-picocontainer" % "1.2.5" % test,
-  "info.cukes" %% "cucumber-scala" % "1.2.5" % test,
-  "org.seleniumhq.selenium" % "selenium-java" % "3.13.0" % test,
-  "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0" % test,
-  "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test,
-  "com.google.guava" % "guava" % "25.1-jre" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.8.0-play-25" % test
+  "io.cucumber"           %% "cucumber-scala"         % "4.7.1",
+  "io.cucumber"           %  "cucumber-junit"         % "4.7.1",
+  "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1",
+  "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0"   exclude( "org.slf4j","slf4j-simple"),
+  "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.8.0-play-25" % test
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
