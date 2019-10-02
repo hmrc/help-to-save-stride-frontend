@@ -43,7 +43,7 @@ lazy val testDependencies = Seq(
   "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
   "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
   "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple"),
-  "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.8.0-play-25" % test
+  "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.15.0-play-26" % test
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
