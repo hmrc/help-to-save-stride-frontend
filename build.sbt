@@ -36,14 +36,10 @@ lazy val testDependencies = Seq(
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.6" % test,
-  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0" % test,
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0" % test
 //  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % test,
 // below for selenium tests
-  "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
-  "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
-  "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
-  "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple"),
-  "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.15.0-play-26" % test
+  
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
@@ -163,6 +159,15 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
   .configs(SeleniumTest)
+  .settings(
+    libraryDependencies ++= testDependencies ++ Seq(
+      "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
+      "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
+      "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
+      "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple"),
+      "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.15.0-play-26" % test
+    )
+  )
   .settings(
     inConfig(SeleniumTest)(Defaults.testTasks),
     Keys.fork in SeleniumTest := true,
