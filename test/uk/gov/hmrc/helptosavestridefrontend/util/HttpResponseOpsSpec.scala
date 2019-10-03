@@ -18,8 +18,8 @@ package uk.gov.hmrc.helptosavestridefrontend.util
 
 import play.api.libs.json.{Format, JsValue, Json}
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
+import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.http.HttpResponse
-import HttpResponseOps._
 
 class HttpResponseOpsSpec extends TestSupport {
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Clock, Instant, ZoneId}
 
 import cats.syntax.either._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks

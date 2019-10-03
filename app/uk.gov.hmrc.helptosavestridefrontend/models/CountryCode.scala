@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.models
 
 import play.api.libs.json.{JsObject, Json}
 
-import scala.collection.Map
 import scala.io.Source
 
 object CountryCode {

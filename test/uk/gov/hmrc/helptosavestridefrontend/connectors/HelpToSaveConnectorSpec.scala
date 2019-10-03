@@ -22,11 +22,11 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
-import uk.gov.hmrc.helptosavestridefrontend.models.{AccountDetails, EnrolmentStatus}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
+import uk.gov.hmrc.helptosavestridefrontend.models.{AccountDetails, EnrolmentStatus}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HttpResponse

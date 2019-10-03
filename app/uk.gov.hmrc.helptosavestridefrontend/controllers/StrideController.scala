@@ -31,8 +31,8 @@ import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
 import uk.gov.hmrc.helptosavestridefrontend.forms.{ApplicantDetailsForm, ApplicantDetailsValidation, GiveNINOForm}
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
-import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
 import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest

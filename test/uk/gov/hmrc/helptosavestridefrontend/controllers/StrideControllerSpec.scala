@@ -26,22 +26,21 @@ import play.api.mvc._
 import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.helptosavestridefrontend._
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, HTSEvent, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation
-import uk.gov.hmrc.helptosavestridefrontend.models.HtsStandardSession
-import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
-import uk.gov.hmrc.helptosavestridefrontend.models._
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
+import uk.gov.hmrc.helptosavestridefrontend.models.{HtsStandardSession, _}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.NINO
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
-import uk.gov.hmrc.helptosavestridefrontend.{models, _}
+import uk.gov.hmrc.helptosavestridefrontend.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
-import views.html._
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -21,9 +21,9 @@ import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.instances.string._
 import cats.syntax.either._
 import cats.syntax.eq._
-import play.api.data.{Form, FormError}
 import play.api.data.Forms.text
 import play.api.data.format.Formatter
+import play.api.data.{Form, FormError}
 
 import scala.util.matching.Regex
 
