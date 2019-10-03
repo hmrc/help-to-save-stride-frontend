@@ -17,6 +17,7 @@
 package uk.gov.hmrc.helptosavestridefrontend.util
 
 import scala.util.{Failure, Success, Try}
+import scala.language.implicitConversions
 
 object TryOps {
   implicit def foldOps[A](t: Try[A]): TryOps[A] = new TryOps[A](t)

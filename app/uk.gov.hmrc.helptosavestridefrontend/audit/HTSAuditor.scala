@@ -17,12 +17,12 @@
 package uk.gov.hmrc.helptosavestridefrontend.audit
 
 import javax.inject.{Inject, Singleton}
+import uk.gov.hmrc.helptosavestridefrontend.util.Logging.LoggerOps
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
-import uk.gov.hmrc.helptosavestridefrontend.util.Logging.LoggerOps
 
 @Singleton
 class HTSAuditor @Inject() (val auditConnector: AuditConnector)(implicit transformer: NINOLogMessageTransformer) extends Logging {

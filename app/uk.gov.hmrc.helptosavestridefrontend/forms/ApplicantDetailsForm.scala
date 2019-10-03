@@ -18,8 +18,8 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 
 import java.time.{Clock, LocalDate}
 
-import cats.syntax.eq._
 import cats.instances.string._
+import cats.syntax.eq._
 import play.api.data.Form
 import play.api.data.Forms._
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages

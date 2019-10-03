@@ -20,7 +20,7 @@ import java.util.UUID
 
 import akka.stream.Materializer
 import com.codahale.metrics._
-import com.kenshoo.play.metrics.{Metrics ⇒ PlayMetrics}
+import com.kenshoo.play.metrics.{Metrics => PlayMetrics}
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures

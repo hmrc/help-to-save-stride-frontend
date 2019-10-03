@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
 import cats.syntax.either._
-
 import org.scalatest.Matchers
 import play.api.data.FormError
 import play.api.data.format.Formatter
