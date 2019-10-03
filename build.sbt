@@ -1,6 +1,6 @@
 import com.typesafe.sbt.uglify.Import
 import play.core.PlayVersion
-import sbt.Keys._
+import sbt.Keys.{libraryDependencies, _}
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings._
 import uk.gov.hmrc.SbtAutoBuildPlugin
@@ -39,7 +39,7 @@ lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0" % test
 //  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % test,
 // below for selenium tests
-  
+
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
@@ -160,15 +160,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
   .configs(SeleniumTest)
   .settings(
-    libraryDependencies ++= testDependencies ++ Seq(
-      "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
-      "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
-      "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
-      "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple"),
-      "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.15.0-play-26" % test
-    )
-  )
-  .settings(
     inConfig(SeleniumTest)(Defaults.testTasks),
     Keys.fork in SeleniumTest := true,
     unmanagedSourceDirectories in Test += baseDirectory.value / "selenium-system-test/src/test/scala",
@@ -177,7 +168,14 @@ lazy val microservice = Project(appName, file("."))
     testOptions in SeleniumTest := Seq(Tests.Filter(seleniumTestFilter)),
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+    libraryDependencies ++= testDependencies ++ Seq(
+      "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
+      "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
+      "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
+      "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple"),
+      "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.15.0-play-26" % test
+    )
   )
 .settings(
   formatMessageQuotes := {
