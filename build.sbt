@@ -158,7 +158,32 @@ lazy val microservice = Project(appName, file("."))
     includeFilter in uglify := GlobFilter("h2s-*.js")
   )
   .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
+.settings(
+  formatMessageQuotes := {
+    import sys.process._
+    val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
+    if(result != 0){ logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes") }
+  },
+  compile := ((compile in Compile) dependsOn formatMessageQuotes).value
+)
+
+lazy val commonSettings = Seq(
+  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
+  majorVersion := 2,
+  evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+  resolvers ++= Seq(
+    Resolver.bintrayRepo("hmrc", "releases"),
+    Resolver.jcenterRepo,
+    "emueller-bintray" at "http://dl.bintray.com/emueller/maven" // for play json schema validator
+  ),
+  scalacOptions += "-Xcheckinit"
+) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
+
+lazy val selenium = (project in file("selenium-system-test"))
+  .dependsOn(microservice)
   .configs(SeleniumTest)
+  .settings(commonSettings: _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
   .settings(
     inConfig(SeleniumTest)(Defaults.testTasks),
     Keys.fork in SeleniumTest := true,
@@ -168,7 +193,9 @@ lazy val microservice = Project(appName, file("."))
     testOptions in SeleniumTest := Seq(Tests.Filter(seleniumTestFilter)),
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+  )
+  .settings(
     libraryDependencies ++= testDependencies ++ Seq(
       "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
       "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
@@ -177,12 +204,13 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc"           %% "reactivemongo-test"     % "4.15.0-play-26" % test
     )
   )
-.settings(
-  formatMessageQuotes := {
-    import sys.process._
-    val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
-    if(result != 0){ logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes") }
-  },
-  compile := ((compile in Compile) dependsOn formatMessageQuotes).value
-)
+  .settings(
+    Keys.fork in Test := true,
+    scalaSource in Test := baseDirectory.value / "src" / "test",
+    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources",
+    testOptions in Test := Seq(Tests.Filter(name ⇒  name.contains("suites"))),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+  )
 
