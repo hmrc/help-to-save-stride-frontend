@@ -8,7 +8,6 @@ Feature: Internal operator goes through the create account journey
     Then an account is successfully created
     Examples:
       | role                 |
-      | hts helpdesk advisor |
       | hts_helpdesk_advisor |
 
   Scenario: Internal operator cancels out of creating an account for an eligible applicant on the create-account screen
@@ -40,5 +39,4 @@ Feature: Internal operator goes through the create account journey
     Then they see account already exists message
     Examples:
       | role                 |
-      | hts helpdesk advisor |
       | hts_helpdesk_advisor |
