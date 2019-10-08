@@ -10,7 +10,6 @@ Feature: SCR Manual Account Creation
     Then the account is successfully created
     Examples:
       | role                        |
-      | hts helpdesk advisor secure |
       | hts_helpdesk_advisor_secure |
 
   Scenario: Invalid inputs

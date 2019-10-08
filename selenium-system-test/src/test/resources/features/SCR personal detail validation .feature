@@ -9,7 +9,6 @@ Feature: SCR personal detail validation
     Then the account is successfully created
     Examples:
       | role                        |
-      | hts helpdesk advisor secure |
       | hts_helpdesk_advisor_secure |
 
   Scenario: First name of the customer's personal details are null
@@ -25,7 +24,6 @@ Feature: SCR personal detail validation
     Then the last name over the limit error message appears
     Examples:
       | role                        |
-      | hts helpdesk advisor secure |
       | hts_helpdesk_advisor_secure |
 
   Scenario: The entered date of birth of the customer is in the future

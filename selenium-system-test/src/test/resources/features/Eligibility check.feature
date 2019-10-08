@@ -9,7 +9,6 @@ Feature: Operator performs an eligibility check on behalf of an applicant
     Then they have the option to enter a new applicant's NINO on the opening screen
     Examples:
       | role                 |
-      | hts helpdesk advisor |
       | hts_helpdesk_advisor |
 
   Scenario: Applicant is entitled to WTC but NOT in receipt of WTC and in receipt of UC but income is insufficient and so is NOT eligible
@@ -48,5 +47,4 @@ Feature: Operator performs an eligibility check on behalf of an applicant
     Then they see account already exists message
     Examples:
       | role                 |
-      | hts helpdesk advisor |
       | hts_helpdesk_advisor |
