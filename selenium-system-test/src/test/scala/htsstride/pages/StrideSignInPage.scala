@@ -31,14 +31,14 @@ object StrideSignInPage extends Page {
 
   val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"
 
-  def authenticateOperator(role: String = "hts helpdesk advisor")(implicit driver: WebDriver): Unit = {
+  def authenticateOperator(role: String = "hts_helpdesk_advisor")(implicit driver: WebDriver): Unit = {
     navigate()
     fillInStrideDetails(role)
     clickSubmit()
     Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
 
-  def authenticateSCROperator(role: String = "hts helpdesk advisor secure")(implicit driver: WebDriver): Unit = {
+  def authenticateSCROperator(role: String = "hts_helpdesk_advisor_secure")(implicit driver: WebDriver): Unit = {
     navigate()
     fillInStrideDetails(role)
     clickSubmit()
