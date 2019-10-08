@@ -151,9 +151,9 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     retrieveManaged := true
   )
-  .settings(resolvers ++= Seq(
-    "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
-  ))
+//  .settings(resolvers ++= Seq(
+//    "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
+//  ))
   .settings(
     // concatenate js
     Concat.groups := Seq(
