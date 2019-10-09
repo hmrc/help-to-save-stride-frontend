@@ -110,7 +110,13 @@ lazy val wartRemoverSettings = {
     Wart.ToString,
     Wart.Var)
 
-  wartremoverErrors in (Compile, compile) ++= Warts.allBut(excludedWarts: _*)
+  Seq(wartremoverErrors in (Compile, compile) ++= Warts.allBut(excludedWarts: _*),
+      wartremoverErrors in (Test, compile) --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
+      wartremoverExcluded ++=
+      routes.in(Compile).value ++
+        (baseDirectory.value ** "*.sc").get ++
+        Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala")
+    )
 }
 
 lazy val commonSettings = Seq(
@@ -139,12 +145,6 @@ lazy val microservice = Project(appName, file("."))
   // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
   // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
   // imcompatible with a lot of WordSpec
-  .settings(wartremoverErrors in (Test, compile) --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference))
-  .settings(wartremoverExcluded ++=
-    routes.in(Compile).value ++
-      (baseDirectory.value ** "*.sc").get ++
-      Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala")
-  )
   .settings(
     libraryDependencies ++= dependencies ++ testDependencies
   )
@@ -194,7 +194,7 @@ lazy val selenium = (project in file("selenium-system-test"))
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
   .settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies ++= testDependencies ++ Seq(
       "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
       "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
       "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,

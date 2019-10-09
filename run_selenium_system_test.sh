@@ -134,4 +134,4 @@ echo "JAVA options are: $EXTRA_JAVA_OPTS"
 # Doing `sbt -Doption1=value1 -Doption2="value2 with spaces" selenium:test` works on some
 # environments but doesn't work with others - here we run sbt and add java system properties
 # within the sbt session and then run the tests
-sbt "; set javaOptions in Test ++= Seq($EXTRA_JAVA_OPTS); selenium:test"
+sbt "; project selenium; set javaOptions ++= Seq($EXTRA_JAVA_OPTS); test"
