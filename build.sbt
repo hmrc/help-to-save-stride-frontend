@@ -199,7 +199,8 @@ lazy val selenium = (project in file("selenium-system-test"))
       "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
       "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
       "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple")
-    )
+    ),
+    resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
   )
   .settings(
     Keys.fork in Test := true,

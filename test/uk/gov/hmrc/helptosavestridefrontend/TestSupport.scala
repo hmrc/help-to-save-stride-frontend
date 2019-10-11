@@ -53,6 +53,7 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
         ConfigFactory.parseString(
           """
             | metrics.enabled = true
+            | metrics.jvm = false
             | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
       ) ++ additionalConfig)
