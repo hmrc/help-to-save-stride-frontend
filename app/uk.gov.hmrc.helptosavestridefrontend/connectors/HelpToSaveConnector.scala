@@ -26,16 +26,17 @@ import play.api.http.Status.OK
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient.HttpClientOps
-import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
+import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
+import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
-import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, maskNino}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,14 +58,16 @@ trait HelpToSaveConnector {
 }
 
 @Singleton
-class HelpToSaveConnectorImpl @Inject() (http:                              HttpClient,
-                                         metrics:                           Metrics,
-                                         pagerDutyAlerting:                 PagerDutyAlerting,
-                                         override val runModeConfiguration: Configuration,
-                                         override val environment:          Environment)(implicit transformer: NINOLogMessageTransformer)
-  extends FrontendAppConfig(runModeConfiguration, environment) with HelpToSaveConnector with Logging {
+class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
+                                         metrics:           HTSMetrics,
+                                         pagerDutyAlerting: PagerDutyAlerting,
+                                         runMode:           RunMode,
+                                         configuration:     Configuration,
+                                         servicesConfig:    ServicesConfig,
+                                         environment:       Environment)(implicit transformer: NINOLogMessageTransformer)
+  extends FrontendAppConfig(runMode, configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
 
-  private val htsUrl = baseUrl("help-to-save")
+  private val htsUrl = servicesConfig.baseUrl("help-to-save")
 
   private val eligibilityUrl: String = s"$htsUrl/help-to-save/eligibility-check"
 

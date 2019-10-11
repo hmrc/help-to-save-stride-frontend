@@ -20,6 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.helptosavestridefrontend.util.JsErrorOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.TryOps._
 import uk.gov.hmrc.http.HttpResponse
+import scala.language.implicitConversions
 
 import scala.util.Try
 

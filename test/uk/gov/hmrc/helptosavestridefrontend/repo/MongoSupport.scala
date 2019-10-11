@@ -21,6 +21,7 @@ import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.FailoverStrategy
 import reactivemongo.core.actors.Exceptions.PrimaryUnavailableException
 import uk.gov.hmrc.mongo.{MongoConnector, MongoSpecSupport}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait MongoSupport extends MongoSpecSupport with BeforeAndAfterEach with BeforeAndAfterAll { this: Suite ⇒
@@ -29,19 +30,19 @@ trait MongoSupport extends MongoSpecSupport with BeforeAndAfterEach with BeforeA
     override def mongoConnector: MongoConnector = mongoConnectorForTest
   }
 
-  def withBrokenMongo(f: ReactiveMongoComponent ⇒ Unit): Unit =
-    scala.util.control.Exception.ignoring(classOf[PrimaryUnavailableException]) {
-      val reactiveMongoComponent: ReactiveMongoComponent = new ReactiveMongoComponent {
-        override def mongoConnector: MongoConnector =
-          MongoConnector(s"mongodb://127.0.0.1:27018/$databaseName", Some(FailoverStrategy(retries = 0)))
-      }
-
-      try {
-        f(reactiveMongoComponent)
-      } finally {
-        reactiveMongoComponent.mongoConnector.helper.driver.close()
-      }
-    }
+  //  def withBrokenMongo(f: ReactiveMongoComponent ⇒ Unit): Unit =
+  //    scala.util.control.Exception.ignoring(classOf[PrimaryUnavailableException]) {
+  //      val reactiveMongoComponent: ReactiveMongoComponent = new ReactiveMongoComponent {
+  //        override def mongoConnector: MongoConnector =
+  //          MongoConnector(s"mongodb://127.0.0.1:27018/$databaseName", Some(FailoverStrategy(retries = 0)))
+  //      }
+  //
+  //      try {
+  //        f(reactiveMongoComponent)
+  //      } finally {
+  //        reactiveMongoComponent.mongoConnector.helper.driver.close()
+  //      }
+  //    }
 
   abstract override def beforeEach(): Unit = {
     super.beforeEach()
@@ -50,7 +51,7 @@ trait MongoSupport extends MongoSpecSupport with BeforeAndAfterEach with BeforeA
 
   abstract override def afterAll(): Unit = {
     super.afterAll()
-    reactiveMongoComponent.mongoConnector.helper.driver.close()
+    //reactiveMongoComponent.mongoConnector.helper.driver.close()
   }
 
 }

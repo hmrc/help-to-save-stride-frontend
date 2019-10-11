@@ -22,13 +22,14 @@
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetails
 @import uk.gov.hmrc.helptosavestridefrontend.models.CountryCode.countryCodes
-@import uk.gov.hmrc.helptosavestridefrontend.views.html.helpers
-@import uk.gov.hmrc.helptosavestridefrontend.views.html.enter_customer_details_form_body
+@import helpers._
+@import enter_customer_details_form_body._
 @import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm
 @import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 @import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
 
+@this(main: main_template)
 
 @(nino: String, form: Form[ApplicantDetails])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
@@ -39,9 +40,9 @@
 @defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>
   @defining(errorMessages.errors.toMap){ errorMessagesMap: Map[String,String] =>      
         
-    @uk.gov.hmrc.helptosavestridefrontend.views.html.main_template(
+    @main(
         title = title,
-        bodyClasses = None,
+        bodyClassesOption = None,
         isErrorPage = errorMessages.errorExists) {
 
         @if(errorMessages.errorExists){

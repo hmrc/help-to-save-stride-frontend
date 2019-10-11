@@ -20,7 +20,6 @@ import java.net.URLEncoder
 import java.util.Base64
 
 import play.api.Configuration
-import play.api.i18n.MessagesApi
 import play.api.mvc.AnyContentAsEmpty
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
@@ -41,8 +40,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class StrideAuthSpec extends TestSupport {
 
-  val standardRoles = List("a", "b")
-  val secureRoles = List("c", "d")
+  lazy val standardRoles = List("a", "b")
+  lazy val secureRoles = List("c", "d")
 
   def base64Encode(s: String): String = new String(Base64.getEncoder.encode(s.getBytes()))
 
@@ -59,7 +58,7 @@ class StrideAuthSpec extends TestSupport {
       .expects(expectedPredicate, expectedRetrieval, *, *)
       .returning(result.fold(Future.failed, Future.successful))
 
-  class TestStrideAuth(val frontendAppConfig: FrontendAppConfig) extends StrideFrontendController(stub[MessagesApi], frontendAppConfig) with StrideAuth {
+  class TestStrideAuth(val frontendAppConfig: FrontendAppConfig) extends StrideFrontendController(frontendAppConfig, testMcc, errorHandler) with StrideAuth {
 
     val authConnector: AuthConnector = mockAuthConnector
 

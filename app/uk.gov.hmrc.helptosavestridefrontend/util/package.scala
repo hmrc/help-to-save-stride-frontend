@@ -18,6 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import java.time.format.DateTimeFormatter
 import java.util.Base64
+import scala.language.implicitConversions
 
 import cats.data.EitherT
 

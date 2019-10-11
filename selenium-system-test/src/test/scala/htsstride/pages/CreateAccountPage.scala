@@ -20,7 +20,8 @@ import htsstride.browser.Browser
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
-object CreateAccountPage extends Page {
+object CreateAccountPage extends BasePage {
+
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/create-account"
 
   override val expectedPageTitle: Option[String] = Some("Create an account")
@@ -37,4 +38,5 @@ object CreateAccountPage extends Page {
     Browser.checkCurrentPageIs(ApplicationCancelledPage)
     clickSubmit()
   }
+
 }

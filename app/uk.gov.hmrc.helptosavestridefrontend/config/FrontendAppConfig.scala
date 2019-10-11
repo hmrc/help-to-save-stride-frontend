@@ -18,46 +18,43 @@ package uk.gov.hmrc.helptosavestridefrontend.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment}
-import play.api.Mode.Mode
-import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 
 import scala.concurrent.duration.Duration
 
 @Singleton
-class FrontendAppConfig @Inject() (override val runModeConfiguration: Configuration, val environment: Environment) extends ServicesConfig {
+class FrontendAppConfig @Inject() (runMode:         RunMode,
+                                   configuration:   Configuration,
+                                   servicesConfig:  ServicesConfig,
+                                   val environment: Environment) {
 
-  override protected def mode: Mode = environment.mode
+  private def loadConfig(key: String) = servicesConfig.getString(key)
 
-  private def loadConfig(key: String) = runModeConfiguration.getString(key).getOrElse(sys.error(s"Missing configuration key: $key"))
-
-  private val contactHost = runModeConfiguration.getString("contact-frontend.host").getOrElse("")
-  private val contactFormServiceIdentifier = "MyService"
+  lazy val config: Configuration = configuration
 
   lazy val assetsPrefix: String = loadConfig("assets.url") + loadConfig("assets.version")
   lazy val analyticsToken: String = loadConfig("google-analytics.token")
   lazy val analyticsHost: String = loadConfig("google-analytics.host")
-  lazy val reportAProblemPartialUrl: String = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
-  lazy val reportAProblemNonJSUrl: String = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
-  val authUrl: String = baseUrl("auth")
+  val authUrl: String = servicesConfig.baseUrl("auth")
 
-  val appName: String = getString("appName")
+  val appName: String = servicesConfig.getString("appName")
 
-  val mongoSessionExpireAfter: Duration = getDuration("mongodb.session.expireAfter")
+  val mongoSessionExpireAfter: Duration = servicesConfig.getDuration("mongodb.session.expireAfter")
 
   object NsiBankTransferDetails {
-    val sortCode: String = getString("nsi-bank-transfer-details.sortcode")
-    val accountNumber: String = getString("nsi-bank-transfer-details.accountNumber")
+    val sortCode: String = servicesConfig.getString("nsi-bank-transfer-details.sortcode")
+    val accountNumber: String = servicesConfig.getString("nsi-bank-transfer-details.accountNumber")
   }
 
   object FormValidation {
-    val forenameMaxTotalLength: Int = getInt("applicant-details.forename.max-length")
+    val forenameMaxTotalLength: Int = servicesConfig.getInt("applicant-details.forename.max-length")
 
-    val surnameMaxTotalLength: Int = getInt("applicant-details.surname.max-length")
+    val surnameMaxTotalLength: Int = servicesConfig.getInt("applicant-details.surname.max-length")
 
-    val addressLineMaxTotalLength: Int = getInt("applicant-details.address-lines.max-length")
+    val addressLineMaxTotalLength: Int = servicesConfig.getInt("applicant-details.address-lines.max-length")
 
-    val postcodeMaxTotalLength: Int = getInt("applicant-details.postcode.max-length")
+    val postcodeMaxTotalLength: Int = servicesConfig.getInt("applicant-details.postcode.max-length")
   }
 
 }

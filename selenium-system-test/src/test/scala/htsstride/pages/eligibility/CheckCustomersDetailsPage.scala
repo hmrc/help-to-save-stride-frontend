@@ -17,12 +17,12 @@
 package htsstride.pages.eligibility
 
 import htsstride.browser.Browser
-import htsstride.pages.{AccountCreatedPage, CreateAccountPage, Page}
-import htsstride.pages.eligibility.CustomerEligiblePage.{clickSubmit, navigate}
+import htsstride.pages.{AccountCreatedPage, BasePage}
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
-object CheckCustomersDetailsPage extends Page {
+object CheckCustomersDetailsPage extends BasePage {
+
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/create-account"
 
   override val expectedPageTitle: Option[String] = Some("Create an account")
@@ -32,6 +32,6 @@ object CheckCustomersDetailsPage extends Page {
     Browser.checkCurrentPageIs(CheckCustomersDetailsPage)
     clickSubmit()
     Browser.checkCurrentPageIs(AccountCreatedPage)
-
   }
+
 }

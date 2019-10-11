@@ -1,12 +1,12 @@
 import com.typesafe.sbt.uglify.Import
 import play.core.PlayVersion
-import sbt.Keys._
+import sbt.Keys.{libraryDependencies, _}
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings._
+import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.versioning.SbtGitVersioning
-import uk.gov.hmrc.{SbtAutoBuildPlugin, _}
 import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
 
 val test = "test"
@@ -18,32 +18,29 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.27.0-play-25",
-  "uk.gov.hmrc" %% "mongo-caching" % "6.1.0-play-25",
-  "uk.gov.hmrc" %% "play-ui" % "7.31.0-play-25",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25",
-  "uk.gov.hmrc" %% "domain" % "5.3.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.40.0-play-26",
+  "uk.gov.hmrc" %% "mongo-caching" % "6.6.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "8.1.0-play-26",
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.29.0-play-26",
+  "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
   "org.typelevel" %% "cats-core" % "1.5.0",
   "com.github.kxbmap" %% "configs" % "0.4.4"
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % test,
-  "org.scalatest" %% "scalatest" % "3.0.5" % test,
+  "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % test,
+  "org.scalatest" %% "scalatest" % "3.0.8" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
+  "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.6" % test,
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.0.0" % test,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.15.0-play-26" % test
+//  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % test,
 // below for selenium tests
-  "info.cukes" % "cucumber-junit" % "1.2.5" % test,
-  "info.cukes" % "cucumber-picocontainer" % "1.2.5" % test,
-  "info.cukes" %% "cucumber-scala" % "1.2.5" % test,
-  "org.seleniumhq.selenium" % "selenium-java" % "3.13.0" % test,
-  "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.13.0" % test,
-  "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0" % test,
-  "com.google.guava" % "guava" % "25.1-jre" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.8.0-play-25" % test
+
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
@@ -68,7 +65,6 @@ lazy val scoverageSettings = {
 
 lazy val scalariformSettings = {
   import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-
   import scalariform.formatter.preferences._
   // description of options found here -> https://github.com/scala-ide/scalariform
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
@@ -114,15 +110,33 @@ lazy val wartRemoverSettings = {
     Wart.ToString,
     Wart.Var)
 
-  wartremoverErrors in (Compile, compile) ++= Warts.allBut(excludedWarts: _*)
+  Seq(wartremoverErrors in (Compile, compile) ++= Warts.allBut(excludedWarts: _*),
+      wartremoverErrors in (Test, compile) --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
+      wartremoverExcluded ++=
+      routes.in(Compile).value ++
+        (baseDirectory.value ** "*.sc").get ++
+        Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala")
+    )
 }
 
+lazy val commonSettings = Seq(
+  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
+  majorVersion := 2,
+  evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+  resolvers ++= Seq(
+    Resolver.bintrayRepo("hmrc", "releases"),
+    Resolver.jcenterRepo,
+    "emueller-bintray" at "http://dl.bintray.com/emueller/maven" // for play json schema validator
+  ),
+  scalacOptions ++= Seq("-Xcheckinit", "-feature")
+) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
+
+
 lazy val microservice = Project(appName, file("."))
+  .settings(commonSettings: _*)
   .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory, SbtWeb) ++ plugins: _*)
-  .settings(addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"))
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(majorVersion := 2)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(PlayKeys.playDefaultPort := 7006)
@@ -131,24 +145,15 @@ lazy val microservice = Project(appName, file("."))
   // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
   // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
   // imcompatible with a lot of WordSpec
-  .settings(wartremoverErrors in (Test, compile) --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference))
-  .settings(wartremoverExcluded ++=
-    routes.in(Compile).value ++
-      (baseDirectory.value ** "*.sc").get ++
-      Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala")
-  )
   .settings(
     libraryDependencies ++= dependencies ++ testDependencies
   )
   .settings(
-    retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    routesGenerator := StaticRoutesGenerator
+    retrieveManaged := true
   )
-  .settings(resolvers ++= Seq(
-    Resolver.bintrayRepo("hmrc", "releases"),
-    Resolver.jcenterRepo
-  ))
+//  .settings(resolvers ++= Seq(
+//    "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
+//  ))
   .settings(
     // concatenate js
     Concat.groups := Seq(
@@ -162,8 +167,21 @@ lazy val microservice = Project(appName, file("."))
     // only compress files generated by concat
     includeFilter in uglify := GlobFilter("h2s-*.js")
   )
-  .settings(scalacOptions += "-Xcheckinit")
+.settings(
+  formatMessageQuotes := {
+    import sys.process._
+    val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
+    if(result != 0){ logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes") }
+  },
+  compile := ((compile in Compile) dependsOn formatMessageQuotes).value
+)
+
+lazy val selenium = (project in file("selenium-system-test"))
+  .dependsOn(microservice)
   .configs(SeleniumTest)
+  .settings(commonSettings: _*)
+  .settings(wartRemoverSettings: _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
   .settings(
     inConfig(SeleniumTest)(Defaults.testTasks),
     Keys.fork in SeleniumTest := true,
@@ -175,12 +193,22 @@ lazy val microservice = Project(appName, file("."))
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
     testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
-.settings(
-  formatMessageQuotes := {
-    import sys.process._
-    val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
-    if(result != 0){ logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes") }
-  },
-  compile := ((compile in Compile) dependsOn formatMessageQuotes).value
-)
+  .settings(
+    libraryDependencies ++= testDependencies ++ Seq(
+      "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
+      "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
+      "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
+      "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple")
+    ),
+    resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
+  )
+  .settings(
+    Keys.fork in Test := true,
+    scalaSource in Test := baseDirectory.value / "src" / "test",
+    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources",
+    testOptions in Test := Seq(Tests.Filter(name ⇒  name.contains("suites"))),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+  )
 

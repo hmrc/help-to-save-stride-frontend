@@ -21,9 +21,9 @@ import java.time.{Clock, Instant, LocalDate, ZoneId}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import play.api.data.format.Formatter
-import play.api.data.{Form, FormError, Mapping}
-import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
+import play.api.data.{Form, FormError}
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsForm.ApplicantDetailsFormOps
+import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 class ApplicantDetailsFormSpec extends WordSpec with Matchers with MockFactory {

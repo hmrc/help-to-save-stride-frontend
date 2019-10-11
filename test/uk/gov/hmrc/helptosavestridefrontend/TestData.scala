@@ -19,9 +19,8 @@ package uk.gov.hmrc.helptosavestridefrontend
 import java.time.LocalDate
 import java.util.UUID
 
-import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult
-import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload.ContactDetails
+import uk.gov.hmrc.helptosavestridefrontend.models.{NSIPayload, SessionEligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResponse
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.EligibilityCheckResult.{AlreadyHasAccount, Eligible, Ineligible}
 

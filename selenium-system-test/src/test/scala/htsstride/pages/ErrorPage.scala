@@ -20,7 +20,8 @@ import htsstride.browser.Browser
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
-object ErrorPage extends Page {
+object ErrorPage extends BasePage {
+
   override val expectedURL = s"${Configuration.host}/help-to-save/hmrc-internal/error"
 
   override val expectedPageTitle: Option[String] = Some("Something went wrong")
@@ -30,4 +31,5 @@ object ErrorPage extends Page {
     clickSubmit()
     Browser.checkCurrentPageIs(CheckEligibilityPage)
   }
+
 }

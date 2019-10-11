@@ -25,9 +25,9 @@ import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.cache.model.Id
 import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSession, HtsStandardSession}
-import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics
-import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, PagerDutyAlerting, Result, toFuture}
+import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
+import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
+import uk.gov.hmrc.helptosavestridefrontend.util.{PagerDutyAlerting, Result, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -44,7 +44,7 @@ trait SessionStore {
 
 @Singleton
 class SessionStoreImpl @Inject() (mongo:             ReactiveMongoComponent,
-                                  metrics:           Metrics,
+                                  metrics:           HTSMetrics,
                                   pagerDutyAlerting: PagerDutyAlerting)(implicit appConfig: FrontendAppConfig, ec: ExecutionContext)
   extends SessionStore {
 

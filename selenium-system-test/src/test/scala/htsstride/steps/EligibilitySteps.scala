@@ -21,7 +21,7 @@ import htsstride.pages._
 import htsstride.pages.eligibility._
 import htsstride.utils.NINOGenerator
 
-class EligibilitySteps extends Steps with NINOGenerator {
+class EligibilitySteps extends BasePage with NINOGenerator {
 
   Given("^the applicant has NINO (.*)$") { nino: String ⇒
     defineNINO(nino)

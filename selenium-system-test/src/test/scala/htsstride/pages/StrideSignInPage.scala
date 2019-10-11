@@ -20,7 +20,7 @@ import htsstride.browser.Browser
 import htsstride.utils.Configuration
 import org.openqa.selenium.WebDriver
 
-object StrideSignInPage extends Page {
+object StrideSignInPage extends BasePage {
 
   val successURL: String =
     if (Configuration.redirectWithAbsoluteUrls) {
@@ -29,7 +29,7 @@ object StrideSignInPage extends Page {
       "/help-to-save/hmrc-internal/check-eligibility"
     }
 
-  val expectedURL: String = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"
+  override val expectedURL = s"${Configuration.strideAuthFrontendHost}/stride/sign-in?successURL=$successURL&origin=help-to-save-stride-frontend"
 
   def authenticateOperator(role: String = "hts_helpdesk_advisor")(implicit driver: WebDriver): Unit = {
     navigate()

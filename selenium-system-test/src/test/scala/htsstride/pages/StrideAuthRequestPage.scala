@@ -18,6 +18,8 @@ package htsstride.pages
 
 import htsstride.utils.Configuration
 
-object StrideAuthRequestPage extends Page {
+object StrideAuthRequestPage extends BasePage {
+
   override val expectedURL = s"${Configuration.strideIdpStubHost}/stride-idp-auth/auth-request"
+
 }

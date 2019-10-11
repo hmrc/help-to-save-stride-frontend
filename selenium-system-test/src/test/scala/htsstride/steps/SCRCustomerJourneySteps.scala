@@ -19,10 +19,10 @@ package htsstride.steps
 import htsstride.browser.Browser
 import htsstride.pages._
 import htsstride.pages.eligibility._
-import htsstride.utils.NINOGenerator
 import htsstride.utils.CustomerDetails.validCustomerDetails
+import htsstride.utils.NINOGenerator
 
-class SCRCustomerJourneySteps extends Steps with NINOGenerator {
+class SCRCustomerJourneySteps extends BasePage with NINOGenerator {
 
   Given("^the secure operator is logged in$") {
     StrideSignInPage.authenticateSCROperator()

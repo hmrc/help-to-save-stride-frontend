@@ -22,13 +22,13 @@ import configs.syntax._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
-import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
+import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
@@ -39,7 +39,7 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
 
   val frontendAppConfig: FrontendAppConfig
 
-  val config: Configuration = frontendAppConfig.runModeConfiguration
+  val config: Configuration = frontendAppConfig.config
 
   val env: Environment = frontendAppConfig.environment
 

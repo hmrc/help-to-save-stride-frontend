@@ -18,7 +18,7 @@ package htsstride.browser
 
 import java.util.function.Function
 
-import htsstride.pages.Page
+import htsstride.pages.BasePage
 import org.openqa.selenium._
 import org.openqa.selenium.support.ui._
 import org.scalatest.Matchers
@@ -104,7 +104,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
     }
   }
 
-  def checkCurrentPageIs(page: Page, isError: Boolean = false)(implicit driver: WebDriver): Unit = {
+  def checkCurrentPageIs(page: BasePage, isError: Boolean = false)(implicit driver: WebDriver): Unit = {
       def isActualUrlExpectedUrl(expectedUrl: String)(implicit driver: WebDriver): Boolean = {
         try {
           val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
@@ -148,7 +148,7 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
     wait.until(expectedCondition)
   }
 
-  def openAndCheckPageInNewWindowUsingLinkText(linkText: String, page: Page)(implicit driver: WebDriver): Unit = {
+  def openAndCheckPageInNewWindowUsingLinkText(linkText: String, page: BasePage)(implicit driver: WebDriver): Unit = {
     Browser.clickLinkTextOnceClickable(linkText)
     val tabs = driver.getWindowHandles.asScala.toList
     tabs match {

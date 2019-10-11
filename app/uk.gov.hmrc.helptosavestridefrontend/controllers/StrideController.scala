@@ -21,39 +21,49 @@ import java.time.Clock
 import cats.data.EitherT
 import cats.instances.future._
 import com.google.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.helptosavestridefrontend.audit.{HTSAuditor, ManualAccountCreationSelected, PersonalInformationDisplayedToOperator}
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
-import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HelpToSaveConnector
 import uk.gov.hmrc.helptosavestridefrontend.forms.{ApplicantDetailsForm, ApplicantDetailsValidation, GiveNINOForm}
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models.EnrolmentStatus.{Enrolled, NotEnrolled}
-import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
+import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.AlreadyHasAccount
 import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResult, IneligibilityReason}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINOLogMessageTransformer, toFuture}
-import uk.gov.hmrc.helptosavestridefrontend.views
+import uk.gov.hmrc.helptosavestridefrontend.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class StrideController @Inject() (val authConnector:       AuthConnector,
-                                  val helpToSaveConnector: HelpToSaveConnector,
-                                  val sessionStore:        SessionStore,
-                                  val auditor:             HTSAuditor,
-                                  messageApi:              MessagesApi
+class StrideController @Inject() (val authConnector:        AuthConnector,
+                                  val helpToSaveConnector:  HelpToSaveConnector,
+                                  val sessionStore:         SessionStore,
+                                  val auditor:              HTSAuditor,
+                                  mcc:                      MessagesControllerComponents,
+                                  errorHandler:             ErrorHandler,
+                                  getEligibilityView:       get_eligibility_page,
+                                  customerNotEligibleView:  customer_not_eligible,
+                                  accountAlreadyExistsView: account_already_exists,
+                                  customerEligibleView:     customer_eligible,
+                                  enterCustomerDetailsView: enter_customer_details,
+                                  createAccountView:        create_account,
+                                  accountCreatedView:       account_created,
+                                  applicationCancelledView: application_cancelled
+
 )(implicit val frontendAppConfig: FrontendAppConfig,
   transformer:                NINOLogMessageTransformer,
   applicantDetailsValidation: ApplicantDetailsValidation,
   clock:                      Clock,
   ec:                         ExecutionContext)
-  extends StrideFrontendController(messageApi, frontendAppConfig) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
+  extends StrideFrontendController(frontendAppConfig, mcc, errorHandler) with StrideAuth with I18nSupport with Logging with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     sessionStore.delete.fold(
@@ -61,7 +71,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         logger.warn(error)
         SeeOther(routes.StrideController.getErrorPage().url)
       },
-      _ ⇒ Ok(views.html.get_eligibility_page(GiveNINOForm.giveNinoForm))
+      _ ⇒ Ok(getEligibilityView(GiveNINOForm.giveNinoForm))
     )
   }(routes.StrideController.getEligibilityPage())
 
@@ -138,7 +148,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
 
     checkSession(roleType)(
       GiveNINOForm.giveNinoForm.bindFromRequest().fold(
-        withErrors ⇒ Ok(views.html.get_eligibility_page(withErrors)),
+        withErrors ⇒ Ok(getEligibilityView(withErrors)),
         form ⇒ {
           checkIfAlreadyEnrolled(form.nino, roleType) {
             val result = for {
@@ -173,7 +183,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname, None, List.empty[String])
           auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
 
-          Ok(views.html.customer_not_eligible(reason, Some(nsiUserInfo.forename → nsiUserInfo.surname), nsiUserInfo.nino, None))
+          Ok(customerNotEligibleView(reason, Some(nsiUserInfo.forename → nsiUserInfo.surname), nsiUserInfo.nino, None))
         }
       },
       whenIneligibleSecure = { (ineligible, nino, nsiUserInfo, _) ⇒
@@ -182,7 +192,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
           SeeOther(routes.StrideController.getErrorPage().url)
         } { reason ⇒
           val form = nsiUserInfo.fold(ApplicantDetailsForm.applicantDetailsForm)(ApplicantDetailsForm.apply)
-          Ok(views.html.customer_not_eligible(reason, None, nino, Some(form)))
+          Ok(customerNotEligibleView(reason, None, nino, Some(form)))
         }
       }
     )
@@ -211,7 +221,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               logger.warn(s"Could not parse ineligibility reason: $ineligible")
               SeeOther(routes.StrideController.getErrorPage().url)
             } { reason ⇒
-              Ok(views.html.customer_not_eligible(reason, None, nino, Some(withErrors)))
+              Ok(customerNotEligibleView(reason, None, nino, Some(withErrors)))
             },
           details ⇒ storeSessionAndContinue(HtsSecureSession(nino, ineligible.copy(manualCreationAllowed = true), Some(NSIPayload(details, nino)), None), nino)
         )
@@ -222,7 +232,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   def accountAlreadyExists: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
     checkSession(roleType)(
       SeeOther(routes.StrideController.getEligibilityPage().url),
-      whenAlreadyHasAccount = (_, accountNumber) ⇒ Ok(views.html.account_already_exists(accountNumber))
+      whenAlreadyHasAccount = (_, accountNumber) ⇒ Ok(accountAlreadyExistsView(accountNumber))
     )
   }(routes.StrideController.accountAlreadyExists())
 
@@ -246,12 +256,12 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
             ))
           auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
 
-          Ok(views.html.customer_eligible(nsiUserInfo))
+          Ok(customerEligibleView(nsiUserInfo))
       }, {
         // whenEligibleSecure
         (_, nino, nsiPayload, _) ⇒
           val form = nsiPayload.fold(ApplicantDetailsForm.applicantDetailsForm)(ApplicantDetailsForm.apply)
-          Ok(views.html.enter_customer_details(nino, form))
+          Ok(enterCustomerDetailsView(nino, form))
       }
     )
   }(routes.StrideController.customerEligible())
@@ -275,7 +285,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       { // when eligible secure
         case (eligible, nino, _, _) ⇒
           ApplicantDetailsForm.applicantDetailsForm.bindFromRequest().fold(
-            withErrors ⇒ Ok(views.html.enter_customer_details(nino, withErrors)),
+            withErrors ⇒ Ok(enterCustomerDetailsView(nino, withErrors)),
             details ⇒ storeSessionAndContinue(HtsSecureSession(nino, eligible, Some(NSIPayload(details, nino)), None))
           )
       }
@@ -289,15 +299,15 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
         if (!detailsConfirmed) {
           SeeOther(routes.StrideController.customerEligible().url)
         } else {
-          Ok(views.html.create_account(None, None, Some(eligible)))
+          Ok(createAccountView(None, None, Some(eligible)))
         },
       whenEligibleSecure   = (eligible, _, nsiPayload, _) ⇒
         nsiPayload.fold(SeeOther(routes.StrideController.customerEligible().url)){ details ⇒
-          Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerEligible().url), Some(eligible)))
+          Ok(createAccountView(Some(details), Some(routes.StrideController.customerEligible().url), Some(eligible)))
         },
       whenIneligible       = { (ineligible, _, _) ⇒
         if (ineligible.manualCreationAllowed) {
-          Ok(views.html.create_account(None, None, None))
+          Ok(createAccountView(None, None, None))
         } else {
           SeeOther(routes.StrideController.customerNotEligible().url)
         }
@@ -305,7 +315,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
       whenIneligibleSecure = { (ineligible, _, nsiPayload, _) ⇒
         if (ineligible.manualCreationAllowed) {
           nsiPayload.fold(SeeOther(routes.StrideController.customerNotEligible().url)) { details ⇒
-            Ok(views.html.create_account(Some(details), Some(routes.StrideController.customerNotEligible().url), None))
+            Ok(createAccountView(Some(details), Some(routes.StrideController.customerNotEligible().url), None))
           }
         } else {
           SeeOther(routes.StrideController.customerNotEligible().url)
@@ -403,7 +413,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
               logger.warn(s"Could not write session to mongo dueto: $e")
               SeeOther(routes.StrideController.getErrorPage().url)
           }, { _ ⇒
-            Ok(views.html.account_created(accountNumber))
+            Ok(accountCreatedView(accountNumber))
           })
         }
       }
@@ -453,7 +463,7 @@ class StrideController @Inject() (val authConnector:       AuthConnector,
   }(routes.StrideController.getAccountCreatedPage())
 
   def getApplicationCancelledPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒
-    Ok(views.html.application_cancelled())
+    Ok(applicationCancelledView())
   }(routes.StrideController.getApplicationCancelledPage())
 
   def getErrorPage: Action[AnyContent] = authorisedFromStride { implicit request ⇒ roleType ⇒

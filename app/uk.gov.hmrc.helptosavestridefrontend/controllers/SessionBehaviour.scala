@@ -18,13 +18,13 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.instances.future._
 import play.api.mvc.{Request, Result}
-import uk.gov.hmrc.helptosavestridefrontend.models._
+import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
+import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.repo.SessionStore
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuth
 
 import scala.concurrent.{ExecutionContext, Future}
 
