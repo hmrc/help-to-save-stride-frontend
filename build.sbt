@@ -183,21 +183,9 @@ lazy val selenium = (project in file("selenium-system-test"))
   .settings(wartRemoverSettings: _*)
   .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
   .settings(
-    inConfig(SeleniumTest)(Defaults.testTasks),
-    Keys.fork in SeleniumTest := true,
-    unmanagedSourceDirectories in Test += baseDirectory.value / "selenium-system-test/src/test/scala",
-    unmanagedResourceDirectories in Test += baseDirectory.value / "selenium-system-test/src/test/resources",
-    testOptions in Test := Seq(Tests.Filter(unitTestFilter)),
-    testOptions in SeleniumTest := Seq(Tests.Filter(seleniumTestFilter)),
-    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
-    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-    testOptions in SeleniumTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
-  )
-  .settings(
     libraryDependencies ++= testDependencies ++ Seq(
       "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
       "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
-      "io.cucumber"           % "cucumber-picocontainer"  % "4.7.1" % test,
       "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple")
     ),
     resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
@@ -211,4 +199,3 @@ lazy val selenium = (project in file("selenium-system-test"))
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
-
