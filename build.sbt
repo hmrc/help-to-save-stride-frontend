@@ -1,6 +1,6 @@
 import com.typesafe.sbt.uglify.Import
 import play.core.PlayVersion
-import sbt.Keys.{libraryDependencies, _}
+import sbt.Keys.{libraryDependencies, resolvers, _}
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings._
 import uk.gov.hmrc.SbtAutoBuildPlugin
@@ -173,19 +173,21 @@ lazy val microservice = Project(appName, file("."))
 lazy val selenium = (project in file("selenium-system-test"))
   .dependsOn(microservice)
   .settings(commonSettings: _*)
-  .settings(wartRemoverSettings: _*)
   .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
   .settings(
     libraryDependencies ++= testDependencies ++ Seq(
-      "io.cucumber"           %% "cucumber-scala"         % "4.7.1" % test,
-      "io.cucumber"           %  "cucumber-junit"         % "4.7.1" % test,
-      "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0" % test exclude( "org.slf4j","slf4j-simple")
+      "io.cucumber"           %% "cucumber-scala"         % "4.7.1",
+      "io.cucumber"           %  "cucumber-junit"         % "4.7.1",
+      "uk.gov.hmrc"           %% "webdriver-factory"      % "0.7.0"   exclude( "org.slf4j","slf4j-simple")
     ),
-    resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
+      resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
   )
   .settings(
     Keys.fork in Test := true,
     scalaSource in Test := baseDirectory.value / "src" / "test",
     resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources",
-    testOptions in Test := Seq(Tests.Filter(name ⇒  name.contains("suites")))
+    testOptions in Test := Seq(Tests.Filter(name ⇒  name.contains("suites"))),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
