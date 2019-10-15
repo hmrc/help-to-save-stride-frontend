@@ -45,10 +45,6 @@ lazy val testDependencies = Seq(
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
-def seleniumTestFilter(name: String): Boolean = name.contains("suites")
-
-def unitTestFilter(name: String): Boolean = !seleniumTestFilter(name)
-
 lazy val SeleniumTest = config("selenium") extend Test
 
 lazy val scoverageSettings = {
@@ -151,9 +147,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     retrieveManaged := true
   )
-//  .settings(resolvers ++= Seq(
-//    "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
-//  ))
+
   .settings(
     // concatenate js
     Concat.groups := Seq(
@@ -178,7 +172,6 @@ lazy val microservice = Project(appName, file("."))
 
 lazy val selenium = (project in file("selenium-system-test"))
   .dependsOn(microservice)
-  .configs(SeleniumTest)
   .settings(commonSettings: _*)
   .settings(wartRemoverSettings: _*)
   .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
@@ -194,8 +187,5 @@ lazy val selenium = (project in file("selenium-system-test"))
     Keys.fork in Test := true,
     scalaSource in Test := baseDirectory.value / "src" / "test",
     resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources",
-    testOptions in Test := Seq(Tests.Filter(name ⇒  name.contains("suites"))),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+    testOptions in Test := Seq(Tests.Filter(name ⇒  name.contains("suites")))
   )
