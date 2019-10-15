@@ -16,15 +16,16 @@
 
 package htsstride.browser
 
+import java.time.Duration
 import java.util.function.Function
 
 import htsstride.pages.BasePage
-import org.openqa.selenium._
-import org.openqa.selenium.support.ui._
+import org.openqa.selenium.support.ui.{ExpectedConditions, FluentWait, Wait}
+import org.openqa.selenium.{By, JavascriptExecutor, Keys, WebDriver}
 import org.scalatest.Matchers
-import org.scalatest.selenium.WebBrowser
+import org.scalatestplus.selenium.WebBrowser
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.util.control.NonFatal
 
 object Browser extends WebBrowser with Navigation with Retrievals with Assertions with Matchers
@@ -66,7 +67,10 @@ trait Navigation {
   }
 
   private def clickByIdentifier(id: String, by: String ⇒ By)(clickOn: String ⇒ Unit)(implicit driver: WebDriver): Unit = {
-    val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
+    val fw: Wait[WebDriver] = new FluentWait[WebDriver](driver)
+      .withTimeout(Duration.ofSeconds(30))
+      .pollingEvery(Duration.ofMillis(500))
+
     val expectedCondition = new Function[WebDriver, Boolean]() {
       override def apply(t: WebDriver): Boolean = {
         ExpectedConditions.or(
@@ -76,13 +80,14 @@ trait Navigation {
       }
     }
 
-    wait.until(expectedCondition)
+    fw.until(expectedCondition)
     clickOn(id)
   }
 
 }
 
-trait Retrievals { this: WebBrowser ⇒
+trait Retrievals {
+  this: WebBrowser ⇒
 
   def getCurrentUrl(implicit driver: WebDriver): String = driver.getCurrentUrl
 
@@ -93,7 +98,8 @@ trait Retrievals { this: WebBrowser ⇒
 
 }
 
-trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
+trait Assertions {
+  this: WebBrowser with Retrievals with Matchers ⇒
 
   def isTextOnPage(regex: String)(implicit driver: WebDriver): Either[String, Unit] = {
     val textPresent = regex.r.findAllIn(Browser.getPageContent).nonEmpty
@@ -105,16 +111,15 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
   }
 
   def checkCurrentPageIs(page: BasePage, isError: Boolean = false)(implicit driver: WebDriver): Unit = {
+
+    val fw: Wait[WebDriver] = new FluentWait[WebDriver](driver)
+      .withTimeout(Duration.ofSeconds(30))
+      .pollingEvery(Duration.ofMillis(500))
+
       def isActualUrlExpectedUrl(expectedUrl: String)(implicit driver: WebDriver): Boolean = {
         try {
-          val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
-          val expectedCondition = new Function[WebDriver, Boolean]() {
-            override def apply(t: WebDriver): Boolean = {
-              ExpectedConditions.urlToBe(expectedUrl).apply(driver)
-            }
-          }
-
-          wait.until(expectedCondition)
+          fw.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.tagName("h1")))
+          fw.until(ExpectedConditions.urlContains(expectedUrl))
           true
         } catch {
           case NonFatal(_) ⇒ false
@@ -138,14 +143,17 @@ trait Assertions { this: WebBrowser with Retrievals with Matchers ⇒
   }
 
   def checkPageIsLoaded()(implicit driver: WebDriver): Unit = {
-    val wait = new WebDriverWait(driver, 20) // scalastyle:ignore magic.number
+    val fw: Wait[WebDriver] = new FluentWait[WebDriver](driver)
+      .withTimeout(Duration.ofSeconds(30))
+      .pollingEvery(Duration.ofMillis(500))
+
     val expectedCondition = new Function[WebDriver, Object]() {
       override def apply(t: WebDriver): Object = {
         ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';").apply(driver)
       }
     }
 
-    wait.until(expectedCondition)
+    fw.until(expectedCondition)
   }
 
   def openAndCheckPageInNewWindowUsingLinkText(linkText: String, page: BasePage)(implicit driver: WebDriver): Unit = {
