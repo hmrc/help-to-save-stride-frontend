@@ -29,7 +29,7 @@ lazy val dependencies = Seq(
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % test,
+  "uk.gov.hmrc" %% "service-integration-test" % "0.9.0-play-26" % test,
   "org.scalatest" %% "scalatest" % "3.0.8" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
