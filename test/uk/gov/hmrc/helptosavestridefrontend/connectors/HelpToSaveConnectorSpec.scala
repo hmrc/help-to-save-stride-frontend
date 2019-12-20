@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.instances.int._
 import cats.syntax.eq._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
@@ -31,7 +31,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HttpResponse
 
-class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with GeneratorDrivenPropertyChecks with TestData with HttpSupport {
+class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData with HttpSupport {
 
   val connector = new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, runMode, configuration, servicesConfig, environment)
 
@@ -39,7 +39,9 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with Genera
   private val payePersonalDetailsUrl: String = "http://localhost:7001/help-to-save/paye-personal-details"
   private val createAccountUrl: String = "http://localhost:7001/help-to-save/create-account"
   private val enrolmentStatusUrl: String = "http://localhost:7001/help-to-save/enrolment-status"
+
   private def getAccountUrl(nino: String): String = s"http://localhost:7001/help-to-save/$nino/account"
+
   private val emptyQueryParameters: Map[String, String] = Map.empty[String, String]
 
   "HelpToSaveConnector" when {

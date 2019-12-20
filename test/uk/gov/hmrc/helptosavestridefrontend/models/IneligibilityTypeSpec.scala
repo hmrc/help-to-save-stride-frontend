@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.models
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.Ineligible
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.IneligibilityReason._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, IneligibilityReason}
 
 // scalastyle:off magic.number
-class IneligibilityTypeSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
+class IneligibilityTypeSpec extends WordSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   "IneligibilityType" must {
 
