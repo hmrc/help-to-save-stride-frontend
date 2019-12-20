@@ -20,7 +20,7 @@ import java.time.{Clock, Instant, ZoneId}
 
 import cats.data.EitherT
 import cats.instances.future._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{Reads, Writes}
 import play.api.mvc._
 import play.api.test.CSRFTokenHelper.CSRFRequest
@@ -45,7 +45,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 class StrideControllerSpec
-  extends TestSupport with AuthSupport with CSRFSupport with TestData with GeneratorDrivenPropertyChecks { // scalastyle:off magic.number
+  extends TestSupport with AuthSupport with CSRFSupport with TestData with ScalaCheckDrivenPropertyChecks { // scalastyle:off magic.number
 
   implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 

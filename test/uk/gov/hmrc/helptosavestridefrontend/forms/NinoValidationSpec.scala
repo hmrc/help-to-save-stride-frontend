@@ -17,12 +17,12 @@
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
 import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import uk.gov.hmrc.helptosavestridefrontend.UnitSpec
 import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.{ErrorMessages, ninoFormatter}
 
 // scalastyle:off magic.number
-class NinoValidationSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks with ValidationTestSupport {
+class NinoValidationSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks with ValidationTestSupport {
 
   "EmailValidation" must {
 

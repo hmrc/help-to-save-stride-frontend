@@ -25,7 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.implicitConversions
+import scala.language.{implicitConversions, postfixOps}
 
 trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
 

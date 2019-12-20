@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 import java.time.{Clock, Instant, ZoneId}
 
 import cats.syntax.either._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.data.FormError
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
@@ -28,7 +28,7 @@ import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.Err
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 
-class ApplicantDetailsValidationSpec extends TestSupport with GeneratorDrivenPropertyChecks with ValidationTestSupport {
+class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPropertyChecks with ValidationTestSupport {
 
   val epochClock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
