@@ -1,13 +1,13 @@
 import com.typesafe.sbt.uglify.Import
 import play.core.PlayVersion
 import sbt.Keys.{libraryDependencies, resolvers, _}
-import sbt._
 import uk.gov.hmrc.DefaultBuildSettings._
 import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.versioning.SbtGitVersioning
-import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
+import wartremover.{Warts, wartremoverErrors, wartremoverExcluded}
+
+import scala.language.postfixOps
 
 val test = "test"
 val appName = "help-to-save-stride-frontend"
@@ -40,14 +40,12 @@ lazy val testDependencies = Seq(
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
-lazy val SeleniumTest = config("selenium") extend Test
-
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;.*config.*;.*(AuthService|BuildInfo|Routes|JsErrorOps).*;.*views.html.*",
-    ScoverageKeys.coverageMinimum := 88,
+    ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes|JsErrorOps).*;.*views.html.*",
+    ScoverageKeys.coverageMinimum := 94,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
@@ -57,7 +55,7 @@ lazy val scoverageSettings = {
 lazy val scalariformSettings = {
   import com.typesafe.sbt.SbtScalariform.ScalariformKeys
   import scalariform.formatter.preferences._
-  // description of options found here -> https://github.com/scala-ide/scalariform
+  
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(AlignArguments, true)
     .setPreference(AlignParameters, true)
@@ -88,7 +86,6 @@ lazy val scalariformSettings = {
 }
 
 lazy val wartRemoverSettings = {
-  // list of warts here: http://www.wartremover.org/doc/warts.html
   val excludedWarts = Seq(
     Wart.DefaultArguments,
     Wart.FinalCaseClass,
@@ -136,15 +133,9 @@ lazy val microservice = Project(appName, file("."))
   // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
   // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
   // imcompatible with a lot of WordSpec
+  .settings(libraryDependencies ++= dependencies ++ testDependencies)
+  .settings(retrieveManaged := true)
   .settings(
-  libraryDependencies ++= dependencies ++ testDependencies
-)
-  .settings(
-    retrieveManaged := true
-  )
-
-  .settings(
-    // concatenate js
     Concat.groups := Seq(
       "javascripts/h2s-app.js" -> group(Seq("javascripts/extendPreventDoubleClick.js", "javascripts/overrideIneligibleCheckboxButtonBind.js", "javascripts/hts.js"))
     ),
@@ -160,31 +151,7 @@ lazy val microservice = Project(appName, file("."))
     formatMessageQuotes := {
       import sys.process._
       val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
-      if (result != 0) {
-        logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes")
-      }
+      if (result != 0) logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes")
     },
     compile := ((compile in Compile) dependsOn formatMessageQuotes).value
-  )
-
-lazy val selenium = (project in file("selenium-system-test"))
-  .dependsOn(microservice)
-  .settings(commonSettings: _*)
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
-  .settings(
-    libraryDependencies ++= testDependencies ++ Seq(
-      "io.cucumber" %% "cucumber-scala" % "4.7.1",
-      "io.cucumber" % "cucumber-junit" % "4.7.1",
-      "uk.gov.hmrc" %% "webdriver-factory" % "0.7.0" exclude("org.slf4j", "slf4j-simple")
-    ),
-    resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
-  )
-  .settings(
-    Keys.fork in Test := true,
-    scalaSource in Test := baseDirectory.value / "src" / "test",
-    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources",
-    testOptions in Test := Seq(Tests.Filter(name ⇒ name.contains("suites"))),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
