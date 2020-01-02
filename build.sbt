@@ -9,6 +9,8 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
 
+import scala.language.postfixOps
+
 val test = "test"
 val appName = "help-to-save-stride-frontend"
 
@@ -40,14 +42,12 @@ lazy val testDependencies = Seq(
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
-lazy val SeleniumTest = config("selenium") extend Test
-
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;.*config.*;.*(AuthService|BuildInfo|Routes|JsErrorOps).*;.*views.html.*",
-    ScoverageKeys.coverageMinimum := 88,
+    ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes|JsErrorOps).*;.*views.html.*",
+    ScoverageKeys.coverageMinimum := 90,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
@@ -119,7 +119,7 @@ lazy val commonSettings = Seq(
     Resolver.jcenterRepo,
     "emueller-bintray" at "http://dl.bintray.com/emueller/maven" // for play json schema validator
   ),
-  scalacOptions ++= Seq("-Xcheckinit", "-feature")
+  scalacOptions ++= Seq("-Xcheckinit", "-feature", "-deprecation")
 ) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
 
 
@@ -165,26 +165,4 @@ lazy val microservice = Project(appName, file("."))
       }
     },
     compile := ((compile in Compile) dependsOn formatMessageQuotes).value
-  )
-
-lazy val selenium = (project in file("selenium-system-test"))
-  .dependsOn(microservice)
-  .settings(commonSettings: _*)
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins: _*)
-  .settings(
-    libraryDependencies ++= testDependencies ++ Seq(
-      "io.cucumber" %% "cucumber-scala" % "4.7.1",
-      "io.cucumber" % "cucumber-junit" % "4.7.1",
-      "uk.gov.hmrc" %% "webdriver-factory" % "0.7.0" exclude("org.slf4j", "slf4j-simple")
-    ),
-    resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
-  )
-  .settings(
-    Keys.fork in Test := true,
-    scalaSource in Test := baseDirectory.value / "src" / "test",
-    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources",
-    testOptions in Test := Seq(Tests.Filter(name ⇒ name.contains("suites"))),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports/html-report"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
   )
