@@ -15,13 +15,28 @@ val appName = "help-to-save-stride-frontend"
 lazy val plugins: Seq[Plugins] = Seq.empty
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
+val akkaVersion     = "2.5.23"
+
+val akkaHttpVersion = "10.0.15"
+
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-stream"    % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-protobuf"  % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-actor"     % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
+
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.47.0-play-26",
-  "uk.gov.hmrc" %% "mongo-caching" % "6.6.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "8.5.0-play-26",
+  "uk.gov.hmrc" %% "govuk-template" % "5.52.0-play-26",
+  "uk.gov.hmrc" %% "mongo-caching" % "6.8.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "8.8.0-play-26",
   "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.32.0-play-26",
+  "uk.gov.hmrc" %% "auth-client" % "2.33.0-play-26",
   "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
   "org.typelevel" %% "cats-core" % "2.0.0",
   "com.github.kxbmap" %% "configs" % "0.4.4"
@@ -31,7 +46,7 @@ lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "service-integration-test" % "0.9.0-play-26" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.15.0-play-26" % test,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.16.0-play-26" % test,
   "org.scalatest" %% "scalatest" % "3.0.8" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
