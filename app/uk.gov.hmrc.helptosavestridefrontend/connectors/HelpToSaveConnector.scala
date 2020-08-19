@@ -35,9 +35,8 @@ import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result, maskNino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -61,11 +60,10 @@ trait HelpToSaveConnector {
 class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
                                          metrics:           HTSMetrics,
                                          pagerDutyAlerting: PagerDutyAlerting,
-                                         runMode:           RunMode,
                                          configuration:     Configuration,
                                          servicesConfig:    ServicesConfig,
                                          environment:       Environment)(implicit transformer: NINOLogMessageTransformer)
-  extends FrontendAppConfig(runMode, configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
+  extends FrontendAppConfig(configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
 
   private val htsUrl = servicesConfig.baseUrl("help-to-save")
 

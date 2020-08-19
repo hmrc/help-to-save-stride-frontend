@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.audit
 
+import java.time.Instant
+
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
@@ -37,7 +39,7 @@ class HTSAuditorSpec extends TestSupport {
 
       "use the audit connector to send an event" in {
         val dataEvent: ExtendedDataEvent =
-          ExtendedDataEvent("source", "type", "id", Map("tag" → "value"), Json.obj("field" → "value"), DateTime.now())
+          ExtendedDataEvent("source", "type", "id", Map("tag" → "value"), Json.obj("field" → "value"), Instant.now)
 
         val htsEvent: HTSEvent = new HTSEvent {
           override val value = dataEvent

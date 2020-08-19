@@ -37,7 +37,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
 import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext
 
@@ -63,8 +63,6 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
   lazy implicit val environment: Environment = injector.instanceOf[Environment]
 
   lazy implicit val configuration: Configuration = injector.instanceOf[Configuration]
-
-  lazy implicit val runMode: RunMode = injector.instanceOf[RunMode]
 
   lazy implicit val servicesConfig: ServicesConfig = injector.instanceOf[ServicesConfig]
 
