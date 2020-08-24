@@ -36,7 +36,7 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "mongo-caching" % "6.15.0-play-26",
   "uk.gov.hmrc" %% "play-ui" % "8.8.0-play-26",
   "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "2.24.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.33.0-play-26",
+  "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
   "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
   "org.typelevel" %% "cats-core" % "2.1.1",
   "com.github.kxbmap" %% "configs" % "0.4.4"
