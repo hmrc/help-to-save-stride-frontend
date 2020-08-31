@@ -26,7 +26,7 @@ import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPropertyChecks with ValidationTestSupport {
 
@@ -41,8 +41,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
     )
 
   lazy val validation = new ApplicantDetailsValidationImpl(
-    new FrontendAppConfig(fakeApplication.injector.instanceOf[RunMode],
-                          fakeApplication.configuration,
+    new FrontendAppConfig(fakeApplication.configuration,
                           fakeApplication.injector.instanceOf[ServicesConfig],
                           fakeApplication.injector.instanceOf[Environment]),
     epochClock

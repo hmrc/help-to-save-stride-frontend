@@ -18,13 +18,12 @@ package uk.gov.hmrc.helptosavestridefrontend.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
+import uk.gov.hmrc.play.bootstrap.config.{ServicesConfig}
 
 import scala.concurrent.duration.Duration
 
 @Singleton
-class FrontendAppConfig @Inject() (runMode:         RunMode,
-                                   configuration:   Configuration,
+class FrontendAppConfig @Inject() (configuration:   Configuration,
                                    servicesConfig:  ServicesConfig,
                                    val environment: Environment) {
 

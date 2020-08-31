@@ -32,21 +32,21 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.52.0-play-26",
-  "uk.gov.hmrc" %% "mongo-caching" % "6.8.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "8.8.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.33.0-play-26",
-  "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
-  "org.typelevel" %% "cats-core" % "2.0.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.56.0-play-26",
+  "uk.gov.hmrc" %% "mongo-caching" % "6.15.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "8.11.0-play-26",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "2.24.0",
+  "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
+  "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
+  "org.typelevel" %% "cats-core" % "2.1.1",
   "com.github.kxbmap" %% "configs" % "0.4.4"
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "service-integration-test" % "0.9.0-play-26" % test,
+  "uk.gov.hmrc" %% "service-integration-test" % "0.12.0-play-26" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
-  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.16.0-play-26" % test,
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "2.24.0" % test,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26" % test,
   "org.scalatest" %% "scalatest" % "3.0.8" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
@@ -142,6 +142,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
+  .settings(scalaVersion := "2.12.11")
   .settings(PlayKeys.playDefaultPort := 7006)
   .settings(scalariformSettings: _*)
   .settings(wartRemoverSettings)
