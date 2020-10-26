@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult
 import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 
-class SessionEligibilityCheckResultSpec extends WordSpec with Matchers {
+class SessionEligibilityCheckResultSpec extends AnyWordSpec with Matchers {
 
   "SessionEligibilityCheckResult" must {
 
