@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.helptosavestridefrontend.util.maskNino
 
 class UtilSpec extends Matchers with UnitSpec {

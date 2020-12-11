@@ -32,12 +32,11 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.56.0-play-26",
+  "uk.gov.hmrc" %% "govuk-template" % "5.59.0-play-26",
   "uk.gov.hmrc" %% "mongo-caching" % "6.15.0-play-26",
   "uk.gov.hmrc" %% "play-ui" % "8.11.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "2.24.0",
-  "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
-  "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "3.0.0",
+  "uk.gov.hmrc" %% "domain" % "5.10.0-play-26",
   "org.typelevel" %% "cats-core" % "2.1.1",
   "com.github.kxbmap" %% "configs" % "0.4.4"
 )
@@ -45,10 +44,11 @@ lazy val dependencies = Seq(
 lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "service-integration-test" % "0.12.0-play-26" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "2.24.0" % test,
+  "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
   "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26" % test,
-  "org.scalatest" %% "scalatest" % "3.0.8" % test,
+  "org.scalatest" %% "scalatest" % "3.2.0" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
+  "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test
 )

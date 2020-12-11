@@ -19,14 +19,15 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.data.format.Formatter
 import play.api.data.{Form, FormError}
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsForm.ApplicantDetailsFormOps
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
-class ApplicantDetailsFormSpec extends WordSpec with Matchers with MockFactory {
+class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactory {
 
   implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
