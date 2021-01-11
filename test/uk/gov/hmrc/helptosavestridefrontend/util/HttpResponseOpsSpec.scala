@@ -46,25 +46,27 @@ class HttpResponseOpsSpec extends TestSupport {
 
       val status = 200
       val data = Test1(0)
+      val emptyHeaderParameters: Map[String, Seq[String]] = Map.empty
+      val emptyBody = ""
 
       // test when there is an exception
       ThrowingHttpResponse().parseJson[Test1]().isLeft shouldBe true
 
       // test when there is no JSON
-      HttpResponse(status).parseJson[Test1]().isLeft shouldBe true
+      HttpResponse(status, emptyBody).parseJson[Test1]().isLeft shouldBe true
 
       // test when the JSON isn't the right format
-      HttpResponse(status, Some(Json.toJson(data))).parseJson[Test2]().isLeft shouldBe true
+      HttpResponse(status, Json.toJson(data), emptyHeaderParameters).parseJson[Test2]().isLeft shouldBe true
 
       // test when everything is ok
-      HttpResponse(status, Some(Json.toJson(data))).parseJson[Test1]() shouldBe Right(data)
+      HttpResponse(status, Json.toJson(data), emptyHeaderParameters).parseJson[Test1]() shouldBe Right(data)
 
       // test the path
-      HttpResponse(status, Some(Json.parse(
+      HttpResponse(status, Json.parse(
         s"""{
           |"data": ${Json.toJson(data)}
           |}
-        """.stripMargin))).parseJson[Test1](_ \ "data") shouldBe Right(data)
+        """.stripMargin), emptyHeaderParameters).parseJson[Test1](_ \ "data") shouldBe Right(data)
     }
   }
 }
