@@ -34,7 +34,7 @@ lazy val dependencies = Seq(
   ws,
   "uk.gov.hmrc" %% "govuk-template" % "5.59.0-play-26",
   "uk.gov.hmrc" %% "mongo-caching" % "6.15.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "8.11.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "8.21.0-play-26",
   "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "3.0.0",
   "uk.gov.hmrc" %% "domain" % "5.10.0-play-26",
   "org.typelevel" %% "cats-core" % "2.1.1",
