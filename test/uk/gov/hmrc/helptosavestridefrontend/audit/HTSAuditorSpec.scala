@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.audit
 
 import java.time.Instant
 
-import org.joda.time.DateTime
 import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.http.HeaderCarrier

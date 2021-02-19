@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 
 import java.time.{Clock, Instant, ZoneId}
 
-import cats.syntax.either._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.data.FormError
 import play.api.{Configuration, Environment}
