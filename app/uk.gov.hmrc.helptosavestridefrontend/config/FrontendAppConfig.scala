@@ -32,8 +32,6 @@ class FrontendAppConfig @Inject() (configuration:   Configuration,
   lazy val config: Configuration = configuration
 
   lazy val assetsPrefix: String = loadConfig("assets.url") + loadConfig("assets.version")
-  lazy val analyticsToken: String = loadConfig("google-analytics.token")
-  lazy val analyticsHost: String = loadConfig("google-analytics.host")
 
   val authUrl: String = servicesConfig.baseUrl("auth")
 
