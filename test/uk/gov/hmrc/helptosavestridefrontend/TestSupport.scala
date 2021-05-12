@@ -36,7 +36,7 @@ import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
 import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext

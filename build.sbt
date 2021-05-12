@@ -2,11 +2,9 @@ import com.typesafe.sbt.uglify.Import
 import play.core.PlayVersion
 import sbt.Keys.{libraryDependencies, resolvers, _}
 import uk.gov.hmrc.DefaultBuildSettings._
-import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-import uk.gov.hmrc.versioning.SbtGitVersioning
-import wartremover.{Warts, wartremoverErrors, wartremoverExcluded}
-
+import wartremover.Warts
+import wartremover.WartRemover.autoImport.{wartremoverExcluded, wartremoverErrors}
 import scala.language.postfixOps
 
 val test = "test"
@@ -32,21 +30,23 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.63.0-play-26",
-  "uk.gov.hmrc" %% "mongo-caching" % "6.16.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "8.21.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "3.4.0",
-  "uk.gov.hmrc" %% "domain" % "5.10.0-play-26",
-  "org.typelevel" %% "cats-core" % "2.4.2",
-  "com.github.kxbmap" %% "configs" % "0.5.0"
+  "uk.gov.hmrc" %% "govuk-template" % "5.66.0-play-26",
+  "uk.gov.hmrc" %% "mongo-caching" % "7.0.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "9.2.0-play-26",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "5.2.0",
+  "uk.gov.hmrc" %% "domain" % "5.11.0-play-26",
+  "org.typelevel" %% "cats-core" % "2.6.0",
+  "com.github.kxbmap" %% "configs" % "0.6.1",
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "service-integration-test" % "0.13.0-play-26" % test,
+  "uk.gov.hmrc" %% "service-integration-test" % "1.1.0-play-26" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.22.0-play-26" % test,
-  "org.scalatest" %% "scalatest" % "3.2.0" % test,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "5.0.0-play-26" % test,
+  "org.scalatest" %% "scalatest" % "3.2.8" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
@@ -60,7 +60,7 @@ lazy val scoverageSettings = {
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes|JsErrorOps).*;.*views.html.*",
-    ScoverageKeys.coverageMinimum := 94,
+    ScoverageKeys.coverageMinimumStmtTotal := 94,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
@@ -70,7 +70,7 @@ lazy val scoverageSettings = {
 lazy val scalariformSettings = {
   import com.typesafe.sbt.SbtScalariform.ScalariformKeys
   import scalariform.formatter.preferences._
-  
+
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(AlignArguments, true)
     .setPreference(AlignParameters, true)
@@ -127,7 +127,6 @@ lazy val commonSettings = Seq(
   majorVersion := 2,
   evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
   resolvers ++= Seq(
-    Resolver.bintrayRepo("hmrc", "releases"),
     Resolver.jcenterRepo,
     "emueller-bintray" at "https://dl.bintray.com/emueller/maven" // for play json schema validator
   ),
@@ -137,7 +136,7 @@ lazy val commonSettings = Seq(
 
 lazy val microservice = Project(appName, file("."))
   .settings(commonSettings: _*)
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory, SbtWeb) ++ plugins: _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin, SbtWeb) ++ plugins: _*)
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
@@ -171,3 +170,6 @@ lazy val microservice = Project(appName, file("."))
     },
     compile := ((compile in Compile) dependsOn formatMessageQuotes).value
   )
+  .settings(scalacOptions += "-P:silencer:globalFilters=Unused import")
+  .settings(scalacOptions += "-P:silencer:pathFilters=routes")
+  .settings(Global / lintUnusedKeysOnLoad := false)

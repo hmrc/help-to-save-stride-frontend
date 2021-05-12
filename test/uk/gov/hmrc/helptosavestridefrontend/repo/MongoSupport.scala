@@ -18,8 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.repo
 
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.FailoverStrategy
-import reactivemongo.core.actors.Exceptions.PrimaryUnavailableException
 import uk.gov.hmrc.mongo.{MongoConnector, MongoSpecSupport}
 
 import scala.concurrent.ExecutionContext.Implicits.global
