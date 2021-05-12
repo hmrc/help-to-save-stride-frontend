@@ -14,14 +14,13 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINO
 @import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.FormOps
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
 @this(main: main_template)
 
-@(form: Form[GiveNINO])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig )
+@(form: Form[GiveNINO])(implicit request: Request[_], messages: Messages)
 
 @title = @{messages("hts.eligibility.title.h1")}
 

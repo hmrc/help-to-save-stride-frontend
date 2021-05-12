@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.play.views.html.layouts.{Head, HeaderNav, Footer, ServiceInfo, MainContentHeader, MainContent, Sidebar, Article, FooterLinks}
 @import play.twirl.api.HtmlFormat
@@ -30,7 +29,7 @@
       footer: Footer,
       footerLinks: FooterLinks)
 
-@(appConfig: FrontendAppConfig,
+@(
         title: String,
         mainClass: Option[String] = None,
         mainDataAttributes: Option[Html] = None,
@@ -39,7 +38,7 @@
         contentHeader: Option[Html] = None,
         mainContentHtml: Html = HtmlFormat.empty,
         serviceInfoContent: Html = HtmlFormat.empty,
-        scriptElement: Option[Html] = None)(implicit request: Request[_], messages: Messages)
+        scriptElement: Option[Html] = None)(implicit messages: Messages)
 
 @linkElement = {
   <link rel="stylesheet" href="@controllers.routes.Assets.versioned("stylesheets/main.css")" />
@@ -50,14 +49,6 @@
     linkElem = Some(linkElement),
     headScripts = None)
     <meta name="format-detection" content="telephone=no" />
-}
-
-@headerNavLinks = {
-<li>
-    <a href=@routes.StrideController.getEligibilityPage().url id="nav-restart-journey">
-        @Messages("hts.restart.journey")
-    </a>
-</li>
 }
 
 @insideHeader = {

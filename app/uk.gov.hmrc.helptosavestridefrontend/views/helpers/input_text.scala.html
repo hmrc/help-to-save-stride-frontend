@@ -26,7 +26,7 @@
   errorMessage: Option[Html] = None,
   inputType: String = "text",
   readOnly: Boolean = false
-)(implicit messages: Messages)
+)
 
 <div class="form-group @if(errorMessage.isDefined){form-group-error} @if(containerClass.nonEmpty){@containerClass}">
     <label class="form-label @if(labelClass.nonEmpty){@labelClass}" for="@id">

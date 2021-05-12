@@ -19,7 +19,7 @@
 
 @this(main: main_template)
 
-@(accountNumber: String)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(accountNumber: String)(implicit messages: Messages, appConfig: FrontendAppConfig)
 
 @title = @{Messages("hts.account-created.title.h1")}
 
