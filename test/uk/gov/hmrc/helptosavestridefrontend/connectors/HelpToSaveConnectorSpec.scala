@@ -207,7 +207,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
         inSequence {
-          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(BAD_REQUEST, None)))
+          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(BAD_REQUEST, "null")))
           mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         }
         val result = await(connector.createAccount(createAccountRequest).value)
@@ -262,7 +262,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
       "return an error" when {
         "there is no JSON" in {
-          mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(200, None)))
+          mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(200, "200")))
 
           val result = connector.getEnrolmentStatus(nino)
           await(result.value).isLeft shouldBe true

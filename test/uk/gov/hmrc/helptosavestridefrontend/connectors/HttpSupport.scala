@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.connectors
 
-import org.scalamock.handlers.CallHandler4
+import org.scalamock.handlers.CallHandler5
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
-
 import play.api.libs.json.Writes
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
 
@@ -34,8 +33,8 @@ trait HttpSupport { this: MockFactory with Matchers ⇒
   // for the query params, to check that a query parameter for a key is defined but to not check it's actual value enter
   // the value "*" for the key in the `queryParms` input
   def mockGet(url: String, queryParams: Map[String, String] = emptyMap, headers: Map[String, String] = emptyMap)(response: Option[HttpResponse]) =
-    (mockHttp.GET(_: String, _: Seq[(String, String)])(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
-      .expects(where{ (u: String, q: Seq[(String, String)], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
+    (mockHttp.GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
+      .expects(where{ (u: String, q: Seq[(String, String)], _: Seq[(String, String)], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
         val (ignoreQueryParams, checkQueryParams) = queryParams.partition(_._2 === "*")
 
         // use matchers here to get useful error messages when the following predicates
@@ -49,8 +48,8 @@ trait HttpSupport { this: MockFactory with Matchers ⇒
       .returning(response.fold(Future.failed[HttpResponse](new Exception("Test exception message")))(Future.successful))
 
   def mockPut[A](url: String, body: A, headers: Map[String, String] = Map.empty[String, String])(result: Option[HttpResponse]): Unit =
-    (mockHttp.PUT(_: String, _: A)(_: Writes[A], _: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
-      .expects(where{ (u: String, a: A, _: Writes[A], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
+    (mockHttp.PUT(_: String, _: A, _: Seq[(String, String)])(_: Writes[A], _: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
+      .expects(where{ (u: String, a: A, _: Seq[(String, String)], _: Writes[A], _: HttpReads[HttpResponse], h: HeaderCarrier, _: ExecutionContext) ⇒
         u shouldBe url
         a shouldBe body
         h.extraHeaders shouldBe headers.toSeq
@@ -63,9 +62,9 @@ trait HttpSupport { this: MockFactory with Matchers ⇒
       .expects(url, body, headers.toSeq, *, *, *, *)
       .returning(result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful))
 
-  def mockDelete[O](url: String)(response: Option[O]): CallHandler4[String, HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
-    (mockHttp.DELETE[O](_: String)(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, *, *, *)
+  def mockDelete[O](url: String)(response: Option[O]): CallHandler5[String, Seq[(String, String)], HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
+    (mockHttp.DELETE[O](_: String, _: Seq[(String, String)])(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
+      .expects(url, *, *, *, *)
       .returning(response.fold(Future.failed[O](new Exception("")))(Future.successful))
 
 }

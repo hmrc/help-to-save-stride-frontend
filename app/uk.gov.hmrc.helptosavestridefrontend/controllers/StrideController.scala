@@ -59,7 +59,6 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
                                   applicationCancelledView: application_cancelled
 
 )(implicit val frontendAppConfig: FrontendAppConfig,
-  transformer:                NINOLogMessageTransformer,
   applicantDetailsValidation: ApplicantDetailsValidation,
   clock:                      Clock,
   ec:                         ExecutionContext)
@@ -75,7 +74,7 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
     )
   }(routes.StrideController.getEligibilityPage())
 
-  private def checkIfAlreadyEnrolled(nino: String, roleType: RoleType)(ifNotEnrolled: ⇒ Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier): Future[Result] = { // scalastyle:ignore
+  private def checkIfAlreadyEnrolled(nino: String, roleType: RoleType)(ifNotEnrolled: ⇒ Future[Result])(implicit hc: HeaderCarrier): Future[Result] = { // scalastyle:ignore
       def updateSessionIfEnrolled(enrolmentStatus: EnrolmentStatus, roleType: RoleType)(implicit hc: HeaderCarrier): EitherT[Future, String, Unit] = enrolmentStatus match {
         case Enrolled ⇒
           roleType match {
@@ -373,7 +372,7 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
                                             eligibilityResult: SessionEligibilityCheckResult,
                                             detailsConfirmed:  Boolean,
                                             reasonCode:        Int,
-                                            source:            String)(implicit hc: HeaderCarrier, request: Request[_]) = {
+                                            source:            String)(implicit hc: HeaderCarrier) = {
     val result = for {
       createAccountResult ← helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source, userDetailsManuallyEntered(roleType)))
       sessionToStore ← createAccountResult match {

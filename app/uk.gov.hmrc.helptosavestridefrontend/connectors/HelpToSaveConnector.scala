@@ -19,7 +19,6 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 import java.util.UUID
 
 import cats.data.EitherT
-import cats.syntax.either._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.http.Status
 import play.api.http.Status.OK

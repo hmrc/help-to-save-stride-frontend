@@ -40,7 +40,7 @@ trait SessionBehaviour extends StrideAuth {
   private def checkSessionInternal(noSessionData: ⇒ Future[Result],
                                    whenSession:   HtsSession ⇒ Future[Result])(
       implicit
-      hc: HeaderCarrier, request: Request[_], ec: ExecutionContext
+      hc: HeaderCarrier, ec: ExecutionContext
   ): Future[Result] =
     sessionStore
       .get
