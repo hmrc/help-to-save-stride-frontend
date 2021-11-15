@@ -30,28 +30,36 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.66.0-play-26",
-  "uk.gov.hmrc" %% "mongo-caching" % "7.0.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "9.2.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "5.2.0",
-  "uk.gov.hmrc" %% "domain" % "5.11.0-play-26",
-  "org.typelevel" %% "cats-core" % "2.6.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.72.0-play-28",
+  "uk.gov.hmrc" %% "mongo-caching" % "7.0.0-play-28",
+  "uk.gov.hmrc" %% "play-ui" % "9.4.0-play-28",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.3.0",
+  "uk.gov.hmrc" %% "domain" % "6.2.0-play-28",
+  "org.typelevel" %% "cats-core" % "2.6.1",
   "com.github.kxbmap" %% "configs" % "0.6.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "service-integration-test" % "1.1.0-play-26" % test,
+  "uk.gov.hmrc" %% "service-integration-test" % "1.1.0-play-28" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "5.0.0-play-26" % test,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "5.0.0-play-28" % test,
   "org.scalatest" %% "scalatest" % "3.2.8" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
-  "com.typesafe.play" %% "play-ws" % PlayVersion.current % test
+  "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
+  "com.vladsch.flexmark"    %  "flexmark-all"                 % "0.35.10"           % "test"
+
 )
+//
+//  "org.scalatestplus"      %% "scalatestplus-mockito"       % "1.0.0-M2"          % "test",
+//  "com.typesafe.play"      %% "play"                        % "2.8.8"             % "test",
+//  "com.miguno.akka"        %% "akka-mock-scheduler"         % "0.5.5"             % "test",
+//  "uk.gov.hmrc"            %% "bootstrap-test-play-28"      % "5.16.0"            % "test",
+//
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
