@@ -131,9 +131,9 @@
             <li>@Messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
         </ul>
 
-        @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.allowManualAccountCreation()) {
-            @defining(maybeForm.map(f ⇒ f → ApplicantDetailsForm.errorMessages(f))) { formAndErrorMessages: Option[(Form[ApplicantDetails], ApplicantDetailsForm.ErrorMessages)] =>
-                @defining(formAndErrorMessages.exists{ case (form, errorMessages) ⇒ errorMessages.errorExists || form.data.nonEmpty }) { showForm: Boolean =>
+        @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.allowManualAccountCreation) {
+        @defining(maybeForm.map(f => f -> ApplicantDetailsForm.errorMessages(f))) { formAndErrorMessages =>
+        @defining(formAndErrorMessages.exists{ case (form, errorMessages) => errorMessages.errorExists || form.data.nonEmpty }) { showForm: Boolean =>
                     <div class="form-group">
                         <fieldset>
                             <div class="multiple-choice" data-target="confirm-conditions-met">
