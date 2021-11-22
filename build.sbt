@@ -22,8 +22,8 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "domain" % "6.2.0-play-28",
   "org.typelevel" %% "cats-core" % "2.6.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
 )
 
 lazy val testDependencies = Seq(
@@ -38,12 +38,6 @@ lazy val testDependencies = Seq(
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test
 
 )
-//
-//  "org.scalatestplus"      %% "scalatestplus-mockito"       % "1.0.0-M2"          % "test",
-//  "com.typesafe.play"      %% "play"                        % "2.8.8"             % "test",
-//  "com.miguno.akka"        %% "akka-mock-scheduler"         % "0.5.5"             % "test",
-//  "uk.gov.hmrc"            %% "bootstrap-test-play-28"      % "5.16.0"            % "test",
-//
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
