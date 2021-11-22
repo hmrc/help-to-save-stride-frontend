@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import java.util.UUID
 
-import akka.stream.Materializer
 import com.codahale.metrics._
 import com.kenshoo.play.metrics.{Metrics ⇒ PlayMetrics}
 import com.typesafe.config.ConfigFactory
@@ -55,7 +54,7 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
             | metrics.jvm = false
             | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
-      ) ++ additionalConfig)
+      ) withFallback additionalConfig)
       .build()
 
   lazy val injector: Injector = fakeApplication.injector
@@ -72,8 +71,6 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
   implicit val headerCarrier: HeaderCarrier =
     HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
-
-  implicit val mat: Materializer = mock[Materializer]
 
   val nino = "AE123456C"
 

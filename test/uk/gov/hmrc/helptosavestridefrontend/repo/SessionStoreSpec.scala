@@ -17,8 +17,8 @@
 package uk.gov.hmrc.helptosavestridefrontend.repo
 
 import java.util.UUID
-
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Span}
 import uk.gov.hmrc.helptosavestridefrontend.connectors.HttpSupport
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession._
 import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSecureSession, HtsStandardSession, SessionEligibilityCheckResult}
@@ -30,6 +30,8 @@ import uk.gov.hmrc.http.SessionId
 class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
 
   val sessionStore = new SessionStoreImpl(reactiveMongoComponent, mockMetrics, mockPagerDuty)
+  implicit override val patienceConfig =
+    PatienceConfig(timeout  = scaled(Span(200, Millis)), interval = scaled(Span(5, Millis)))
 
   "SessionStore" when {
 
