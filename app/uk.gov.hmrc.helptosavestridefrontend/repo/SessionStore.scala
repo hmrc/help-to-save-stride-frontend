@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ import cats.instances.either._
 import cats.syntax.either._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.libs.json.{Json, Reads, Writes}
+import play.modules.reactivemongo.ReactiveMongoComponent
+import uk.gov.hmrc.cache.model.Id
+import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession
 import uk.gov.hmrc.helptosavestridefrontend.util.{PagerDutyAlerting, Result, toFuture}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
-import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
+
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration
 
 @ImplementedBy(classOf[SessionStoreImpl])
 trait SessionStore {
@@ -42,16 +43,14 @@ trait SessionStore {
 }
 
 @Singleton
-class SessionStoreImpl @Inject() (mongo:             MongoComponent,
+class SessionStoreImpl @Inject() (mongo:             ReactiveMongoComponent,
                                   metrics:           HTSMetrics,
-                                  timeStampSupport:  TimestampSupport,
                                   pagerDutyAlerting: PagerDutyAlerting)(implicit appConfig: FrontendAppConfig, ec: ExecutionContext)
   extends SessionStore {
 
   private val expireAfterSeconds = appConfig.mongoSessionExpireAfter.toSeconds
 
-  private val cacheRepository =
-    new MongoCacheRepository[String](mongo, "sessions", ttl = Duration.fromNanos(expireAfterSeconds), timestampSupport = timeStampSupport, cacheIdType = CacheIdType.SimpleCacheId)
+  private val cacheRepository = new CacheMongoRepository("sessions", expireAfterSeconds)(mongo.mongoConnector.db, ec)
 
   private type EitherStringOr[A] = Either[String, A]
 
@@ -62,10 +61,10 @@ class SessionStoreImpl @Inject() (mongo:             MongoComponent,
 
         val timerContext = metrics.sessionStoreReadTimer.time()
 
-        cacheRepository.findById(sessionId).map { maybeCache ⇒
+        cacheRepository.findById(Id(sessionId)).map { maybeCache ⇒
           val response: OptionT[EitherStringOr, HtsSession] = for {
             cache ← OptionT.fromOption[EitherStringOr](maybeCache)
-            data ← OptionT.fromOption[EitherStringOr](Some(cache.data))
+            data ← OptionT.fromOption[EitherStringOr](cache.data)
             result ← OptionT.liftF[EitherStringOr, HtsSession](
               (data \ "htsSession").validate[HtsSession].asEither.leftMap(e ⇒ s"Could not parse session data from mongo: ${e.mkString("; ")}"))
           } yield result
@@ -91,16 +90,22 @@ class SessionStoreImpl @Inject() (mongo:             MongoComponent,
     EitherT(hc.sessionId.map(_.value) match {
       case Some(sessionId) ⇒
         val timerContext = metrics.sessionStoreWriteTimer.time()
-        cacheRepository.put(sessionId)(DataKey("htsSession"), Json.toJson(newSession)).map{ _ ⇒
-          val _ = timerContext.stop()
-          Right(())
-        }.recover {
-          case e ⇒
-            val _ = timerContext.stop()
-            metrics.sessionStoreWriteErrorCounter.inc()
-            pagerDutyAlerting.alert("unexpected error when writing stride HtsSession to mongo")
-            Left(e.getMessage)
-        }
+        cacheRepository.createOrUpdate(Id(sessionId), "htsSession", Json.toJson(newSession))
+          .map[Either[String, Unit]] {
+            dbUpdate ⇒
+              if (dbUpdate.writeResult.inError) {
+                Left(dbUpdate.writeResult.errmsg.getOrElse("unknown error during inserting session data in mongo"))
+              } else {
+                val _ = timerContext.stop()
+                Right(())
+              }
+          }.recover {
+            case e ⇒
+              val _ = timerContext.stop()
+              metrics.sessionStoreWriteErrorCounter.inc()
+              pagerDutyAlerting.alert("unexpected error when writing stride HtsSession to mongo")
+              Left(e.getMessage)
+          }
 
       case None ⇒
         Left("can't store HTSSession in mongo dueto no sessionId in the HeaderCarrier")
@@ -112,10 +117,15 @@ class SessionStoreImpl @Inject() (mongo:             MongoComponent,
     EitherT(hc.sessionId.map(_.value) match {
       case Some(sessionId) ⇒
         val timerContext = metrics.sessionStoreDeleteTimer.time()
-        cacheRepository.deleteEntity(sessionId)
-          .map { _ ⇒
-            val _ = timerContext.stop()
-            Right(())
+        cacheRepository.removeById(Id(sessionId))
+          .map[Either[String, Unit]] {
+            dbRemove ⇒
+              if (dbRemove.writeErrors.nonEmpty) {
+                Left(dbRemove.writeErrors.map(_.errmsg).mkString(", "))
+              } else {
+                val _ = timerContext.stop()
+                Right(())
+              }
           }.recover {
             case e ⇒
               val _ = timerContext.stop()
