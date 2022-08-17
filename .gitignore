@@ -2,6 +2,7 @@
 logs
 project/project
 project/target
+project/.bloop/
 target
 lib_managed
 tmp
@@ -19,3 +20,4 @@ dist
 *.iws
 **/*.sc
 /.bsp
+/.bloop/
