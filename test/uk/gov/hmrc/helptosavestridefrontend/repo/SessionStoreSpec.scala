@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
-
+import uk.gov.hmrc.mongo.test.MongoSupport
+import uk.gov.hmrc.mongo.{CurrentTimestampSupport}
 class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
 
-  val sessionStore = new SessionStoreImpl(reactiveMongoComponent, mockMetrics, mockPagerDuty)
+  val timeStampSupport = new CurrentTimestampSupport()
+  val sessionStore = new SessionStoreImpl(mongoComponent, mockMetrics, timeStampSupport = timeStampSupport, mockPagerDuty)
   implicit override val patienceConfig =
     PatienceConfig(timeout  = scaled(Span(200, Millis)), interval = scaled(Span(5, Millis)))
 

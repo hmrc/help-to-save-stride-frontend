@@ -16,7 +16,7 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 lazy val dependencies = Seq(
   ws,
   "uk.gov.hmrc" %% "govuk-template" % "5.72.0-play-28",
-  "uk.gov.hmrc" %% "mongo-caching" % "7.0.0-play-28",
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.70.0",
   "uk.gov.hmrc" %% "play-ui" % "9.7.0-play-28",
   "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.2.0",
   "uk.gov.hmrc" %% "domain" % "6.2.0-play-28",
@@ -30,7 +30,7 @@ lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "service-integration-test" % "1.1.0-play-28" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "5.0.0-play-28" % test,
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.70.0" % test,
   "org.scalatest" %% "scalatest" % "3.2.8" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
@@ -114,7 +114,8 @@ lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
   resolvers ++= Seq(
     Resolver.jcenterRepo,
-    "emueller-bintray" at "https://dl.bintray.com/emueller/maven" // for play json schema validator
+    "emueller-bintray" at "https://dl.bintray.com/emueller/maven", // for play json schema validator,
+    "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service.gov.uk/maven2"
   ),
   scalacOptions ++= Seq("-Xcheckinit", "-feature")
 ) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
