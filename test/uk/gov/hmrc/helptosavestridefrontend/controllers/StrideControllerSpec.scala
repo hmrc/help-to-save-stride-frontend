@@ -464,7 +464,7 @@ class StrideControllerSpec
                               Some("PID"), "name", "email")), "AE123456C")
           }
 
-          val result = csrfAddToken(controller.allowManualAccountCreation())(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.allowManualAccountCreation())(fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
 
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
@@ -477,7 +477,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(expectedSession)(Left("uh oh"))
           }
 
-          val result = csrfAddToken(controller.allowManualAccountCreation())(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.allowManualAccountCreation())(fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
@@ -536,7 +536,7 @@ class StrideControllerSpec
     "checking the eligibility and retrieving paye details" must {
 
         def doRequest(nino: String) =
-          controller.checkEligibilityAndGetPersonalInfo(FakeRequest().withFormUrlEncodedBody("nino" → nino).withCSRFToken)
+          controller.checkEligibilityAndGetPersonalInfo(FakeRequest().withMethod("POST").withFormUrlEncodedBody("nino" → nino).withCSRFToken)
 
       "handle the forms with invalid input" in {
         inSequence {
@@ -985,7 +985,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(expectedSession)(Right(()))
           }
 
-          val result = csrfAddToken(controller.customerEligibleSubmit)(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.customerEligibleSubmit)(fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
 
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getCreateAccountPage().url)
@@ -998,7 +998,7 @@ class StrideControllerSpec
             mockSessionStoreInsert(expectedSession)(Left("uh oh"))
           }
 
-          val result = csrfAddToken(controller.customerEligibleSubmit)(fakeRequest.withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
+          val result = csrfAddToken(controller.customerEligibleSubmit)(fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*))
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
         }
