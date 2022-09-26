@@ -99,10 +99,10 @@ lazy val wartRemoverSettings = {
     Wart.ToString,
     Wart.Var)
 
-  Seq(wartremoverErrors in(Compile, compile) ++= Warts.allBut(excludedWarts: _*),
-    wartremoverErrors in(Test, compile) --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
+  Seq(Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*),
+    Test / compile / wartremoverErrors --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
     wartremoverExcluded ++=
-      routes.in(Compile).value ++
+      (Compile / routes).value ++
         (baseDirectory.value ** "*.sc").get ++
         Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala")
   )
