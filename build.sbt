@@ -15,11 +15,11 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "govuk-template" % "5.72.0-play-28",
-  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.70.0",
-  "uk.gov.hmrc" %% "play-ui" % "9.7.0-play-28",
+  "uk.gov.hmrc" %% "govuk-template" % "5.78.0-play-28",
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.73.0",
+  "uk.gov.hmrc" %% "play-ui" % "9.11.0-play-28",
   "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.24.0",
-  "uk.gov.hmrc" %% "domain" % "6.2.0-play-28",
+  "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
   "org.typelevel" %% "cats-core" % "2.6.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
@@ -27,10 +27,10 @@ lazy val dependencies = Seq(
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "service-integration-test" % "1.1.0-play-28" % test,
+  "uk.gov.hmrc" %% "service-integration-test" % "1.3.0-play-28" % test,
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
-  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.70.0" % test,
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.73.0" % test,
   "org.scalatest" %% "scalatest" % "3.2.8" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
