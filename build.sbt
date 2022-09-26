@@ -18,12 +18,12 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "govuk-template" % "5.78.0-play-28",
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.73.0",
   "uk.gov.hmrc" %% "play-ui" % "9.11.0-play-28",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.24.0",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.25.0",
   "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
-  "org.typelevel" %% "cats-core" % "2.6.0",
+  "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.11" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.11" % Provided cross CrossVersion.full
 )
 
 lazy val testDependencies = Seq(
@@ -31,7 +31,7 @@ lazy val testDependencies = Seq(
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.73.0" % test,
-  "org.scalatest" %% "scalatest" % "3.2.8" % test,
+  "org.scalatest" %% "scalatest" % "3.2.9" % test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
