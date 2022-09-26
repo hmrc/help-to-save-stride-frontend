@@ -97,7 +97,8 @@ lazy val wartRemoverSettings = {
     Wart.Nothing,
     Wart.Overloading,
     Wart.ToString,
-    Wart.Var)
+    Wart.Var,
+    Wart.PlatformDefault)
 
   Seq(Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*),
     Test / compile / wartremoverErrors --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
