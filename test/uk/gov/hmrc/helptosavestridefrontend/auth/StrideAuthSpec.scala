@@ -28,7 +28,7 @@ import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, _}
+import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuthSpec.NotLoggedInException
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig

@@ -45,7 +45,7 @@
 @helpers.input_text(
         id = Ids.forename,
         label = messages("hts.customer-eligible.enter-details.form.personal-details.forename.label"),
-        value = form.data.get(Ids.forename).getOrElse(""),
+        value = form.data.getOrElse(Ids.forename, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.forename,
@@ -55,7 +55,7 @@
 @helpers.input_text(
         id = Ids.surname,
         label = messages("hts.customer-eligible.enter-details.form.personal-details.surname.label"),
-        value = form.data.get(Ids.surname).getOrElse(""),
+        value = form.data.getOrElse(Ids.surname, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.surname,
@@ -78,14 +78,14 @@
                         <div class="form-group form-group-day">
                             <label for="@Ids.dobDay" class="form-label  ">
                                 <span>@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.day.label")</span>
-                                <input type="number" class="form-control @formControlError" name="@Ids.dobDay" id="@Ids.dobDay" value=@form.data.get(Ids.dobDay).getOrElse("")>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobDay" id="@Ids.dobDay" value=@form.data.getOrElse(Ids.dobDay, "")>
                             </label>
                         </div>
 
                         <div class="form-group form-group-month">
                             <label for="@Ids.dobMonth" class="form-label">
                                 <span>  @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.month.label")</span>
-                                <input type="number" class="form-control @formControlError" name="@Ids.dobMonth" id="@Ids.dobMonth" value=@form.data.get(Ids.dobMonth).getOrElse("")>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobMonth" id="@Ids.dobMonth" value=@form.data.getOrElse(Ids.dobMonth, "")>
                             </label>
                         </div>
 
@@ -94,7 +94,7 @@
                                 <span>
                                 @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.year.label")
                                 </span>
-                                <input type="number" class="form-control @formControlError" name="@Ids.dobYear" id="@Ids.dobYear" value=@form.data.get(Ids.dobYear).getOrElse("")>
+                                <input type="number" class="form-control @formControlError" name="@Ids.dobYear" id="@Ids.dobYear" value=@form.data.getOrElse(Ids.dobYear, "")>
                             </label>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
 @helpers.input_text(
         id = Ids.address1,
         label = messages("hts.customer-eligible.enter-details.form.address.title.address1.label"),
-        value = form.data.get(Ids.address1).getOrElse(""),
+        value = form.data.getOrElse(Ids.address1, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.address1,
@@ -133,7 +133,7 @@
 @helpers.input_text(
         id = Ids.address2,
         label = messages("hts.customer-eligible.enter-details.form.address.title.address2.label"),
-        value = form.data.get(Ids.address2).getOrElse(""),
+        value = form.data.getOrElse(Ids.address2, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.address2,
@@ -143,7 +143,7 @@
 @helpers.input_text(
         id = Ids.address3,
         label = messages("hts.customer-eligible.enter-details.form.address.title.address3.label"),
-        value = form.data.get(Ids.address3).getOrElse(""),
+        value = form.data.getOrElse(Ids.address3, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.address3,
@@ -153,7 +153,7 @@
 @helpers.input_text(
         id = Ids.address4,
         label = messages("hts.customer-eligible.enter-details.form.address.title.address4.label"),
-        value = form.data.get(Ids.address4).getOrElse(""),
+        value = form.data.getOrElse(Ids.address4, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.address4,
@@ -163,7 +163,7 @@
 @helpers.input_text(
         id = Ids.address5,
         label = messages("hts.customer-eligible.enter-details.form.address.title.address5.label"),
-        value = form.data.get(Ids.address5).getOrElse(""),
+        value = form.data.getOrElse(Ids.address5, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.address5,
@@ -173,7 +173,7 @@
 @helpers.input_text(
         id = Ids.postcode,
         label = messages("hts.customer-eligible.enter-details.form.address.title.postcode.label"),
-        value = form.data.get(Ids.postcode).getOrElse(""),
+        value = form.data.getOrElse(Ids.postcode, ""),
         inputType = "text",
         inputClass = Some("form-control-1-2"),
         name = Ids.postcode,
