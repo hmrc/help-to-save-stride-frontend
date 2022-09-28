@@ -28,7 +28,7 @@ import play.api.data.format.Formatter
 import play.api.data.{FormError, Mapping}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
-import uk.gov.hmrc.helptosavestridefrontend.util.Validation.{ValidOrErrorStrings, _}
+import uk.gov.hmrc.helptosavestridefrontend.util.Validation._
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import scala.language.implicitConversions
 
