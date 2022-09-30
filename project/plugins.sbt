@@ -5,7 +5,7 @@ resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts
 
 resolvers += Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.8.0")
+addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "3.5.0")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.1.0")
 
