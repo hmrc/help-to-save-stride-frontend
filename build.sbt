@@ -118,7 +118,8 @@ lazy val commonSettings = Seq(
     "emueller-bintray" at "https://dl.bintray.com/emueller/maven", // for play json schema validator,
     "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service.gov.uk/maven2"
   ),
-  scalacOptions ++= Seq("-Xcheckinit", "-feature")
+  scalacOptions ++= Seq("-Xcheckinit", "-feature"),
+  Compile / scalacOptions -= "utf8"
 ) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
 
 
@@ -129,7 +130,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
-  .settings(scalaVersion := "2.12.17")
+  .settings(scalaVersion := "2.12.13")
   .settings(PlayKeys.playDefaultPort := 7006)
   .settings(scalariformSettings: _*)
   .settings(wartRemoverSettings)
