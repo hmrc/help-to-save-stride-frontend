@@ -6,9 +6,9 @@ hts.global.title.prepended-error-message=Error:
 hts.global.link.back=Back
 
 hts.payment-details.details-are=Details for the customer’s bank:
-hts.payment-details.sort-code.text=sort code:
-hts.payment-details.account-number.text=account number:
-hts.payment-details.payment-reference-number.text=payment reference number:
+hts.payment-details.sort-code.text=Sort Code:
+hts.payment-details.account-number.text=Account Number:
+hts.payment-details.payment-reference-number.text=Payment Reference Number:
 hts.payment-details.monthly-deadline.message=To help make sure payments reach the customer’s account by the end of the month, they’ll need to go out before the 26th.
 
 hts.eligibility.title.h1=Check the customer’s eligibility

@@ -20,26 +20,29 @@
 
 @this(govukButton: GovukButton)
 
-@(  msgKey: String = "hts.global.continue-button",
-    inputType: String = "submit",
-    name: Option[String] = None,
-    classes: String = "",
-    value: Option[String] = None,
-    attrs: Map[String, String] = Map("id" -> "submit-button"),
-    href: Option[String] = None,
-    preventDoubleClick : Boolean = false
-)(implicit messages: Messages)
+@(
+  msgKey: String = "hts.global.continue-button",
+  inputType: String = "submit",
+  name: Option[String] = None,
+  classes: String = "",
+  value: Option[String] = None,
+  attrs: Map[String, String] = Map("id" -> "submit-button"),
+  href: Option[String] = None,
+  preventDoubleClick : Boolean = false
+)(
+  implicit messages: Messages
+)
 
 @govukButton(
-    Button(
-        attributes = attrs,
-        content = Text(messages(msgKey)),
-        name = name,
-        classes = classes,
-        value = value,
-        inputType = Some(inputType),
-        href = href,
-        preventDoubleClick = preventDoubleClick
-    )
+  Button(
+    attributes = attrs,
+    content = Text(messages(msgKey)),
+    name = name,
+    classes = classes,
+    value = value,
+    inputType = Some(inputType),
+    href = href,
+    preventDoubleClick = preventDoubleClick
+  )
 )
 

@@ -14,8 +14,9 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTimeoutDialogHelper
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteCss
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteJavascript
@@ -24,27 +25,41 @@
 
 @this(
     hmrcLayout: HmrcLayout,
-    standardBetaBanner: StandardBetaBanner,
-    appConfig: FrontendAppConfig,
     hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
+    standardBetaBanner: StandardBetaBanner,
     autcompleteCss: HmrcAccessibleAutocompleteCss,
-    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript
+    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
+    appConfig: FrontendAppConfig
 )
 
-@(title: String, pageScripts: Option[Html] = None, pageHeadBlock: Option[Html] = None)(contentBlock: Html)(implicit request : Request[_], messages: Messages, config: FrontendAppConfig)
+@(
+  title: String,
+  pageScripts: Option[Html] = None,
+  pageHeadBlock: Option[Html] = None
+)(
+  contentBlock: Html
+)(
+  implicit request : Request[_],
+  messages: Messages,
+  config: FrontendAppConfig
+)
 
 @content = {
     @contentBlock
     @hmrcReportTechnicalIssueHelper()
 }
+
 @pageTitle = @{
     title + " - " + Messages("app.name") + " - " + "GOV.UK"
 }
+
 @hmrcLayout(
     pageTitle = Some(pageTitle),
     isWelshTranslationAvailable = false, /* or false if your service has not been translated */
     //signOutUrl = Some(routes.SignOutController.signout.url),
     displayHmrcBanner = true,
     additionalHeadBlock = pageHeadBlock,
-    additionalScriptsBlock = pageScripts
+    additionalScriptsBlock = pageScripts,
+    phaseBanner = None
 )(content)
