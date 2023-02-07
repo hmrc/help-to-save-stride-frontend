@@ -18,6 +18,6 @@
 @import views.html.helper.CSRF
 
 <form action="@action.url" method="@action.method" @toHtmlArgs(args.toMap[Symbol,String]) novalidate>
- @CSRF.formField(request)
- @body
+  @CSRF.formField(request)
+  @body
 </form>
