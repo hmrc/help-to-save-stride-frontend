@@ -14,10 +14,15 @@
  * limitations under the License.
  *@
 
-@(action: play.api.mvc.Call, args: (Symbol, String)*)(body: => Html)(implicit request: Request[_])
-@import views.html.helper.CSRF
+@this()
 
-<form action="@action.url" method="@action.method" @toHtmlArgs(args.toMap[Symbol,String]) novalidate>
-  @CSRF.formField(request)
-  @body
-</form>
+@(
+   key: String = "",
+   html: Option[Html] = None,
+   classes: Option[String] = None,
+   id: Option[String] = None
+)(implicit msgs: Messages)
+
+@cls = @{"govuk-body ".concat(classes.getOrElse(""))}
+
+<p class="@cls"@id.map(i => { s" id=${i}"})>@html.getOrElse(Html(msgs(key)))</p>

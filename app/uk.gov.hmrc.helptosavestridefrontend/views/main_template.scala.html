@@ -16,37 +16,45 @@
 
 @import uk.gov.hmrc.play.views.html.layouts.{Sidebar, MainContentHeader, Article}
 
-@this(govukWrapper: govuk_wrapper,
-      sidebar: Sidebar,
-      mainContentHeader: MainContentHeader,
-      article: Article)
+@this(
+  govukWrapper: govuk_wrapper,
+  sidebar: Sidebar,
+  mainContentHeader: MainContentHeader,
+  article: Article
+)
 
-@(title: String,
-        sidebarLinks: Option[Html] = None,
-        contentHeader: Option[Html] = None,
-        bodyClassesOption: Option[String] = None,
-        mainClassOption: Option[String] = None,
-        scriptElem: Option[Html] = None,
-        isErrorPage: Boolean = false)(mainContent: Html)(implicit messages: Messages)
+@(
+  title: String,
+  sidebarLinks: Option[Html] = None,
+  contentHeader: Option[Html] = None,
+  bodyClassesOption: Option[String] = None,
+  mainClassOption: Option[String] = None,
+  scriptElem: Option[Html] = None,
+  isErrorPage: Boolean = false
+)(
+  mainContent: Html
+)(
+  implicit messages: Messages
+)
 
 
 
 @serviceInfoContentHtml = {}
 
 @sidebarHtml = {
-@if(sidebarLinks.isDefined) {
+  @if(sidebarLinks.isDefined) {
     @sidebar(sidebarLinks.getOrElse(Html("")), Some("sidebar"))
-}
+  }
 }
 
 
 @govukWrapper(
-    title = (if(isErrorPage) messages("hts.global.title.prepended-error-message") + " " else "" ) + title + " " +messages("hts.global.title-suffix"),
-    mainClass = mainClassOption,
-    bodyClasses = bodyClassesOption,
-    sidebar = sidebarHtml,
-    contentHeader = contentHeader,
-    mainContentHtml = article(mainContent),
-    serviceInfoContent = serviceInfoContentHtml,
-    scriptElement = scriptElem
+  title = (if(isErrorPage) messages("hts.global.title.prepended-error-message") + " " else "" ) + title + " " +messages("hts.global.title-suffix"),
+  mainClass = mainClassOption,
+  bodyClasses = bodyClassesOption,
+  sidebar = sidebarHtml,
+  contentHeader = contentHeader,
+  mainContentHtml = article(mainContent),
+  serviceInfoContent = serviceInfoContentHtml,
+  scriptElement = scriptElem
 )

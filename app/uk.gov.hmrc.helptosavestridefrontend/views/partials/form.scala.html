@@ -14,8 +14,14 @@
  * limitations under the License.
  *@
 
-@(action: play.api.mvc.Call, args: (Symbol, String)*)(body: => Html)(implicit request: Request[_])
 @import views.html.helper.CSRF
+
+@this()
+
+@(
+  action: play.api.mvc.Call,
+  args: (Symbol, String)*)(body: => Html)(implicit request: Request[_]
+)
 
 <form action="@action.url" method="@action.method" @toHtmlArgs(args.toMap[Symbol,String]) novalidate>
   @CSRF.formField(request)
