@@ -38,7 +38,7 @@ lazy val testDependencies = Seq(
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
-  "uk.gov.hmrc" %% "bootstrap-test-play-28" % "5.24.0" % "test"
+  "uk.gov.hmrc" %% "bootstrap-test-play-28" % "5.25.0" % "test"
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
@@ -132,7 +132,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
-  .settings(scalaVersion := "2.12.13")
+  .settings(scalaVersion := "2.13.8")
   .settings(PlayKeys.playDefaultPort := 7006)
   .settings(scalariformSettings: _*)
   .settings(wartRemoverSettings)
