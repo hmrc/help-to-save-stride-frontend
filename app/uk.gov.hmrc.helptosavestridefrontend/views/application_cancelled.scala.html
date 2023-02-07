@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
 
 @this(
-  main: layout,
+  layout: layout,
   h1: h1,
   a: link
 )
@@ -31,7 +31,7 @@
   messages: Messages
 )
 
-@main(title = s"${messages("hts.application.cancelled.title.h1")} ${messages("hts.global.title-suffix")}") {
+@layout(title = messages("hts.application.cancelled.title.h1")) {
 
   @h1(messages("hts.application.cancelled.title.h1"))
 

@@ -21,12 +21,11 @@
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.views.html.layout
 @import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
-
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.helptosavestridefrontend.views.helpers.SummaryRowsNoChange
 
 @this(
-  main: layout,
+  layout: layout,
   h1: h1,
   h2: h2,
   p: paragraph,
@@ -40,14 +39,15 @@
 @(
   details: NSIPayload
 )(
-  implicit request: Request[_],
+  implicit
+  request: Request[_],
   config: FrontendAppConfig,
   messages: Messages
 )
 
 
 
-@main(title = s"${messages("hts.you.are.eligible.title.h1")} ${messages("hts.global.title-suffix")}") {
+@layout(title = messages("hts.you.are.eligible.title.h1")) {
 
   @h1(messages("hts.you.are.eligible.title.h1"))
 

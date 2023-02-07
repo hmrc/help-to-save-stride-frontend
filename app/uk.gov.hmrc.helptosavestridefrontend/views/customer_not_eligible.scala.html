@@ -146,21 +146,17 @@
                             </div>
 
                             @formAndErrorMessages.map { case (form, errorMessages) =>
-                            <div class="@{
-                                "subsection--wide divider--top" + {
-                                    if(showForm) "" else " js-hidden"
-                                }
-                            }" id="confirm-conditions-met">
-                                <h1>Manual account creation</h1>
-
-
-                                @enter_customer_details_form_body(
-                                    "userDetailsForm",
-                                    errorMessages,
-                                    nino,
-                                    form
-                                )
-                            </div>
+                              <div
+                                class = @{"subsection--wide divider--top" + {if(showForm) "" else " js-hidden"}}
+                                id = "confirm-conditions-met"
+                              >
+                                  @enter_customer_details_form_body(
+                                      "userDetailsForm",
+                                      errorMessages,
+                                      nino,
+                                      form
+                                  )
+                              </div>
                             }
                         </fieldset>
                     </div>

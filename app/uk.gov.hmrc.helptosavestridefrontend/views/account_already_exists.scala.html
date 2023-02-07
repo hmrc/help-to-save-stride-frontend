@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
 
 @this(
-  main: layout,
+  layout: layout,
   h1: h1,
   p: paragraph,
   a: link,
@@ -37,7 +37,7 @@
   messages: Messages
 )
 
-@main(title = s"${messages("hts.account.exists.title.h1")} ${messages("hts.global.title-suffix")}") {
+@layout(title = messages("hts.account.exists.title.h1")) {
 
   @h1(messages("hts.account.exists.title.h1"))
 

@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
-  main: layout,
+  layout: layout,
   h1: h1,
   h2: h2,
   p: paragraph,
@@ -33,12 +33,13 @@
 @(
   accountNumber: String
 )(
-  implicit request: Request[_],
+  implicit
+  request: Request[_],
   appConfig: FrontendAppConfig,
   messages: Messages
 )
 
-@main(title = s"${messages("hts.account-created.title.h1")} ${messages("hts.global.title-suffix")}") {
+@layout(title = messages("hts.account-created.title.h1")) {
 
   @govukPanel(Panel(
     title = Text("hts.account-created.title.h1"),

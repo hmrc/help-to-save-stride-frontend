@@ -34,13 +34,12 @@
   }
 }){ errorMessage =>
 
-    @main(
-      title = title,
-      sidebarLinks = None,
-      bodyClassesOption = None,
-      isErrorPage = errorMessage.isDefined
-    ) {
-
+  @main(
+    title = title,
+    sidebarLinks = None,
+    bodyClassesOption = None,
+    isErrorPage = errorMessage.isDefined
+  ){
     @{errorMessage.fold(Html("")){ e =>
         Html("""
           <div class="error-summary" role="alert" aria-labelledby="error-summary-give-nino" tabindex="-1">
@@ -50,7 +49,7 @@
             </ul>
           </div>
         """)
-     }
+      }
     }
 
     <h1 class="heading-large">@title</h1>
