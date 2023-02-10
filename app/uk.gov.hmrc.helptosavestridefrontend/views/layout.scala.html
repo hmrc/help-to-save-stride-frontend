@@ -14,29 +14,31 @@
  * limitations under the License.
  *@
 
+@import views.html.helper.CSPNonce
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcInternalHead
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcInternalHeader
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.internalheader.InternalHeader
+
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTimeoutDialogHelper
-@import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteCss
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteJavascript
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
-    hmrcLayout: HmrcLayout,
-    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
-    standardBetaBanner: StandardBetaBanner,
+    hmrcLayout: GovukLayout,
     autcompleteCss: HmrcAccessibleAutocompleteCss,
     autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
-    appConfig: FrontendAppConfig
+    appConfig: FrontendAppConfig,
+    hmrcInternalHead: HmrcInternalHead,
+    hmrcInternalHeader: HmrcInternalHeader
 )
 
 @(
-  title: String,
-  pageScripts: Option[Html] = None,
-  pageHeadBlock: Option[Html] = None
+  title: Option[String] = None
 )(
   contentBlock: Html
 )(
@@ -47,19 +49,10 @@
 
 @content = {
     @contentBlock
-    @hmrcReportTechnicalIssueHelper()
-}
-
-@pageTitle = @{
-    title + " - " + Messages("hts.global.title-suffix") + " - " + "GOV.UK"
 }
 
 @hmrcLayout(
-    pageTitle = Some(pageTitle),
-    isWelshTranslationAvailable = false, /* or false if your service has not been translated */
-    //signOutUrl = Some(routes.SignOutController.signout.url),
-    displayHmrcBanner = true,
-    additionalHeadBlock = pageHeadBlock,
-    additionalScriptsBlock = pageScripts,
-    phaseBanner = None
+    pageTitle = title,
+    headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
+    headerBlock = Some(hmrcInternalHeader(InternalHeader()))
 )(content)
