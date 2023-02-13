@@ -62,20 +62,8 @@ object NSIPayload {
             contactDetails: ContactDetails): NSIPayload = NSIPayload(forename, surname, dateOfBirth, nino, contactDetails, "callCentre", "STRIDE")
 
   def apply(details: ApplicantDetails, nino: NINO): NSIPayload =
-    NSIPayload(
-      details.forename,
-      details.surname,
-      details.dateOfBirth,
-      nino,
-      ContactDetails(
-        details.address1,
-        details.address2,
-        details.address3,
-        details.address4,
-        details.address5,
-        details.postcode,
-        Some(details.countryCode)
-      )
-    )
+    NSIPayload(details.forename, details.surname, details.dateOfBirth, nino,
+               ContactDetails(details.address1, details.address2, details.address3,
+                              details.address4, details.address5, details.postcode, Some(details.countryCode)))
 
 }

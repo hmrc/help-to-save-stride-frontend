@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestridefrontend.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment}
-import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.play.bootstrap.config.{ServicesConfig}
 
 import scala.concurrent.duration.Duration
