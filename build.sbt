@@ -12,6 +12,7 @@ val appName = "help-to-save-stride-frontend"
 
 lazy val plugins: Seq[Plugins] = Seq.empty
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
+val playVersion = "play-28"
 
 lazy val dependencies = Seq(
   ws,
@@ -23,7 +24,8 @@ lazy val dependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.11" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.11" % Provided cross CrossVersion.full
+  "com.github.ghik" % "silencer-lib" % "1.7.11" % Provided cross CrossVersion.full,
+  "uk.gov.hmrc" %% "play-frontend-hmrc" % s"3.34.0-$playVersion"
 )
 
 lazy val testDependencies = Seq(
@@ -35,8 +37,8 @@ lazy val testDependencies = Seq(
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
-  "com.typesafe.play" %% "play-ws" % PlayVersion.current % test
-
+  "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
+  "uk.gov.hmrc" %% "bootstrap-test-play-28" % "5.25.0" % "test"
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
