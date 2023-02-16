@@ -15,18 +15,33 @@
  *@
 
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
+@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.layout
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
 
-@this(main: main_template)
+@this(
+  layout: layout,
+  h1: h1,
+  a: link
+)
 
-@()(implicit messages: Messages)
+@()(
+  implicit request: Request[_],
+  config: FrontendAppConfig,
+  messages: Messages
+)
 
-@title = @{Messages("hts.application.cancelled.title.h1")}
+@layout(title = messages("hts.application.cancelled.title.h1")) {
 
-@main(
-  title = title,
-  bodyClassesOption = None) {
+  @h1(messages("hts.application.cancelled.title.h1"))
 
-  <h1 class="heading-large">@title</h1>
-
-  <a role="button" class="button" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
+  @a(
+    href = routes.StrideController.getEligibilityPage().url,
+    id=Some("end-call"),
+    key = ("hts.global.end-call.button"),
+    attrs = Map(
+      "role" -> "button",
+      "data-button" -> "submit-disabled"
+    )
+  )
 }
