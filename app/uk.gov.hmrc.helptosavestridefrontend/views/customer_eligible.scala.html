@@ -18,49 +18,58 @@
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.util.browserDateFormat
 
-@this(main: main_template)
+@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.layout
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.helptosavestridefrontend.views.helpers.SummaryRowsNoChange
 
-@(details: NSIPayload)(implicit request: Request[_], messages: Messages)
+@this(
+  layout: layout,
+  h1: h1,
+  h2: h2,
+  p: paragraph,
+  a: link,
+  button: button,
+  form: form,
+  govukSummaryList : GovukSummaryList,
+  summaryRows: SummaryRowsNoChange
+)
 
-@title = @{messages("hts.you.are.eligible.title.h1")}
+@(
+  details: NSIPayload
+)(
+  implicit
+  request: Request[_],
+  config: FrontendAppConfig,
+  messages: Messages
+)
 
-@main(
-    title = title,
-    bodyClassesOption = None) {
 
-    <h1 class="heading-large">@title</h1>
 
-    <p>@messages("hts.you.are.eligible.h2")</p>
-    <dl class="govuk-check-your-answers cya-questions-short">
-      <div>
-        <dt class="cya-question">@messages("hts.you.are.eligible.user.details.name-label")</dt>
-        <dd class="cya-answer">@{details.forename} @{details.surname}</dd>
-      </div>
-      <div>
-        <dt class="cya-question">@messages("hts.you.are.eligible.user.details.nino-label")</dt>
-        <dd class="cya-answer">@{details.nino.grouped(2).mkString(" ")}</dd>
-      </div>
-      <div>
-        <dt class="cya-question">@messages("hts.you.are.eligible.user.details.dob-label")</dt>
-        <dd class="cya-answer">@{details.dateOfBirth.format(browserDateFormat)}</dd>
-      </div>
-      <div>
-        <dt class="cya-question">@messages("hts.you.are.eligible.user.details.address-label")</dt>
-        <dd class="cya-answer">
-          @{details.contactDetails.address1}<br />
-          @{details.contactDetails.address2}<br />
-          @details.contactDetails.address3.map(a => Html(s"""$a <br />"""))
-          @details.contactDetails.address4.map(a => Html(s"""$a <br />"""))
-          @details.contactDetails.address5.map(a => Html(s"""$a <br />"""))
-          @{details.contactDetails.postcode}
-        </dd>
-      </div>
-    </dl>
+@layout(title = messages("hts.you.are.eligible.title.h1")) {
 
-    <p class="subsection flush--bottom">@messages("hts.you.are.eligible.h3")</p>
+  @h1(messages("hts.you.are.eligible.title.h1"))
 
-    @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.customerEligibleSubmit()) {
-      @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "soft-half--left") { @messages("hts.you.are.eligible.continue-button") }
-      <a role="button" class="flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
-    }
+  @h2(messages("hts.you.are.eligible.h2"))
+
+  @govukSummaryList(SummaryList(rows = summaryRows.userDetailsRow(details)))
+
+  @p(messages("hts.you.are.eligible.h3"), classes = Some("subsection"))
+
+  @form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.customerEligibleSubmit()) {
+    <div class="form-field">
+      @button(classes = ("govuk-!-display-block"), msgKey = ("hts.you.are.eligible.continue-button"))
+    </div>
+    @a(
+      href = routes.StrideController.getApplicationCancelledPage().url,
+      id=Some("end-call"),
+      key = ("hts.you.are.eligible.end-call.button"),
+      attrs = Map(
+        "role" -> "button",
+        "data-button" -> "submit-disabled"
+      )
+    )
+  }
+
 }
