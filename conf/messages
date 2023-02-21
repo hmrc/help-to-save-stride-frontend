@@ -1,9 +1,10 @@
 hts.global.header.nav-title=Check eligibility and create a Help to Save account
 hts.global.continue-button=Continue
 hts.global.end-call.button=End call
-hts.global.title-suffix=- Help to Save - HMRC
+hts.global.title-suffix=Help to Save
 hts.global.title.prepended-error-message=Error:
 hts.global.link.back=Back
+hts.global.error.prefix=Error
 
 hts.payment-details.details-are=Details for the customer’s bank:
 hts.payment-details.sort-code.text=sort code:
