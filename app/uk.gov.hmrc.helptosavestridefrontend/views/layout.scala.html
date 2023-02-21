@@ -15,18 +15,12 @@
  *@
 
 @import views.html.helper.CSPNonce
-@import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcInternalHead
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcInternalHeader
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.internalheader.InternalHeader
 
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTimeoutDialogHelper
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteCss
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteJavascript
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-@import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
     hmrcLayout: GovukLayout,
@@ -38,7 +32,8 @@
 )
 
 @(
-  title: Option[String] = None
+  title: String,
+  hasErrors: Boolean = false
 )(
   contentBlock: Html
 )(
@@ -51,8 +46,13 @@
     @contentBlock
 }
 
+@actualPageTitle = @{
+    if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title)
+    else Some(title)
+}
+
 @hmrcLayout(
-    pageTitle = title,
+    pageTitle = actualPageTitle,
     headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
-    headerBlock = Some(hmrcInternalHeader(InternalHeader()))
+    headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title")))))
 )(content)
