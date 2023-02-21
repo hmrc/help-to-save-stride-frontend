@@ -23,12 +23,12 @@
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 
 @this(
-    hmrcLayout: GovukLayout,
-    autcompleteCss: HmrcAccessibleAutocompleteCss,
-    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
-    appConfig: FrontendAppConfig,
-    hmrcInternalHead: HmrcInternalHead,
-    hmrcInternalHeader: HmrcInternalHeader
+  hmrcLayout: GovukLayout,
+  autcompleteCss: HmrcAccessibleAutocompleteCss,
+  autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
+  appConfig: FrontendAppConfig,
+  hmrcInternalHead: HmrcInternalHead,
+  hmrcInternalHeader: HmrcInternalHeader
 )
 
 @(
@@ -43,16 +43,16 @@
 )
 
 @content = {
-    @contentBlock
+  @contentBlock
 }
 
 @actualPageTitle = @{
-    if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title)
-    else Some(title)
+  if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title + " " + messages("hts.global.title-suffix"))
+  else Some(title + " " + messages("hts.global.title-suffix"))
 }
 
 @hmrcLayout(
-    pageTitle = actualPageTitle,
-    headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
-    headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title")))))
+  pageTitle = actualPageTitle,
+  headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
+  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title")))))
 )(content)
