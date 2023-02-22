@@ -23,9 +23,9 @@
   messages: Messages
 )
 
-@cls = @{"govuk-heading-s".concat(classes.getOrElse(""))}
+@cls = @{"govuk-heading-m ".concat(classes.getOrElse(""))}
 
-<h2 class="@cls">@Html(messages(key))</h2>
+<h2 class="@cls">@(messages(key))</h2>
 
 
 
