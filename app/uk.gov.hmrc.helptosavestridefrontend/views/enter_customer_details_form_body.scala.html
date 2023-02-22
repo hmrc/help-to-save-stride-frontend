@@ -38,87 +38,85 @@
 
 
 @defining(errorMessages.errors.toMap){ errorMessagesMap: Map[String,String] =>
-<div id="@id">
 
-<h2>@messages("hts.customer-eligible.enter-details.form.personal-details.title")</h2>
+  <div id="@id">
 
-@helpers.input_text(
-        id = Ids.forename,
-        label = messages("hts.customer-eligible.enter-details.form.personal-details.forename.label"),
-        value = form.data.getOrElse(Ids.forename, ""),
-        inputType = "text",
-        inputClass = Some("form-control-1-2"),
-        name = Ids.forename,
-        errorMessage = errorMessagesMap.get(Ids.forename).map(Html(_))
-    )
+    <h2 class="govuk-heading-m">
+      @messages("hts.customer-eligible.enter-details.form.personal-details.title")
+    </h2>
 
-@helpers.input_text(
-        id = Ids.surname,
-        label = messages("hts.customer-eligible.enter-details.form.personal-details.surname.label"),
-        value = form.data.getOrElse(Ids.surname, ""),
-        inputType = "text",
-        inputClass = Some("form-control-1-2"),
-        name = Ids.surname,
-        errorMessage = errorMessagesMap.get(Ids.surname).map(Html(_))
-    )
+    @govukInput(Input(
+      id = Ids.forename,
+      name = Ids.forename,
+      label = Label(
+        isPageHeading = false,
+        classes = "govuk-label--s",
+        content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.forename.label")
+        )
+      ),
+      value = form.data.getOrElse(Ids.forename, ""),
+      errorMessage = errorMessagesMap.get(Ids.forename).map(Html(_))
+    ))
 
-@sectionBreak
+    @govukInput(Input(
+      id = Ids.surname,
+      name = Ids.surname,
+      label = Label(
+        isPageHeading = false,
+        classes = "govuk-label--s",
+        content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.surname.label")
+        )
+      ),
+      value = form.data.getOrElse(Ids.surname, ""),
+      errorMessage = errorMessagesMap.get(Ids.surname).map(Html(_))
+    ))
 
-@defining(errorMessagesMap.get(Ids.dateOfBirth)){ dobErrorMessage: Option[String] =>
+    @sectionBreak
+
+    @defining(errorMessagesMap.get(Ids.dateOfBirth)){ dobErrorMessage: Option[String] =>
         @defining(dobErrorMessage.map(_ ⇒ "form-control-error")){ formControlError: Option[String] =>
-            <div class="form-group  soft--ends @if(dobErrorMessage.isDefined){ form-group-error }" id="@{Ids.dateOfBirth}" >
-
-                <fieldset class="form-group" aria-describedby="dob-hint @if(dobErrorMessage.isDefined){  dob-error }">
-                    <legend><span class="form-label">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")</span></legend>
-
-                    <span class="form-hint" id="dob-hint">@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.hint")</span>
-                    @dobErrorMessage.map(e => <span class="error-message" id="dob-error">{e}</span>)
-
-                    <div class="form-date">
-                        <div class="form-group form-group-day">
-                            <label for="@Ids.dobDay" class="form-label  ">
-                                <span>@messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.day.label")</span>
-                                <input type="number" class="form-control @formControlError" name="@Ids.dobDay" id="@Ids.dobDay" value=@form.data.getOrElse(Ids.dobDay, "")>
-                            </label>
-                        </div>
-
-                        <div class="form-group form-group-month">
-                            <label for="@Ids.dobMonth" class="form-label">
-                                <span>  @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.month.label")</span>
-                                <input type="number" class="form-control @formControlError" name="@Ids.dobMonth" id="@Ids.dobMonth" value=@form.data.getOrElse(Ids.dobMonth, "")>
-                            </label>
-                        </div>
-
-                        <div class="form-group form-group-year">
-                            <label for="@Ids.dobYear" class="form-label">
-                                <span>
-                                @messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.year.label")
-                                </span>
-                                <input type="number" class="form-control @formControlError" name="@Ids.dobYear" id="@Ids.dobYear" value=@form.data.getOrElse(Ids.dobYear, "")>
-                            </label>
-                        </div>
-                    </div>
-                </fieldset>
-            </div>
+          @govukDateInput(DateInput(
+            id = "dob",
+            namePrefix = Some("dob"),
+            hint = Some(Hint(
+              content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.hint"))
+            )),
+            fieldset = Some(Fieldset(
+              legend = Some(Legend(
+                content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")),
+                classes = "govuk-fieldset__legend--s",
+                isPageHeading = false
+              ))
+            )),
+            errorMessage = dobErrorMessage.map(e => ErrorMessage(
+              content = Text(e),
+              visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+            )))
+          ))
         }
     }
 
-@sectionBreak
+    @sectionBreak
 
-@helpers.input_text(
-        id = "nino",
-        label = messages("hts.customer-eligible.enter-details.form.personal-details.nino.label"),
-        value = nino,
-        inputType = "text",
-        inputClass = Some("form-control-1-2"),
-        name = "nino",
-        hint = Some(messages("hts.customer-eligible.enter-details.form.personal-details.nino.hint")),
-        readOnly = true
-    )
+    @govukInput(Input(
+      id = "nino",
+      name = "nino",
+      label = Label(
+        isPageHeading = false,
+        classes = "govuk-label--s",
+        content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.nino.label")
+        )
+      ),
+      hint = Some(Hint(
+        content = Text(Messages("hts.customer-eligible.enter-details.form.personal-details.nino.hint"))
+      )),
+      value = nino,
+      errorMessage = errorMessagesMap.get("nino").map(Html(_))
+    ))
 
-@sectionBreak
+    @sectionBreak
 
-    <h2>@messages("hts.customer-eligible.enter-details.form.address.title")</h2>
+    <h2 class="govuk-heading-m">@messages("hts.customer-eligible.enter-details.form.address.title")</h2>
 
 @helpers.input_text(
         id = Ids.address1,
