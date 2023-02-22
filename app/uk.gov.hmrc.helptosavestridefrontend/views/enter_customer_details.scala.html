@@ -23,13 +23,12 @@
 @import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetails
 @import uk.gov.hmrc.helptosavestridefrontend.models.CountryCode.countryCodes
 @import helpers._
-@import enter_customer_details_form_body._
 @import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm
 @import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 @import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
 
-@this(main: main_template)
+@this(main: main_template, customerDetailsFormBody: enter_customer_details_form_body)
 
 @(nino: String, form: Form[ApplicantDetails])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
@@ -61,7 +60,7 @@
 
         @helpers.form(routes.StrideController.customerEligibleSubmit(), 'id -> "userDetailsForm") {
 
-            @enter_customer_details_form_body(
+            @customerDetailsFormBody(
                 "userDetailsForm",
                 errorMessages,
                 nino,
