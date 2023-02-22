@@ -24,25 +24,24 @@
 @title = @{Messages("hts.account.exists.title.h1")}
 
 @main(
- title = title,
- bodyClassesOption = None) {
+  title = title,
+  bodyClassesOption = None
+) {
+    <h1 class="heading-large">@title</h1>
 
- <h1 class="heading-large">@title</h1>
+    <p>@messages("hts.account.exists.p1")</p>
 
- <p>@messages("hts.account.exists.p1")</p>
- @{accountNumber.map { number ⇒
-  <p>{messages("hts.payment-details.details-are")}</p>
+    @{accountNumber.map { number ⇒
+      <p>{messages("hts.payment-details.details-are")}</p>
 
-  <ul class="list list-bullet">
-   <li>{messages("hts.payment-details.sort-code.text")} <span class="bold">{appConfig.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</span></li>
-   <li>{messages("hts.payment-details.account-number.text")} <span class="bold">{appConfig.NsiBankTransferDetails.accountNumber}</span></li>
-   <li>{messages("hts.payment-details.payment-reference-number.text")} <span class="bold">{number}</span></li>
-  </ul>
+      <ul class="list list-bullet">
+        <li>{messages("hts.payment-details.sort-code.text")} <span class="bold">{appConfig.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</span></li>
+        <li>{messages("hts.payment-details.account-number.text")} <span class="bold">{appConfig.NsiBankTransferDetails.accountNumber}</span></li>
+        <li>{messages("hts.payment-details.payment-reference-number.text")} <span class="bold">{number}</span></li>
+      </ul>
 
-  <p>{messages("hts.payment-details.monthly-deadline.message")}</p>
- }}
+      <p>{messages("hts.payment-details.monthly-deadline.message")}</p>
+    }}
 
- <a role="button" class="button" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
-
+    <a role="button" class="button" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
 }
-  
