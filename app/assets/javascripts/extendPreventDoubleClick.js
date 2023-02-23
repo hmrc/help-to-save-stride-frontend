@@ -6,23 +6,19 @@
 */
 
 ;(function preventSubmitAfterCancel() {
-  const form = document.querySelector('form')
-  if (form) {
-    const disableOnSubmit = document.querySelectorAll('[role*="button"]')[0]
-    if (disableOnSubmit) {
-      disableOnSubmit.addEventListener('click', function(e) {
-        disableOnSubmit.setAttribute('disabled', 'disabled')
-      })
-    }
+  const disableOnSubmit = document.querySelectorAll('[data-button*="submit-disabled"]')[0]
+  if (disableOnSubmit) {
+    disableOnSubmit.addEventListener('click', function(e) {
+      disableOnSubmit.setAttribute('disabled', 'disabled')
+    })
   }
-
 })();
 
 
 ;(function preventCancelAfterSubmit() {
   const form = document.querySelector('form')
-  if (form) {
-    const disableOnSubmit = document.querySelectorAll('[data-button=submit-disabled]')[0]
+  const disableOnSubmit = document.querySelectorAll('[data-button*="submit-disabled"]')[0]
+  if (form && disableOnSubmit) {
     form.addEventListener('submit', function (e) {
       disableOnSubmit.setAttribute('disabled', 'disabled')
     })
