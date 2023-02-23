@@ -156,6 +156,7 @@
                             CheckboxItem(
                                 content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
                                 value = "yes",
+                                checked = showForm,
                                 conditionalHtml = formAndErrorMessages.map { case (form, errorMessages) =>
                                     customerDetailsFormBody("userDetailsForm", errorMessages, nino, form)
                                 }

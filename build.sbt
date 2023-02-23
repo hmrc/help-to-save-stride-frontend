@@ -25,7 +25,7 @@ lazy val dependencies = Seq(
   "com.github.kxbmap" %% "configs" % "0.6.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.11" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.11" % Provided cross CrossVersion.full,
-  "uk.gov.hmrc" %% "play-frontend-hmrc" % s"3.34.0-$playVersion"
+  "uk.gov.hmrc" %% "play-frontend-hmrc" % s"6.6.0-$playVersion"
 )
 
 lazy val testDependencies = Seq(
@@ -143,7 +143,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(retrieveManaged := true)
   .settings(
     Concat.groups := Seq(
-      "javascripts/h2s-app.js" -> group(Seq("javascripts/extendPreventDoubleClick.js", "javascripts/overrideIneligibleCheckboxButtonBind.js", "javascripts/hts.js"))
+      "javascripts/h2s-app.js" -> group(Seq("javascripts/overrideIneligibleCheckboxButtonBind.js", "javascripts/hts.js"))
     ),
     // prevent removal of unused code which generates warning errors due to use of third-party libs
     Import.uglifyCompressOptions := Seq("unused=false", "dead_code=false"),
