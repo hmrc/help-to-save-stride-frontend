@@ -52,8 +52,8 @@
 }
 
 @actualPageTitle = @{
-    if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title + " " + messages("hts.global.title-suffix"))
-    else Some(title + " " + messages("hts.global.title-suffix"))
+  if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title + " " + messages("hts.global.title-suffix"))
+  else Some(title + " " + messages("hts.global.title-suffix"))
 }
 
 @hmrcLayout(
