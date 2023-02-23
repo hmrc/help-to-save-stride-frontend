@@ -6,29 +6,27 @@
 */
 
 ;(function preventSubmitAfterCancel() {
-  const disableOnSubmit = document.querySelectorAll('[data-button*="submit-disabled"]')[0]
+  const disableOnSubmit = document.querySelectorAll('[data-button=submit-disabled]')[0]
   if (disableOnSubmit) {
     disableOnSubmit.addEventListener('click', function(e) {
       disableOnSubmit.setAttribute('disabled', 'disabled')
+      const otherButtons = document.querySelectorAll('[type="submit"]')
+      var b;
+      if (otherButtons) {
+        for(var b = 0; b < otherButtons.length; b++) {
+          otherButtons[i].setAttribute('disabled', 'disabled')
+        }
+      }
     })
   }
 })();
 
-
 ;(function preventCancelAfterSubmit() {
+  const disableOnSubmit = document.querySelectorAll('[data-button=submit-disabled]')[0]
   const form = document.querySelector('form')
-  const disableOnSubmit = document.querySelectorAll('[data-button*="submit-disabled"]')[0]
   if (form && disableOnSubmit) {
-    form.addEventListener('submit', function (e) {
-      disableOnSubmit.setAttribute('disabled', 'disabled')
-    })
+    disableOnSubmit.setAttribute('disabled', 'disabled')
   }
-  /**
-  * On form submit, prevent cancel button click.
-  * A module within ASSETS_FRONTEND prevents the double click of the submit button:
-  * https://github.com/hmrc/assets-frontend/blob/master/assets/javascripts/modules/preventDoubleSubmit.js
-  */
-
 })();
 
 
