@@ -51,11 +51,6 @@
   else Some(title + " " + messages("hts.global.title-suffix"))
 }
 
-@actualPageTitle = @{
-  if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title + " " + messages("hts.global.title-suffix"))
-  else Some(title + " " + messages("hts.global.title-suffix"))
-}
-
 @hmrcLayout(
   pageTitle = actualPageTitle,
   headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
