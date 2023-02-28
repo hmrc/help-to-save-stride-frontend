@@ -54,7 +54,7 @@
                   ErrorSummary(
                       errorList = errorMessages.errors.map(e =>
                           ErrorLink(
-                              href = Some(s"#${e._1}"),
+                              href = Some(if(e._1.matches("dob")) s"#${e._1}-day" else s"#${e._1}"),
                               content = Text(e._2)
                           )
                       ),
