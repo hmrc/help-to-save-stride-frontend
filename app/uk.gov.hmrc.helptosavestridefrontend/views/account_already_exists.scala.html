@@ -24,7 +24,6 @@
   layout: layout,
   h1: h1,
   p: paragraph,
-  a: link,
   button: button,
   ul: ul
 )
@@ -43,24 +42,24 @@
 
   @p(messages("hts.account.exists.p1"))
 
-  @p(messages("hts.payment-details.details-are"))
+  @{accountNumber map { number => 
+    Html(s"""
+      ${p(messages("hts.payment-details.details-are"))}
+      ${ul(items = Seq(
+        s"""${messages("hts.payment-details.sort-code.text")} <strong>${config.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</strong>""",
+        s"""${messages("hts.payment-details.account-number.text")} <strong>${config.NsiBankTransferDetails.accountNumber}</strong>""",
+        s"""${messages("hts.payment-details.payment-reference-number.text")} <strong>${number}</strong>"""
+      ))}
+      ${p(messages("hts.payment-details.monthly-deadline.message"))}
+    """)
+  }}
 
-  @ul(items = Seq(
-    s"""${messages("hts.payment-details.sort-code.text")} <strong>${config.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</strong>""",
-    s"""${messages("hts.payment-details.account-number.text")} <strong>${config.NsiBankTransferDetails.accountNumber}</strong>""",
-    s"""${messages("hts.payment-details.payment-reference-number.text")} <strong>${accountNumber}</strong>"""
-  ))
 
-  @p(messages("hts.payment-details.monthly-deadline.message"))
-
-  @a(
-    href = routes.StrideController.getApplicationCancelledPage().url,
-    id= Some("end-call"),
-    key = ("hts.you.are.eligible.end-call.button"),
-    classes = Some("govuk-body"),
+  @button(
+    msgKey = ("hts.global.end-call.button"),
+    href = Some(routes.StrideController.getEligibilityPage().url),
     attrs = Map(
-      "role" -> "button",
-      "data-button" -> "submit-disabled"
+      "id" -> "end-call"
     )
   )
 
