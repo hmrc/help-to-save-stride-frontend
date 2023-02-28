@@ -37,6 +37,9 @@
 
   @button(
     msgKey = ("hts.global.end-call.button"),
-    href = Some(routes.StrideController.getEligibilityPage().url)
+    href = Some(routes.StrideController.getEligibilityPage().url),
+    attrs = Map(
+      "id" -> "end-call"
+    )
   )
 }
