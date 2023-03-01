@@ -17,32 +17,50 @@
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 
-@this(main: main_template)
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.layout
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
 
-@(accountNumber: Option[String])(implicit messages: Messages, appConfig: FrontendAppConfig)
+@this(
+  layout: layout,
+  h1: h1,
+  p: paragraph,
+  button: button,
+  ul: ul
+)
 
-@title = @{Messages("hts.account.exists.title.h1")}
+@(
+  accountNumber: Option[String]
+)(
+  implicit request: Request[_],
+  config: FrontendAppConfig,
+  messages: Messages
+)
 
-@main(
- title = title,
- bodyClassesOption = None) {
+@layout(title = messages("hts.account.exists.title.h1")) {
 
- <h1 class="heading-large">@title</h1>
+  @h1(messages("hts.account.exists.title.h1"))
 
- <p>@messages("hts.account.exists.p1")</p>
- @{accountNumber.map { number ⇒
-  <p>{messages("hts.payment-details.details-are")}</p>
+  @p(messages("hts.account.exists.p1"))
 
-  <ul class="list list-bullet">
-   <li>{messages("hts.payment-details.sort-code.text")} <span class="bold">{appConfig.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</span></li>
-   <li>{messages("hts.payment-details.account-number.text")} <span class="bold">{appConfig.NsiBankTransferDetails.accountNumber}</span></li>
-   <li>{messages("hts.payment-details.payment-reference-number.text")} <span class="bold">{number}</span></li>
-  </ul>
+  @{accountNumber map { number => 
+    Html(s"""
+      ${p(messages("hts.payment-details.details-are"))}
+      ${ul(items = Seq(
+        s"""${messages("hts.payment-details.sort-code.text")} <strong>${config.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</strong>""",
+        s"""${messages("hts.payment-details.account-number.text")} <strong>${config.NsiBankTransferDetails.accountNumber}</strong>""",
+        s"""${messages("hts.payment-details.payment-reference-number.text")} <strong>${number}</strong>"""
+      ))}
+      ${p(messages("hts.payment-details.monthly-deadline.message"))}
+    """)
+  }}
 
-  <p>{messages("hts.payment-details.monthly-deadline.message")}</p>
- }}
 
- <a role="button" class="button" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
+  @button(
+    msgKey = ("hts.global.end-call.button"),
+    href = Some(routes.StrideController.getEligibilityPage().url),
+    attrs = Map(
+      "id" -> "end-call"
+    )
+  )
 
 }
-  
