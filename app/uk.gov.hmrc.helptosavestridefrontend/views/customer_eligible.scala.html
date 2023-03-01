@@ -58,7 +58,7 @@
   @p(messages("hts.you.are.eligible.h3"), classes = Some("subsection"))
 
   @form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.customerEligibleSubmit()) {
-    @button(classes = ("govuk-!-display-block"), msgKey = ("hts.you.are.eligible.continue-button"))
+    @button(classes = ("govuk-!-display-block"), attrs = Map("id" -> "continue"), msgKey = ("hts.you.are.eligible.continue-button"))
     @a(
       href = routes.StrideController.getApplicationCancelledPage().url,
       id=Some("end-call"),
