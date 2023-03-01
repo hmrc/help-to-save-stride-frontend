@@ -44,8 +44,12 @@
 )(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @title = @{messages("hts.eligibility.not.eligible.title.h1")}
+@hasErrors = @{maybeForm match {
+    case Some(f) => f.hasErrors
+    case _ => false
+}}
 
-@layout(title) {
+@layout(title, hasErrors) {
 
     @maybeForm.map{ form =>
         @defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>
@@ -70,9 +74,8 @@
     <p class="govuk-body">@messages("hts.eligibility.not.eligible.p1")</p>
 
     <p class="govuk-body">
-        @foreNameAndSurname.map { case (forename, surname) => {
+        @foreNameAndSurname.map { case (forename, surname) =>
             <strong>@messages("hts.eligibility.not.eligible.name")</strong> @forename @surname<br>
-          }
         }
         <strong>@messages("hts.eligibility.not.eligible.nino")</strong> @{nino.grouped(2).mkString(" ")}
     </p>

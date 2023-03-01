@@ -44,7 +44,7 @@
 @defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>
   @defining(errorMessages.errors.toMap){ errorMessagesMap: Map[String,String] =>      
         
-    @layout(title) {
+    @layout(title, hasErrors = form.hasErrors) {
 
         @if(errorMessages.errorExists){
           @govukErrorSummary(
