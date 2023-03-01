@@ -16,58 +16,74 @@
 
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.layout
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main: main_template)
+@this(
+  layout: layout,
+  h1: h1,
+  h2: h2,
+  p: paragraph,
+  ul: ul,
+  button: button,
+  govukPanel : GovukPanel
+)
 
-@(accountNumber: String)(implicit messages: Messages, appConfig: FrontendAppConfig)
+@(
+  accountNumber: String
+)(
+  implicit
+  request: Request[_],
+  appConfig: FrontendAppConfig,
+  messages: Messages
+)
 
-@title = @{Messages("hts.account-created.title.h1")}
+@layout(title = messages("hts.account-created.title.h1")) {
 
-@main(
-title = title,
-bodyClassesOption = None) {
+  @govukPanel(Panel(
+    title = Text("hts.account-created.title.h1"),
+    content = HtmlContent(s"""${messages("hts.account-created.customer-account-number.title")}<br><strong>${accountNumber}</strong>""")
+  ))
 
-<div class="govuk-box-highlight">
-    <h1 class="heading-xlarge">@title</h1>
-    <p class="font-large">
-      @Html(Messages("hts.account-created.customer-account-number.title"))
-      <br />
-      <strong class="bold">@accountNumber</strong>
-    </p>
-</div>
+  @p(messages("hts.account-created.tell-customer.heading"))
 
-<p>@messages("hts.account-created.tell-customer.heading")</p>
+  @ul(items = Seq(
+    s"""${messages("hts.account.created.tell-customer.ul1-li1")}""",
+    s"""${messages("hts.account.created.tell-customer.ul1-li2")}""",
+    s"""${messages("hts.account.created.tell-customer.ul1-li3")}""",
+    s"""${messages("hts.account.created.tell-customer.ul1-li4")}"""
+  ), classes = Some("govuk-list--bullet"))
 
-<ul class="list list-bullet">
-    <li>@messages("hts.account.created.tell-customer.ul1-li1")</li>
-    <li>@messages("hts.account.created.tell-customer.ul1-li2")</li>
-    <li>@messages("hts.account.created.tell-customer.ul1-li3")</li>
-    <li>@messages("hts.account.created.tell-customer.ul1-li4")</li>
-</ul>
+  @h2(messages("hts.account-created.tell-customer.what-happens-next.header"))
 
-<h2 class="heading-medium">@messages("hts.account-created.tell-customer.what-happens-next.header")</h2>
+  @p(messages("hts.account-created.tell-customer.what-happens-next.title"))
 
-<p>@messages("hts.account-created.tell-customer.what-happens-next.title")</p>
+  @ul(items = Seq(
+    s"""${messages("hts.account.created.tell-customer.what-happens-next.ul1-li1")}""",
+    s"""${messages("hts.account.created.tell-customer.what-happens-next.ul1-li2")}"""
+  ), classes = Some("govuk-list--bullet"))
 
-<ul class="list list-bullet">
-    <li>@messages("hts.account.created.tell-customer.what-happens-next.ul1-li1")</li>
-    <li>@messages("hts.account.created.tell-customer.what-happens-next.ul1-li2")</li>
-</ul>
+  @p(messages("hts.account-created.tell-customer.what-happens-next.title"))
 
-<p>@messages("hts.account.created.tell-customer.start-saving")</p>
+  @h2(messages("hts.account-created.tell-customer.bank-transfer-details.header"))
 
-<h2 class="heading-medium">@messages("hts.account-created.tell-customer.bank-transfer-details.header")</h2>
+  @p(messages("hts.account.created.tell-customer.start-saving"))
 
-<p>@Html(messages("hts.payment-details.details-are"))</p>
+  @ul(items = Seq(
+    s"""${messages("hts.payment-details.sort-code.text")} <strong>${appConfig.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</strong>""",
+    s"""${messages("hts.payment-details.account-number.text")} <strong>${appConfig.NsiBankTransferDetails.accountNumber}</strong>""",
+    s"""${messages("hts.payment-details.payment-reference-number.text")} <strong>${accountNumber}</strong>"""
+  ), classes = Some("govuk-list--bullet"))
 
-<ul class="list list-bullet">
-    <li>@messages("hts.payment-details.sort-code.text") <span class="bold">@{appConfig.NsiBankTransferDetails.sortCode.replace(" ", "").grouped(2).mkString(" ")}</span></li>
-    <li>@messages("hts.payment-details.account-number.text") <span class="bold">@appConfig.NsiBankTransferDetails.accountNumber</span></li>
-    <li>@messages("hts.payment-details.payment-reference-number.text") <span class="bold">@accountNumber</span></li>
-</ul>
+  @p(messages("hts.payment-details.monthly-deadline.message"))
 
-<p>@Html(messages("hts.payment-details.monthly-deadline.message"))</p>
+  @button(
+    msgKey = ("hts.global.end-call.button"),
+    href = Some(routes.StrideController.getEligibilityPage().url),
+    attrs = Map(
+      "id" -> "end-call"
+    )
+  )
 
-
-<a role="button" class="button" id="end-call" href=@routes.StrideController.getEligibilityPage().url>@messages("hts.global.end-call.button")</a>
 }
