@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcInternalHeader
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.internalheader.InternalHeader
-
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 
 @this(
@@ -28,7 +28,8 @@
   autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
   appConfig: FrontendAppConfig,
   hmrcInternalHead: HmrcInternalHead,
-  hmrcInternalHeader: HmrcInternalHeader
+  hmrcInternalHeader: HmrcInternalHeader,
+  hmrcScripts: HmrcScripts
 )
 
 @(
@@ -46,6 +47,10 @@
   @contentBlock
 }
 
+@scripts = {
+  <script src='@controllers.routes.Assets.versioned("javascripts/hts.js")'></script>
+}
+
 @actualPageTitle = @{
   if(hasErrors) Some(messages("hts.global.error.prefix") + ": " + title + " " + messages("hts.global.title-suffix"))
   else Some(title + " " + messages("hts.global.title-suffix"))
@@ -54,5 +59,6 @@
 @hmrcLayout(
   pageTitle = actualPageTitle,
   headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
-  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title")))))
+  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title"))))),
+  scriptsBlock = Some(hmrcScripts(scriptsBlock = Some(scripts)))
 )(content)

@@ -28,7 +28,7 @@
   value: Option[String] = None,
   attrs: Map[String, String] = Map("id" -> "submit-button"),
   href: Option[String] = None,
-  preventDoubleClick : Boolean = false
+  preventDoubleClick : Option[Boolean] = None
 )(
   implicit messages: Messages
 )
