@@ -16,99 +16,74 @@
 
 @import cats.syntax.eq._
 @import cats.instances.int._
+@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.util.browserDateFormat
 @import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 @import uk.gov.hmrc.helptosavestridefrontend.models.SessionEligibilityCheckResult.Eligible
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
+@import uk.gov.hmrc.helptosavestridefrontend.views.helpers.SummaryRowsNoChange
 
-@this(main: main_template)
+@this(
+        layout: uk.gov.hmrc.helptosavestridefrontend.views.html.layout,
+        formWithCSRF: FormWithCSRF,
+        govukButton: GovukButton,
+        govukSummaryList: GovukSummaryList,
+        h1: h1,
+        h2: h2,
+        p: paragraph,
+        ul: ul,
+        a: link,
+        summaryRowsHelper: SummaryRowsNoChange
+)
 
 @(detailsToConfirm: Option[NSIPayload],
   backUrl: Option[String],
-  eligible: Option[Eligible])(implicit request: Request[_], messages: Messages)
+  eligible: Option[Eligible])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
-@title = @{Messages("hts.create.account.title.h1")}
+@title = @{messages("hts.create.account.title.h1")}
 
-@main(
-  title = title,
-  bodyClassesOption = None) {
-
-  @backUrl.map(url =>  <a href={url} class="link-back">{messages("hts.global.link.back")}</a>)
+@layout(title, backLocation = backUrl) {
 
   @detailsToConfirm match {
     case Some(details) => {
-      <h1 class="heading-large">@Messages("hts.create.account.secure.title")</h1>
-
-      <h2 class="heading-medium">@Messages("hts.create.account.secure.h2")</h2>
-      <dl class="govuk-check-your-answers cya-questions-short">
-        <div>
-          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.name-label")</dt>
-          <dd class="cya-answer">@details.forename @details.surname</dd>
-        </div>
-        <div>
-          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.dob-label")</dt>
-          <dd class="cya-answer">@details.dateOfBirth.format(browserDateFormat)</dd>
-        </div>
-        <div>
-          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.nino-label")</dt>
-          <dd class="cya-answer">@{details.nino.grouped(2).mkString(" ")}</dd>
-        </div>
-      </dl>
-
-      <h2 class="heading-medium">@Messages("hts.create.account.secure.h3")</h2>
-      <dl class="govuk-check-your-answers cya-questions-short">
-        <div>
-          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.address-label-l1")</dt>
-          <dd class="cya-answer">@details.contactDetails.address1</dd>
-        </div>
-        <div>
-          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.address-label-l2")</dt>
-          <dd class="cya-answer">@details.contactDetails.address2</dd>
-        </div>
-        @{details.contactDetails.address3.map(a => {
-          <div>
-            <dt class="cya-question">{Messages("hts.you.are.eligible.user.details.address-label-l3")}</dt>
-            <dd class="cya-answer">{a}</dd>
-          </div>
-        })}
-        @{details.contactDetails.address4.map(a => {
-        <div>
-          <dt class="cya-question">{Messages("hts.you.are.eligible.user.details.address-label-l4")}</dt>
-          <dd class="cya-answer">{a}</dd>
-        </div>
-        })}
-        @{details.contactDetails.address5.map(a => {
-        <div>
-          <dt class="cya-question">{Messages("hts.you.are.eligible.user.details.address-label-l5")}</dt>
-          <dd class="cya-answer">{a}</dd>
-        </div>
-        })}
-        <div>
-          <dt class="cya-question">@Messages("hts.you.are.eligible.user.details.postcode")</dt>
-          <dd class="cya-answer">@details.contactDetails.postcode</dd>
-        </div>
-      </dl>
+      @h1(messages("hts.create.account.secure.title"))
+      @h2(messages("hts.create.account.secure.h2"))
+      @govukSummaryList(
+        SummaryList(
+          rows = summaryRowsHelper.personalDetailsRow(details)
+        )
+      )
+      @h2(messages("hts.create.account.secure.h3"))
+      @govukSummaryList(
+        SummaryList(
+          rows = summaryRowsHelper.addressDetailsRow(details)
+        )
+      )
     }
-    case None => {
-      <h1 class="heading-large">@title</h1>
-    }
+    case _ => { @h1(title) }
   }
 
+  @h2(messages("hts.create.account.terms.heading"))
+  @p(messages("hts.create.account.terms.p1"))
+  @ul(Seq(
+    messages("hts.create.account.terms.ul1-li1"),
+    messages("hts.create.account.terms.ul1-li2"),
+    messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r ⇒ if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" })),
+    messages("hts.create.account.terms.ul1-li4")
+  ))
+  @p(messages("hts.create.account.terms.p2"))
 
-  <h2 class="heading-medium">@Messages("hts.create.account.terms.heading")</h2>
-  <p>@Messages("hts.create.account.terms.p1")</p>
-
-  <ul class="list list-bullet">
-    <li>@Messages("hts.create.account.terms.ul1-li1")</li>
-    <li>@Messages("hts.create.account.terms.ul1-li2")</li>
-    <li>@Messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r ⇒ if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" }))</li>
-    <li>@Messages("hts.create.account.terms.ul1-li4")</li>
-  </ul>
-
-  <p>@Messages("hts.create.account.terms.p2")</p>
-
-  @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
-      @helpers.submit('_buttonClass -> "", 'id → "continue", 'role → "button", '_modifierClass -> "soft-half--left") { @messages("hts.create-account.continue-button") }
-      <a role="button" class="flush--right" id="end-call" data-button="submit-disabled" href=@routes.StrideController.getApplicationCancelledPage().url>@messages("hts.you.are.eligible.end-call.button")</a>
+  @formWithCSRF(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount) {
+    @govukButton(Button(
+      attributes = Map("id" -> "continue"),
+      content = Text(messages("hts.create-account.continue-button"))
+    ))
   }
+  <p class="govuk-body">
+    <a id="end-call" class="govuk-link" href="@{routes.StrideController.getApplicationCancelledPage().url}">
+    @messages("hts.you.are.eligible.end-call.button")
+    </a>
+  </p>
 }
