@@ -70,5 +70,50 @@ class SummaryRowsNoChange {
       addressRow
     )
   }
+
+  def personalDetailsRow(details: NSIPayload)(implicit messages: Messages): List[SummaryListRow] = {
+    val messageKey = "hts.you.are.eligible.user.details"
+
+    val nameRow: SummaryListRow = summaryListRow(
+      messages(s"$messageKey.name-label"),
+      s"""${details.forename} ${details.surname}"""
+    )
+
+    val ninoRow: SummaryListRow = summaryListRow(
+      messages(s"$messageKey.nino-label"),
+      s"${details.nino.grouped(2).mkString(" ")}"
+    )
+
+    val dobRow: SummaryListRow = summaryListRow(
+      messages(s"$messageKey.dob-label"),
+      s"${details.dateOfBirth.format(browserDateFormat)}"
+    )
+
+    List(
+      nameRow,
+      ninoRow,
+      dobRow
+    )
+  }
+
+  def addressDetailsRow(details: NSIPayload)(implicit messages: Messages): List[SummaryListRow] = {
+    val messageKey = "hts.you.are.eligible.user.details"
+
+    val addressRow: SummaryListRow = summaryListRow(
+      messages(s"$messageKey.address-label"),
+      s"""
+        ${details.contactDetails.address1}<br>
+        ${details.contactDetails.address2}<br>
+        ${details.contactDetails.address3.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.address4.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.address5.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.postcode}
+      """
+    )
+
+    List(
+      addressRow
+    )
+  }
 }
 

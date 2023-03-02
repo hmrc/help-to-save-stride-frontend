@@ -29,12 +29,14 @@
   appConfig: FrontendAppConfig,
   hmrcInternalHead: HmrcInternalHead,
   hmrcInternalHeader: HmrcInternalHeader,
-  hmrcScripts: HmrcScripts
+  hmrcScripts: HmrcScripts,
+  govukBackLink: GovukBackLink
 )
 
 @(
   title: String,
-  hasErrors: Boolean = false
+  hasErrors: Boolean = false,
+  backLocation: Option[String] = None
 )(
   contentBlock: Html
 )(
@@ -42,6 +44,14 @@
   messages: Messages,
   config: FrontendAppConfig
 )
+
+@beforeContentBlock = {
+  <div class="govuk-!-display-none-print">
+    @{backLocation map { back =>
+      govukBackLink(BackLink(href = back, attributes = Map("id" -> "back")))
+    }}
+  </div>
+}
 
 @content = {
   @contentBlock
@@ -60,5 +70,6 @@
   pageTitle = actualPageTitle,
   headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
   headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title"))))),
-  scriptsBlock = Some(hmrcScripts(scriptsBlock = Some(scripts)))
+  scriptsBlock = Some(hmrcScripts(scriptsBlock = Some(scripts))),
+  beforeContentBlock = Some(beforeContentBlock)
 )(content)
