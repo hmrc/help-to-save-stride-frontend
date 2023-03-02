@@ -14,71 +14,80 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 @import uk.gov.hmrc.helptosavestridefrontend.forms.GiveNINO
 @import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.FormOps
 @import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
 
-@this(main: main_template)
+@this(
+        layout: uk.gov.hmrc.helptosavestridefrontend.views.html.layout,
+        govukErrorSummary: GovukErrorSummary,
+        formWithCSRF: FormWithCSRF,
+        govukInput : GovukInput,
+        govukButton: GovukButton,
+        h1: h1,
+        p: paragraph,
+        ul: ul
+)
 
-@(form: Form[GiveNINO])(implicit request: Request[_], messages: Messages)
+@(form: Form[GiveNINO])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @title = @{messages("hts.eligibility.title.h1")}
+@key = @{"nino"}
 
 @defining({
- if(form.hasBlankNINO) {
-    Some("hts.eligibility.blank.nino")
-  } else if(form.hasInvalidNINO){
-     Some("hts.eligibility.invalid.nino")
-  }  else {
-    None
-  }
+   if(form.hasBlankNINO) {
+      Some("hts.eligibility.blank.nino")
+    } else if(form.hasInvalidNINO){
+       Some("hts.eligibility.invalid.nino")
+    }  else {
+      None
+    }
 }){ errorMessage =>
 
-    @main(
-      title = title,
-      sidebarLinks = None,
-      bodyClassesOption = None,
-      isErrorPage = errorMessage.isDefined
-    ) {
+  @layout(title, hasErrors = errorMessage.isDefined) {
 
-    @{errorMessage.fold(Html("")){ e =>
-        Html("""
-          <div class="error-summary" role="alert" aria-labelledby="error-summary-give-nino" tabindex="-1">
-            <h2 class="heading-medium error-summary-heading" id="error-summary-give-nino">""" + Messages("hts.eligibility.invalid.nino.error.title") + """</h2>
-            <ul class="error-summary-list">
-              <li><a href="#nino">""" + Messages(e) + """</a></li>
-            </ul>
-          </div>
-        """)
+    @{errorMessage.map { e =>
+      govukErrorSummary(
+        ErrorSummary(
+          errorList = Seq(
+            ErrorLink(
+              href = Some(s"#$key"),
+              content = Text(messages(e))
+            )
+          ),
+          title = Text(messages("hts.eligibility.invalid.nino.error.title"))
+        )
+      )
      }
     }
 
-    <h1 class="heading-large">@title</h1>
-    <p>@messages("hts.eligibility.p1")</p>
-
-    <ul class="list list-bullet">
-      <li>@messages("hts.eligibility.ul1-li1")</li>
-      <li>@messages("hts.eligibility.ul1-li2")</li>
-    </ul>
-
-    @helpers.form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.checkEligibilityAndGetPersonalInfo()) {
-      <div class="divider--top subsection--wide push--bottom">
-        <h2 class="heading-medium">@messages("hts.eligibility.give-nino.h2")</h2>
-        @helpers.input_text(
-          id = "nino",
-          name = "nino",
-          hint = Some(messages("hts.eligibility.give-nino.hint")),
-          containerClass = Some("push--bottom"),
-          label = messages(""),
-          labelClass = Some("oversize-label"),
-          errorMessage = errorMessage.map(e ⇒ Html(messages(e))),
-          inputClass = errorMessage.map(_ ⇒ "form-control-error")
-        )
-      </div>
-
-      <section class="subsection push--bottom">
-        @helpers.submit('_buttonClass -> "", 'id → "continue") { @messages("hts.eligibility.check-availability.continue-button") }
-      </section>
+    @h1(title)
+    @p(messages("hts.eligibility.p1"))
+    @ul(Seq(messages("hts.eligibility.ul1-li1"), messages("hts.eligibility.ul1-li2")))
+    @formWithCSRF(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.checkEligibilityAndGetPersonalInfo) {
+      @govukInput(Input(
+        id = key,
+        name = key,
+        label = Label(
+          isPageHeading = false,
+          classes = "govuk-label--m",
+          content = Text(messages("hts.eligibility.give-nino.h2")
+          )
+        ),
+        value = form.data.get(key),
+        errorMessage = errorMessage.map(e => ErrorMessage(
+          content = Text(messages(e)),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        )),
+        classes = "govuk-input--width-10"
+      ))
+      @govukButton(Button(
+        attributes = Map("id" -> "continue"),
+        content = Text(messages("hts.eligibility.check-availability.continue-button"))
+      ))
     }
   }
 }
