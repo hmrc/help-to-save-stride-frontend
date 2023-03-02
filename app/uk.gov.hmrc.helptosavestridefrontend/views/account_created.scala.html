@@ -42,7 +42,7 @@
 @layout(title = messages("hts.account-created.title.h1")) {
 
   @govukPanel(Panel(
-    title = Text("hts.account-created.title.h1"),
+    title = Text(messages("hts.account-created.title.h1")),
     content = HtmlContent(s"""${messages("hts.account-created.customer-account-number.title")}<br><strong>${accountNumber}</strong>""")
   ))
 
