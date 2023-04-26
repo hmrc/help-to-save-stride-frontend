@@ -28,8 +28,9 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{PagerDutyAlerting, Result, toF
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
+
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, SECONDS}
 
 @ImplementedBy(classOf[SessionStoreImpl])
 trait SessionStore {
@@ -51,7 +52,7 @@ class SessionStoreImpl @Inject() (mongo:             MongoComponent,
   private val expireAfterSeconds = appConfig.mongoSessionExpireAfter.toSeconds
 
   private val cacheRepository =
-    new MongoCacheRepository[String](mongo, "sessions", ttl = Duration.fromNanos(expireAfterSeconds), timestampSupport = timeStampSupport, cacheIdType = CacheIdType.SimpleCacheId)
+    new MongoCacheRepository[String](mongo, "sessions", ttl = Duration(expireAfterSeconds, SECONDS), timestampSupport = timeStampSupport, cacheIdType = CacheIdType.SimpleCacheId)
 
   private type EitherStringOr[A] = Either[String, A]
 
