@@ -123,7 +123,7 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= Seq("-Xcheckinit", "-feature"),
   Compile / scalacOptions -= "utf8"
-) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
+) ++ scalaSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
 
 
 lazy val microservice = Project(appName, file("."))
@@ -131,7 +131,6 @@ lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin, SbtWeb) ++ plugins: _*)
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(scalaVersion := "2.13.8")
   .settings(PlayKeys.playDefaultPort := 7006)
