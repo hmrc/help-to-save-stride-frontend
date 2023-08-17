@@ -80,12 +80,12 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     override def counter(name: String): Counter = new Counter()
   }
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     Play.start(fakeApplication)
     super.beforeAll()
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     Play.stop(fakeApplication)
     super.afterAll()
   }
