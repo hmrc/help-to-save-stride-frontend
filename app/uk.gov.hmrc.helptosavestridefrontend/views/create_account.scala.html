@@ -75,7 +75,7 @@
   ))
   @p(messages("hts.create.account.terms.p2"))
 
-  @formWithCSRF(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount) {
+  @formWithCSRF(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
     @govukButton(Button(
       attributes = Map("id" -> "continue"),
       content = Text(messages("hts.create-account.continue-button"))

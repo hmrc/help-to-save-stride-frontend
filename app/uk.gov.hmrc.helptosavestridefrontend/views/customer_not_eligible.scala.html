@@ -143,7 +143,7 @@
             <li>@messages("hts.eligibility.not.eligible.manually.create.ul1.li3")</li>
         </ul>
 
-        @formWithCSRF(routes.StrideController.allowManualAccountCreation) {
+        @formWithCSRF(routes.StrideController.allowManualAccountCreation()) {
             @defining(maybeForm.map(f => f -> ApplicantDetailsForm.errorMessages(f))) { formAndErrorMessages =>
                 @defining(formAndErrorMessages.exists{ case (form, errorMessages) => errorMessages.errorExists || form.data.nonEmpty }) { showForm: Boolean =>
                     @govukCheckboxes(Checkboxes(
