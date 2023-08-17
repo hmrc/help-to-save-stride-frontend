@@ -63,7 +63,7 @@
         <p class="govuk-body">@messages("hts.customer-eligible.enter-details.p1")</p>
 
 
-        @formWithCSRF(routes.StrideController.customerEligibleSubmit(), 'id -> "userDetailsForm") {
+        @formWithCSRF(routes.StrideController.customerEligibleSubmit(), Symbol("id") -> "userDetailsForm") {
 
             @customerDetailsFormBody(
                 "userDetailsForm",
