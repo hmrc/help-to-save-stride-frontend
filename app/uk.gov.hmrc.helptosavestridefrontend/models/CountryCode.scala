@@ -34,7 +34,7 @@ object CountryCode {
           .map(x => ((x._2 \ "short_name").asOpt[String], (x._2 \ "alpha_two_code").asOpt[String]))
           .collect {
             case (Some(countryName), Some(countryCode)) =>
-              countryName → countryCode.take(2)
+              countryName -> countryCode.take(2)
           }
       case _ => sys.error("no country codes were found, terminating the service")
     }

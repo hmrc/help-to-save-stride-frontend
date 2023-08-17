@@ -41,42 +41,42 @@ object ApplicantDetailsForm {
 
   def apply(nsiPayload: NSIPayload)(implicit applicantDetailsValidation: ApplicantDetailsValidation, clock: Clock): Form[ApplicantDetails] = {
     val maybeFields = Map(
-      Ids.address3 → nsiPayload.contactDetails.address3,
-      Ids.address4 → nsiPayload.contactDetails.address4,
-      Ids.address5 → nsiPayload.contactDetails.address5,
-      Ids.countryCode → nsiPayload.contactDetails.countryCode
+      Ids.address3 -> nsiPayload.contactDetails.address3,
+      Ids.address4 -> nsiPayload.contactDetails.address4,
+      Ids.address5 -> nsiPayload.contactDetails.address5,
+      Ids.countryCode -> nsiPayload.contactDetails.countryCode
     )
 
     applicantDetailsForm.copy(data =
       Map(
-        Ids.forename → nsiPayload.forename,
-        Ids.surname → nsiPayload.surname,
-        Ids.dobDay → nsiPayload.dateOfBirth.getDayOfMonth.toString,
-        Ids.dobMonth → nsiPayload.dateOfBirth.getMonthValue.toString,
-        Ids.dobYear → nsiPayload.dateOfBirth.getYear.toString,
-        Ids.address1 → nsiPayload.contactDetails.address1,
-        Ids.address2 → nsiPayload.contactDetails.address2,
-        Ids.postcode → nsiPayload.contactDetails.postcode
+        Ids.forename -> nsiPayload.forename,
+        Ids.surname -> nsiPayload.surname,
+        Ids.dobDay -> nsiPayload.dateOfBirth.getDayOfMonth.toString,
+        Ids.dobMonth -> nsiPayload.dateOfBirth.getMonthValue.toString,
+        Ids.dobYear -> nsiPayload.dateOfBirth.getYear.toString,
+        Ids.address1 -> nsiPayload.contactDetails.address1,
+        Ids.address2 -> nsiPayload.contactDetails.address2,
+        Ids.postcode -> nsiPayload.contactDetails.postcode
       ) ++
-        maybeFields.collect{ case (key, Some(value)) => key → value }
+        maybeFields.collect{ case (key, Some(value)) => key -> value }
     )
   }
 
   def applicantDetailsForm(implicit applicantDetailsValidation: ApplicantDetailsValidation, clock: Clock): Form[ApplicantDetails] = Form(
     mapping(
-      Ids.forename → of(applicantDetailsValidation.forenameFormatter),
-      Ids.surname → of(applicantDetailsValidation.surnameFormatter),
-      Ids.dobDay → of(applicantDetailsValidation.dayOfMonthFormatter),
-      Ids.dobMonth → of(applicantDetailsValidation.monthFormatter),
-      Ids.dobYear → of(applicantDetailsValidation.yearFormatter),
-      Ids.dateOfBirth → of(applicantDetailsValidation.dateOfBirthFormatter),
-      Ids.address1 → of(applicantDetailsValidation.addressLine1Formatter),
-      Ids.address2 → of(applicantDetailsValidation.addressLine2Formatter),
-      Ids.address3 → of(applicantDetailsValidation.addressLine3Formatter),
-      Ids.address4 → of(applicantDetailsValidation.addressLine4Formatter),
-      Ids.address5 → of(applicantDetailsValidation.addressLine5Formatter),
-      Ids.postcode → of(applicantDetailsValidation.postcodeFormatter),
-      Ids.countryCode → text
+      Ids.forename -> of(applicantDetailsValidation.forenameFormatter),
+      Ids.surname -> of(applicantDetailsValidation.surnameFormatter),
+      Ids.dobDay -> of(applicantDetailsValidation.dayOfMonthFormatter),
+      Ids.dobMonth -> of(applicantDetailsValidation.monthFormatter),
+      Ids.dobYear -> of(applicantDetailsValidation.yearFormatter),
+      Ids.dateOfBirth -> of(applicantDetailsValidation.dateOfBirthFormatter),
+      Ids.address1 -> of(applicantDetailsValidation.addressLine1Formatter),
+      Ids.address2 -> of(applicantDetailsValidation.addressLine2Formatter),
+      Ids.address3 -> of(applicantDetailsValidation.addressLine3Formatter),
+      Ids.address4 -> of(applicantDetailsValidation.addressLine4Formatter),
+      Ids.address5 -> of(applicantDetailsValidation.addressLine5Formatter),
+      Ids.postcode -> of(applicantDetailsValidation.postcodeFormatter),
+      Ids.countryCode -> text
     ){
         case (forename, surname, _, _, _, dob, address1, address2, address3, address4, address5, postcode, countryCode) =>
           ApplicantDetails(forename, surname, dob, address1, address2, address3, address4, address5, postcode, countryCode)

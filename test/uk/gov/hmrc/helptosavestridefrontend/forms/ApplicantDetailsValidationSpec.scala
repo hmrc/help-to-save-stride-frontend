@@ -33,10 +33,10 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
   override lazy val additionalConfig: Configuration =
     Configuration(
-      "applicant-details.forename.max-length" → 3,
-      "applicant-details.surname.max-length" → 3,
-      "applicant-details.address-lines.max-length" → 3,
-      "applicant-details.postcode.max-length" → 3
+      "applicant-details.forename.max-length" -> 3,
+      "applicant-details.surname.max-length" -> 3,
+      "applicant-details.address-lines.max-length" -> 3,
+      "applicant-details.postcode.max-length" -> 3
     )
 
   lazy val validation = new ApplicantDetailsValidationImpl(
@@ -224,7 +224,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
     "validating date of births" must {
 
-      val data = Map(Ids.dobDay → "1", Ids.dobMonth → "2", Ids.dobYear → "1990")
+      val data = Map(Ids.dobDay -> "1", Ids.dobMonth -> "2", Ids.dobYear -> "1990")
 
       "mark years as valid" when {
 
@@ -257,7 +257,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
         "the day, month and year values together do not form a valid date" in {
           // 31st February doesn't exist
-          testDateOfBirthInvalid(Map(Ids.dobDay → "31", Ids.dobMonth → "2", Ids.dobYear → "1990"))
+          testDateOfBirthInvalid(Map(Ids.dobDay -> "31", Ids.dobMonth -> "2", Ids.dobYear -> "1990"))
         }
 
       }

@@ -65,9 +65,9 @@ class SessionStoreImpl @Inject() (mongo:             MongoComponent,
 
         cacheRepository.findById(sessionId).map { maybeCache =>
           val response: OptionT[EitherStringOr, HtsSession] = for {
-            cache ← OptionT.fromOption[EitherStringOr](maybeCache)
-            data ← OptionT.fromOption[EitherStringOr](Some(cache.data))
-            result ← OptionT.liftF[EitherStringOr, HtsSession](
+            cache <- OptionT.fromOption[EitherStringOr](maybeCache)
+            data <- OptionT.fromOption[EitherStringOr](Some(cache.data))
+            result <- OptionT.liftF[EitherStringOr, HtsSession](
               (data \ "htsSession").validate[HtsSession].asEither.leftMap(e => s"Could not parse session data from mongo: ${e.mkString("; ")}"))
           } yield result
 

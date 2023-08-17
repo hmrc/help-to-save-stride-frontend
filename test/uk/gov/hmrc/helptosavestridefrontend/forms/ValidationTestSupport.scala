@@ -25,7 +25,7 @@ trait ValidationTestSupport { this: Matchers =>
 
   def testValidation[A](formatter: Formatter[A])(value: Option[String])(expectedResult: Either[Set[String], A]): Unit = {
     val result: Either[Seq[FormError], A] =
-      formatter.bind("key", value.fold(Map.empty[String, String])(v => Map("key" → v)))
+      formatter.bind("key", value.fold(Map.empty[String, String])(v => Map("key" -> v)))
 
     result.leftMap(_.toSet) shouldBe expectedResult.leftMap(_.map(s => FormError("key", s)))
   }

@@ -46,8 +46,8 @@ class StrideAuthSpec extends TestSupport {
   def base64Encode(s: String): String = new String(Base64.getEncoder.encode(s.getBytes()))
 
   override lazy val additionalConfig: Configuration = Configuration(
-    "stride.base64-encoded-roles" → standardRoles.map(base64Encode),
-    "stride.base64-encoded-secure-roles" → secureRoles.map(base64Encode)
+    "stride.base64-encoded-roles" -> standardRoles.map(base64Encode),
+    "stride.base64-encoded-secure-roles" -> secureRoles.map(base64Encode)
   )
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]

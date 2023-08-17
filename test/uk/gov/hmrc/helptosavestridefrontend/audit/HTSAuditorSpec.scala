@@ -38,7 +38,7 @@ class HTSAuditorSpec extends TestSupport {
 
       "use the audit connector to send an event" in {
         val dataEvent: ExtendedDataEvent =
-          ExtendedDataEvent("source", "type", "id", Map("tag" → "value"), Json.obj("field" → "value"), Instant.now)
+          ExtendedDataEvent("source", "type", "id", Map("tag" -> "value"), Json.obj("field" -> "value"), Instant.now)
 
         val htsEvent: HTSEvent = new HTSEvent {
           override val value = dataEvent

@@ -46,11 +46,11 @@ object SessionEligibilityCheckResult {
       }
 
       val fields: List[(String, JsValue)] =
-        List("code" → Some(JsNumber(code)),
-          "result" → result.map(Json.toJson(_)),
-          "manualCreationAllowed" → manualCreationAllowed.map(Json.toJson(_))
+        List("code" -> Some(JsNumber(code)),
+          "result" -> result.map(Json.toJson(_)),
+          "manualCreationAllowed" -> manualCreationAllowed.map(Json.toJson(_))
         ).collect {
-            case (key, Some(value)) => key → value
+            case (key, Some(value)) => key -> value
           }
 
       JsObject(fields)
@@ -88,21 +88,21 @@ object HtsSession {
     override def writes(s: HtsSession): JsValue = {
 
       val (sessionType, json) = s match {
-        case s: HtsStandardSession => "standard" → HtsStandardSession.format.writes(s)
-        case s: HtsSecureSession   => "secure" → HtsSecureSession.format.writes(s)
+        case s: HtsStandardSession => "standard" -> HtsStandardSession.format.writes(s)
+        case s: HtsSecureSession   => "secure" -> HtsSecureSession.format.writes(s)
       }
 
       val fields: List[(String, JsValue)] = List(
-        "type" → JsString(sessionType),
-        "session" → json
+        "type" -> JsString(sessionType),
+        "session" -> json
       )
       JsObject(fields)
     }
 
     override def reads(json: JsValue): JsResult[HtsSession] = {
       for {
-        sessionType ← (json \ "type").validate[String]
-        session ← {
+        sessionType <- (json \ "type").validate[String]
+        session <- {
           val sessionParseResult: JsResult[HtsSession] = if (sessionType === "standard") {
             (json \ "session").validate[HtsStandardSession]
           } else if (sessionType === "secure") {

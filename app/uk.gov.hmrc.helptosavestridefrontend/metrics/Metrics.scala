@@ -54,18 +54,18 @@ class HTSMetrics @Inject() (metrics: com.kenshoo.play.metrics.Metrics) {
 object Metrics {
 
   private val timeWordToDenomination = List(
-    "ns" → 1000L,
-    "μs" → 1000L,
-    "ms" → 1000L,
-    "s" → 60L,
-    "m" → 60L,
-    "h" → 24L,
-    "d" → 7L
+    "ns" -> 1000L,
+    "μs" -> 1000L,
+    "ms" -> 1000L,
+    "s" -> 60L,
+    "m" -> 60L,
+    "h" -> 24L,
+    "d" -> 7L
   )
 
   /** Return the integer part and the remainder of the result of dividing th enumerator by the denominator */
   private def divide(numerator: Long, denominator: Long): (Long, Long) =
-    (numerator / denominator) → (numerator % denominator)
+    (numerator / denominator) -> (numerator % denominator)
 
   /**
    * Convert `nanos` to a human-friendly string - will return the time in terms of
@@ -85,14 +85,14 @@ object Metrics {
 
         case (word, number) :: tail =>
           if (t < number) {
-            (t → word) :: acc
+            (t -> word) :: acc
           } else {
             val (remaining, currentUnits) = divide(t, number)
 
             if (currentUnits === 0L) {
               loop(tail, remaining, acc)
             } else {
-              loop(tail, remaining, (currentUnits → word) :: acc)
+              loop(tail, remaining, (currentUnits -> word) :: acc)
             }
           }
       }

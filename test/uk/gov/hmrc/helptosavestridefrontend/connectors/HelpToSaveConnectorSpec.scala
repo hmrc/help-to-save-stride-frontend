@@ -50,7 +50,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
     "checking eligibility" must {
         def eligibilityCheckResponse(resultCode: Int): JsValue =
-          JsObject(Map("eligibilityCheckResult" → Json.toJson(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1))))
+          JsObject(Map("eligibilityCheckResult" -> Json.toJson(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1))))
 
       "return a successful eligibility response for a valid NINO" in {
         mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, eligibilityCheckResponse(1), emptyHeaderParameters))) // scalastyle:ignore magic.number
@@ -226,21 +226,21 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
     "getEnrolmentStatus" must {
       val statusToJSON: Map[EnrolmentStatus, String] = Map(
-        Enrolled →
+        Enrolled ->
           """
             |{
             |  "enrolled"    : true,
             |  "itmpHtSFlag" : true
             |}
           """.stripMargin,
-        Enrolled →
+        Enrolled ->
           """
             |{
             |  "enrolled"    : true,
             |  "itmpHtSFlag" : false
             |}
           """.stripMargin,
-        NotEnrolled →
+        NotEnrolled ->
           """
             |{
             |  "enrolled"    : false,
@@ -313,7 +313,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
       val validJSON = Json.parse(s"""{ "accountNumber" : "${accountNumber}"}""")
 
         def mockGetAccount(httpResponse: Option[HttpResponse]): Either[String, AccountDetails] = {
-          mockGet(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" → "*"))(httpResponse)
+          mockGet(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> "*"))(httpResponse)
           await(connector.getAccount(nino).value)
         }
 

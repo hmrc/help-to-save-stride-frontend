@@ -130,18 +130,18 @@ class StrideControllerSpec
     )
 
   val validEnterDetailsFormBody = Map(
-    Ids.forename → nsiUserInfo.forename,
-    Ids.surname → nsiUserInfo.surname,
-    Ids.dobDay → nsiUserInfo.dateOfBirth.getDayOfMonth.toString,
-    Ids.dobMonth → nsiUserInfo.dateOfBirth.getMonthValue.toString,
-    Ids.dobYear → nsiUserInfo.dateOfBirth.getYear.toString,
-    Ids.address1 → nsiUserInfo.contactDetails.address1,
-    Ids.address2 → nsiUserInfo.contactDetails.address2,
-    Ids.address3 → nsiUserInfo.contactDetails.address3.getOrElse(""),
-    Ids.address4 → nsiUserInfo.contactDetails.address4.getOrElse(""),
-    Ids.address5 → nsiUserInfo.contactDetails.address5.getOrElse(""),
-    Ids.postcode → nsiUserInfo.contactDetails.postcode,
-    Ids.countryCode → "GB"
+    Ids.forename -> nsiUserInfo.forename,
+    Ids.surname -> nsiUserInfo.surname,
+    Ids.dobDay -> nsiUserInfo.dateOfBirth.getDayOfMonth.toString,
+    Ids.dobMonth -> nsiUserInfo.dateOfBirth.getMonthValue.toString,
+    Ids.dobYear -> nsiUserInfo.dateOfBirth.getYear.toString,
+    Ids.address1 -> nsiUserInfo.contactDetails.address1,
+    Ids.address2 -> nsiUserInfo.contactDetails.address2,
+    Ids.address3 -> nsiUserInfo.contactDetails.address3.getOrElse(""),
+    Ids.address4 -> nsiUserInfo.contactDetails.address4.getOrElse(""),
+    Ids.address5 -> nsiUserInfo.contactDetails.address5.getOrElse(""),
+    Ids.postcode -> nsiUserInfo.contactDetails.postcode,
+    Ids.countryCode -> "GB"
   )
 
   "The StrideController" when {
@@ -536,7 +536,7 @@ class StrideControllerSpec
     "checking the eligibility and retrieving paye details" must {
 
         def doRequest(nino: String) =
-          controller.checkEligibilityAndGetPersonalInfo(FakeRequest().withMethod("POST").withFormUrlEncodedBody("nino" → nino).withCSRFToken)
+          controller.checkEligibilityAndGetPersonalInfo(FakeRequest().withMethod("POST").withFormUrlEncodedBody("nino" -> nino).withCSRFToken)
 
       "handle the forms with invalid input" in {
         inSequence {

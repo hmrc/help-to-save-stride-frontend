@@ -230,7 +230,7 @@ class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
   override def getAccount(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[AccountDetails] = {
     val corrlelationId = UUID.randomUUID().toString
 
-    EitherT(http.get(getAccountUrl(nino), Map("systemId" → "MDTP-STRIDE", "correlationId" → corrlelationId)).map[Either[String, AccountDetails]]{ response =>
+    EitherT(http.get(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> corrlelationId)).map[Either[String, AccountDetails]]{ response =>
       response.status match {
         case OK    => response.parseJson[AccountDetails]()
         case other => Left(s"Could not get account details for correlation Id $corrlelationId. Got status $other")

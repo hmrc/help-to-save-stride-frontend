@@ -91,10 +91,10 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
   val dateOfBirthFormatter: Formatter[LocalDate] = new Formatter[LocalDate] {
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], LocalDate] = {
       val dob: Option[LocalDate] = for {
-        day ← data.get(Ids.dobDay).map(_.trim)
-        month ← data.get(Ids.dobMonth).map(_.trim)
-        year ← data.get(Ids.dobYear).map(_.trim)
-        dob ← Try(LocalDate.of(year.toInt, month.toInt, day.toInt)).toOption
+        day <- data.get(Ids.dobDay).map(_.trim)
+        month <- data.get(Ids.dobMonth).map(_.trim)
+        year <- data.get(Ids.dobYear).map(_.trim)
+        dob <- Try(LocalDate.of(year.toInt, month.toInt, day.toInt)).toOption
       } yield dob
 
       Either.fromOption(dob, Seq(FormError(Ids.dateOfBirth, ErrorMessages.dateOfBirthInvalid)))
@@ -130,7 +130,7 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
                            mapping:           Mapping[A]
   ): Formatter[A] = new Formatter[A] {
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], A] =
-      key → data.get(key).fold(invalid[A](emptyErrorMessage))(validate)
+      key -> data.get(key).fold(invalid[A](emptyErrorMessage))(validate)
 
     override def unbind(key: String, value: A): Map[String, String] = mapping.withPrefix(key).unbind(value)
   }
@@ -177,7 +177,7 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
 
   private def optionalAddressLineValidator(tooLongErrorMessage: String): Formatter[Option[String]] = new Formatter[Option[String]] {
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Option[String]] =
-      key → {
+      key -> {
         data.get(key).map(_.trim).filter(_.nonEmpty) match {
           case Some(trimmed) => validatedFromBoolean(trimmed)(_.length <= addressLineMaxTotalLength, tooLongErrorMessage).map(Some(_))
           case None          => Valid(None)

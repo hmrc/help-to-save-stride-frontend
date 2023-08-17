@@ -80,15 +80,15 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
           roleType match {
             case Standard(_) =>
               for {
-                nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
-                accountDetails ← EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
-                _ ← sessionStore.store(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
+                nsiUserInfo <- helpToSaveConnector.getNSIUserInfo(nino)
+                accountDetails <- EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
+                _ <- sessionStore.store(HtsStandardSession(AlreadyHasAccount, nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
               } yield ()
 
             case Secure(_) =>
               for {
-                accountDetails ← EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
-                _ ← sessionStore.store(HtsSecureSession(nino, AlreadyHasAccount, None, accountNumber = accountDetails.map(_.accountNumber)))
+                accountDetails <- EitherT.liftF[Future, String, Option[AccountDetails]](getAccountDetails(nino))
+                _ <- sessionStore.store(HtsSecureSession(nino, AlreadyHasAccount, None, accountNumber = accountDetails.map(_.accountNumber)))
               } yield ()
           }
 
@@ -97,8 +97,8 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
 
     val result =
       for {
-        status ← helpToSaveConnector.getEnrolmentStatus(nino)
-        _ ← updateSessionIfEnrolled(status, roleType)
+        status <- helpToSaveConnector.getEnrolmentStatus(nino)
+        _ <- updateSessionIfEnrolled(status, roleType)
       } yield status
 
     result.fold[Future[Result]](
@@ -132,15 +132,15 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
         roleType match {
           case Standard(_) =>
             for {
-              nsiUserInfo ← helpToSaveConnector.getNSIUserInfo(nino)
-              accountDetails ← getAccountDetailsResult
-              _ ← sessionStore.store(HtsStandardSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
+              nsiUserInfo <- helpToSaveConnector.getNSIUserInfo(nino)
+              accountDetails <- getAccountDetailsResult
+              _ <- sessionStore.store(HtsStandardSession(SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), nsiUserInfo, accountNumber = accountDetails.map(_.accountNumber)))
             } yield ()
 
           case Secure(_) =>
             for {
-              accountDetails ← getAccountDetailsResult
-              _ ← sessionStore.store(HtsSecureSession(nino, SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), None, accountDetails.map(_.accountNumber)))
+              accountDetails <- getAccountDetailsResult
+              _ <- sessionStore.store(HtsSecureSession(nino, SessionEligibilityCheckResult.fromEligibilityCheckResult(eligibility), None, accountDetails.map(_.accountNumber)))
             } yield ()
         }
       }
@@ -151,8 +151,8 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
         form => {
           checkIfAlreadyEnrolled(form.nino, roleType) {
             val result = for {
-              eligibility ← helpToSaveConnector.getEligibility(form.nino)
-              _ ← updateSession(eligibility, form.nino, roleType)
+              eligibility <- helpToSaveConnector.getEligibility(form.nino)
+              _ <- updateSession(eligibility, form.nino, roleType)
             } yield eligibility
 
             result.fold(
@@ -182,7 +182,7 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
           val piDisplayedToOperator = PersonalInformationDisplayed(nsiUserInfo.nino, nsiUserInfo.forename + " " + nsiUserInfo.surname, None, List.empty[String])
           auditor.sendEvent(PersonalInformationDisplayedToOperator(piDisplayedToOperator, operatorDetails, request.path), nsiUserInfo.nino)
 
-          Ok(customerNotEligibleView(reason, Some(nsiUserInfo.forename → nsiUserInfo.surname), nsiUserInfo.nino, None))
+          Ok(customerNotEligibleView(reason, Some(nsiUserInfo.forename -> nsiUserInfo.surname), nsiUserInfo.nino, None))
         }
       },
       whenIneligibleSecure = { (ineligible, nino, nsiUserInfo, _) =>
@@ -374,8 +374,8 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
                                             reasonCode:        Int,
                                             source:            String)(implicit hc: HeaderCarrier) = {
     val result = for {
-      createAccountResult ← helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source, userDetailsManuallyEntered(roleType)))
-      sessionToStore ← createAccountResult match {
+      createAccountResult <- helpToSaveConnector.createAccount(CreateAccountRequest(nsiUserInfo, reasonCode, source, userDetailsManuallyEntered(roleType)))
+      sessionToStore <- createAccountResult match {
         case AccountCreated(accountNumber) => roleType match {
           case Standard(_) => EitherT.pure(HtsStandardSession(eligibilityResult, nsiUserInfo, detailsConfirmed, Some(accountNumber)))
           case Secure(_)   => EitherT.pure(HtsSecureSession(nsiUserInfo.nino, eligibilityResult, Some(nsiUserInfo), Some(accountNumber)))
@@ -385,7 +385,7 @@ class StrideController @Inject() (val authConnector:        AuthConnector,
           case Secure(_)   => EitherT.liftF(getAccountDetails(nsiUserInfo.nino)).map(a => HtsSecureSession(nsiUserInfo.nino, AlreadyHasAccount, Some(nsiUserInfo), a.map(_.accountNumber)))
         }
       }
-      _ ← sessionStore.store(sessionToStore)
+      _ <- sessionStore.store(sessionToStore)
     } yield createAccountResult
 
     result.fold[Result](
