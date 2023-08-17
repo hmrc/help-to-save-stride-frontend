@@ -84,7 +84,7 @@ object ApplicantDetailsForm {
         Some((details.forename, details.surname, details.dateOfBirth.getDayOfMonth, details.dateOfBirth.getMonthValue,
           details.dateOfBirth.getYear, details.dateOfBirth, details.address1, details.address2, details.address3, details.address4, details.address5,
           details.postcode, details.countryCode))
-      } verifying (ErrorMessages.dateOfBirthInFuture, _.dateOfBirth.isBefore(LocalDate.now(clock)))
+      }.verifying(ErrorMessages.dateOfBirthInFuture, _.dateOfBirth.isBefore(LocalDate.now(clock)))
   )
 
   implicit class ApplicantDetailsFormOps(val a: Form[ApplicantDetails]) extends AnyVal {
