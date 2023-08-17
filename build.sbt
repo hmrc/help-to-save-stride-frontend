@@ -114,7 +114,6 @@ lazy val wartRemoverSettings = {
 }
 
 lazy val commonSettings = Seq(
-  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
   majorVersion := 2,
   update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
   resolvers ++= Seq(
