@@ -28,7 +28,7 @@ class SummaryRowsNoChange {
   def summaryListRow(
       question: String,
       answer:   String
-  )(implicit messages: Messages): SummaryListRow = SummaryListRow(
+  ): SummaryListRow = SummaryListRow(
     key   = Key(content = Text(question), classes = "govuk-!-width-one-third"),
     value = Value(content = HtmlContent(answer)),
   )
