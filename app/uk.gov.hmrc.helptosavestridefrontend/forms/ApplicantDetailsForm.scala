@@ -58,7 +58,7 @@ object ApplicantDetailsForm {
         Ids.address2 → nsiPayload.contactDetails.address2,
         Ids.postcode → nsiPayload.contactDetails.postcode
       ) ++
-        maybeFields.collect{ case (key, Some(value)) ⇒ key → value }
+        maybeFields.collect{ case (key, Some(value)) => key → value }
     )
   }
 
@@ -78,9 +78,9 @@ object ApplicantDetailsForm {
       Ids.postcode → of(applicantDetailsValidation.postcodeFormatter),
       Ids.countryCode → text
     ){
-        case (forename, surname, _, _, _, dob, address1, address2, address3, address4, address5, postcode, countryCode) ⇒
+        case (forename, surname, _, _, _, dob, address1, address2, address3, address4, address5, postcode, countryCode) =>
           ApplicantDetails(forename, surname, dob, address1, address2, address3, address4, address5, postcode, countryCode)
-      }{ details ⇒
+      }{ details =>
         Some((details.forename, details.surname, details.dateOfBirth.getDayOfMonth, details.dateOfBirth.getMonthValue,
           details.dateOfBirth.getYear, details.dateOfBirth, details.address1, details.address2, details.address3, details.address4, details.address5,
           details.postcode, details.countryCode))

@@ -298,7 +298,7 @@ class StrideControllerSpec
       }
 
       "show the you-are-not-eligible page if session is found in mongo and but user is NOT eligible" in {
-        ineligibleReasonCodes.foreach { code ⇒
+        ineligibleReasonCodes.foreach { code =>
           inSequence {
             mockSuccessfulAuthorisationWithDetails()
             mockSessionStoreGet(Right(Some(HtsStandardSession(ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), nsiUserInfo))))
@@ -315,7 +315,7 @@ class StrideControllerSpec
       }
 
       "show the customer-are-not-eligible page if session is found in mongo and but user is NOT eligible and the role type is secure" in {
-        ineligibleReasonCodes.foreach { code ⇒
+        ineligibleReasonCodes.foreach { code =>
           inSequence {
             mockSuccessfulSecureAuthorisationWithDetails()
             mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), None, None))))
@@ -334,7 +334,7 @@ class StrideControllerSpec
 
       "show the customer-are-not-eligible page with customer details if session is found in mongo and but user " +
         "is NOT eligible and the role type is secure and there are customer details in the session" in {
-          ineligibleReasonCodes.foreach { code ⇒
+          ineligibleReasonCodes.foreach { code =>
             inSequence {
               mockSuccessfulSecureAuthorisationWithDetails()
               mockSessionStoreGet(Right(Some(HtsSecureSession(nino, ineligibleEligibilityResult.copy(response = ineligibleResponse(code)), Some(nsiUserInfo), None))))
@@ -353,7 +353,7 @@ class StrideControllerSpec
         }
 
       "show an error page if the session is found in mongo and the user is ineligible but the reason code cannot be parsed" in {
-        forAll { code: Int ⇒
+        forAll { code: Int =>
           whenever(!ineligibleReasonCodes.contains(code)) {
             inSequence {
               mockSuccessfulAuthorisationWithDetails()
@@ -369,7 +369,7 @@ class StrideControllerSpec
 
       "show an error page if the session is found in mongo and the user is ineligible but the reason code cannot be parsed " +
         "and the role type is secure" in {
-          forAll { code: Int ⇒
+          forAll { code: Int =>
             whenever(!ineligibleReasonCodes.contains(code)) {
               inSequence {
                 mockSuccessfulSecureAuthorisationWithDetails()

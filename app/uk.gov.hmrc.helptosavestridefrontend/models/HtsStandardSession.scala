@@ -32,17 +32,17 @@ object SessionEligibilityCheckResult {
   case object AlreadyHasAccount extends SessionEligibilityCheckResult
 
   def fromEligibilityCheckResult(result: EligibilityCheckResult): SessionEligibilityCheckResult = result match {
-    case EligibilityCheckResult.Eligible(value)      ⇒ Eligible(value)
-    case EligibilityCheckResult.Ineligible(value)    ⇒ Ineligible(value, manualCreationAllowed = false)
-    case EligibilityCheckResult.AlreadyHasAccount(_) ⇒ AlreadyHasAccount
+    case EligibilityCheckResult.Eligible(value)      => Eligible(value)
+    case EligibilityCheckResult.Ineligible(value)    => Ineligible(value, manualCreationAllowed = false)
+    case EligibilityCheckResult.AlreadyHasAccount(_) => AlreadyHasAccount
   }
 
   implicit val format: Format[SessionEligibilityCheckResult] = new Format[SessionEligibilityCheckResult] {
     override def writes(u: SessionEligibilityCheckResult): JsValue = {
       val (code, result, manualCreationAllowed) = u match {
-        case Eligible(value)                   ⇒ (1, Some(value), None)
-        case Ineligible(value, manualCreation) ⇒ (2, Some(value), Some(manualCreation))
-        case AlreadyHasAccount                 ⇒ (3, None, None)
+        case Eligible(value)                   => (1, Some(value), None)
+        case Ineligible(value, manualCreation) => (2, Some(value), Some(manualCreation))
+        case AlreadyHasAccount                 => (3, None, None)
       }
 
       val fields: List[(String, JsValue)] =
@@ -50,7 +50,7 @@ object SessionEligibilityCheckResult {
           "result" → result.map(Json.toJson(_)),
           "manualCreationAllowed" → manualCreationAllowed.map(Json.toJson(_))
         ).collect {
-            case (key, Some(value)) ⇒ key → value
+            case (key, Some(value)) => key → value
           }
 
       JsObject(fields)
@@ -60,10 +60,10 @@ object SessionEligibilityCheckResult {
       ((json \ "code").validate[Int],
         (json \ "result").validateOpt[EligibilityCheckResponse],
         (json \ "manualCreationAllowed").validate[Boolean]) match {
-          case (JsSuccess(1, _), JsSuccess(Some(value), _), _) ⇒ JsSuccess(Eligible(value))
-          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) ⇒ JsSuccess(Ineligible(value, manualCreationAllowed))
-          case (JsSuccess(3, _), JsSuccess(None, _), _) ⇒ JsSuccess(AlreadyHasAccount)
-          case _ ⇒ JsError(s"error during parsing eligibility from json $json")
+          case (JsSuccess(1, _), JsSuccess(Some(value), _), _) => JsSuccess(Eligible(value))
+          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) => JsSuccess(Ineligible(value, manualCreationAllowed))
+          case (JsSuccess(3, _), JsSuccess(None, _), _) => JsSuccess(AlreadyHasAccount)
+          case _ => JsError(s"error during parsing eligibility from json $json")
         }
     }
   }
@@ -88,8 +88,8 @@ object HtsSession {
     override def writes(s: HtsSession): JsValue = {
 
       val (sessionType, json) = s match {
-        case s: HtsStandardSession ⇒ "standard" → HtsStandardSession.format.writes(s)
-        case s: HtsSecureSession   ⇒ "secure" → HtsSecureSession.format.writes(s)
+        case s: HtsStandardSession => "standard" → HtsStandardSession.format.writes(s)
+        case s: HtsSecureSession   => "secure" → HtsSecureSession.format.writes(s)
       }
 
       val fields: List[(String, JsValue)] = List(

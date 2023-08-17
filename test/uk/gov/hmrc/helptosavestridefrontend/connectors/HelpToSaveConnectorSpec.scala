@@ -72,7 +72,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
       }
 
       "handles the case of success response but invalid eligibility result code" in {
-        (4 to 10).foreach { resultCode ⇒
+        (4 to 10).foreach { resultCode =>
           mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, eligibilityCheckResponse(resultCode), emptyHeaderParameters))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
@@ -111,7 +111,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
         }
 
         "the call comes back with an unexpected http status" in {
-          forAll { status: Int ⇒
+          forAll { status: Int =>
             whenever(status > 0 && status =!= 200) {
               inSequence {
                 mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(status, emptyBody)))
@@ -159,7 +159,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
         }
 
         "the call comes back with an unexpected http status" in {
-          forAll { status: Int ⇒
+          forAll { status: Int =>
             whenever(status > 0 && status =!= 200 && status =!= 404) {
               inSequence {
                 mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(Some(HttpResponse(status, emptyBody)))
@@ -251,7 +251,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
       "return the enrolment status" in {
         statusToJSON.foreach {
-          case (s, j) ⇒
+          case (s, j) =>
             mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(200, Json.parse(j), emptyHeaderParameters)))
 
             val result = connector.getEnrolmentStatus(nino)
@@ -276,10 +276,10 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
         }
 
         "the response comes back with any status other than 200" in {
-          forAll { status: Int ⇒
+          forAll { status: Int =>
             whenever(status > 0 && status =!= 200) {
               statusToJSON.foreach {
-                case (_, j) ⇒
+                case (_, j) =>
                   inSequence {
                     mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(status, Json.parse(j), emptyHeaderParameters)))
                     mockPagerDutyAlert("Received unexpected http status from the back end when calling the get enrolment status url")
@@ -324,7 +324,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
       "return an error" when {
 
         "the response comes back with any status other than 200" in {
-          forAll { status: Int ⇒
+          forAll { status: Int =>
             whenever(status > 0 && status =!= 200) {
               mockGetAccount(Some(HttpResponse(status, validJSON, emptyHeaderParameters))) shouldBe a[Left[_, _]]
             }

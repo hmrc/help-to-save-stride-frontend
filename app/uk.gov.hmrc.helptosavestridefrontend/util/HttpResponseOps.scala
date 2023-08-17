@@ -31,18 +31,18 @@ object HttpResponseOps {
 
 class HttpResponseOps(val response: HttpResponse) extends AnyVal {
 
-  def parseJson[A](path: JsValue ⇒ JsLookupResult = { j ⇒ JsDefined(j) })(implicit reads: Reads[A]): Either[String, A] =
+  def parseJson[A](path: JsValue => JsLookupResult = { j => JsDefined(j) })(implicit reads: Reads[A]): Either[String, A] =
     Try(response.json).fold(
-      error ⇒
+      error =>
         // response.json failed in this case - there was no JSON in the response
         Left(s"Could not read http response as JSON (${error.getMessage}). Response body was ${maskNino(response.body)}"),
-      jsValue ⇒
+      jsValue =>
         // use Option here to filter out null values
         Option(jsValue).fold[Either[String, A]](
           Left("No JSON found in body of http response")
-        )(j ⇒
+        )(j =>
             path(j).validate[A].fold[Either[String, A]](
-              errors ⇒
+              errors =>
                 // there was JSON in the response but we couldn't read it
                 Left(s"Could not parse http reponse JSON: ${JsError(errors).prettyPrint()}. Response body was ${maskNino(response.body)}"),
               Right(_)

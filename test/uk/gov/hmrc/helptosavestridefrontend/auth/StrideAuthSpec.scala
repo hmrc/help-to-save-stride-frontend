@@ -66,7 +66,7 @@ class StrideAuthSpec extends TestSupport {
 
   lazy val test = new TestStrideAuth(frontendAppConfig)
 
-  lazy val action = test.authorisedFromStride { _ ⇒ _ ⇒ Ok }(controllers.routes.Default.redirect())
+  lazy val action = test.authorisedFromStride { _ => _ => Ok }(controllers.routes.Default.redirect())
 
   "StrideAuth" must {
 
@@ -91,7 +91,7 @@ class StrideAuthSpec extends TestSupport {
             Set("aa"),
             Set("aa", "bb"),
             Set.empty
-          ).foreach { enrolments ⇒
+          ).foreach { enrolments =>
               withClue(s"For enrolments $enrolments:") {
                 mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(enrolments.map(Enrolment(_)))))
 
@@ -106,7 +106,7 @@ class StrideAuthSpec extends TestSupport {
           Set("a"),
           Set("b"),
           Set("a", "b")
-        ).foreach { enrolments ⇒
+        ).foreach { enrolments =>
             withClue(s"For enrolments $enrolments:") {
               mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(enrolments.map(Enrolment(_)))))
               status(action(FakeRequest())) shouldBe OK
@@ -118,8 +118,8 @@ class StrideAuthSpec extends TestSupport {
         val retrievals = new ~(new ~(new ~(Enrolments(standardRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
 
         mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(Right(retrievals))
-        val action = test.authorisedFromStrideWithDetails { _ ⇒ operatorDetails ⇒
-          roleType ⇒ {
+        val action = test.authorisedFromStrideWithDetails { _ => operatorDetails =>
+          roleType => {
             operatorDetails shouldBe OperatorDetails(List("a", "b"), Some("PID"), "name", "email")
             roleType shouldBe RoleType.Standard(List("a", "b"))
             Ok
@@ -134,11 +134,11 @@ class StrideAuthSpec extends TestSupport {
           Set("c"),
           Set("d"),
           Set("c", "d")
-        ).foreach { enrolments ⇒
+        ).foreach { enrolments =>
             withClue(s"For enrolments $enrolments:") {
               mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(enrolments.map(Enrolment(_)))))
 
-              val action = test.authorisedFromStride { _ ⇒ roleType ⇒ {
+              val action = test.authorisedFromStride { _ => roleType => {
                 roleType shouldBe RoleType.Secure(enrolments.toList)
                 Ok
               }
@@ -154,8 +154,8 @@ class StrideAuthSpec extends TestSupport {
 
         mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(Right(retrievals))
 
-        val action = test.authorisedFromStrideWithDetails { _ ⇒ operatorDetails ⇒
-          roleType ⇒ {
+        val action = test.authorisedFromStrideWithDetails { _ => operatorDetails =>
+          roleType => {
             operatorDetails shouldBe OperatorDetails(List("c", "d"), Some("PID"), "name", "email")
             roleType shouldBe RoleType.Secure(List("c", "d"))
             Ok

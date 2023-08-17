@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestridefrontend
 import java.util.UUID
 
 import com.codahale.metrics._
-import com.kenshoo.play.metrics.{Metrics ⇒ PlayMetrics}
+import com.kenshoo.play.metrics.{Metrics => PlayMetrics}
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -41,7 +41,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.ExecutionContext
 
 trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport {
-  this: Suite ⇒
+  this: Suite =>
 
   lazy val additionalConfig = Configuration()
 

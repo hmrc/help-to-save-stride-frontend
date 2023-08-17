@@ -56,9 +56,9 @@ class SummaryRowsNoChange {
       s"""
         ${details.contactDetails.address1}<br>
         ${details.contactDetails.address2}<br>
-        ${details.contactDetails.address3.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address4.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address5.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.address3.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address4.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address5.fold("")(a => s"$a <br>")}
         ${details.contactDetails.postcode}
       """
     )
@@ -104,9 +104,9 @@ class SummaryRowsNoChange {
       s"""
         ${details.contactDetails.address1}<br>
         ${details.contactDetails.address2}<br>
-        ${details.contactDetails.address3.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address4.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address5.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.address3.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address4.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address5.fold("")(a => s"$a <br>")}
         ${details.contactDetails.postcode}
       """
     )

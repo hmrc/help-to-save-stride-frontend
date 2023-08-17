@@ -28,15 +28,15 @@ object CountryCode {
   val countryCodes: List[(CountryName, AlphaTwoCode)] = {
     val content = Source.fromInputStream(getClass.getResourceAsStream("/resources/country.json")).mkString
     Json.parse(content) match {
-      case JsObject(fields) ⇒
+      case JsObject(fields) =>
         fields
           .toList
-          .map(x ⇒ ((x._2 \ "short_name").asOpt[String], (x._2 \ "alpha_two_code").asOpt[String]))
+          .map(x => ((x._2 \ "short_name").asOpt[String], (x._2 \ "alpha_two_code").asOpt[String]))
           .collect {
-            case (Some(countryName), Some(countryCode)) ⇒
+            case (Some(countryName), Some(countryCode)) =>
               countryName → countryCode.take(2)
           }
-      case _ ⇒ sys.error("no country codes were found, terminating the service")
+      case _ => sys.error("no country codes were found, terminating the service")
     }
   }
 

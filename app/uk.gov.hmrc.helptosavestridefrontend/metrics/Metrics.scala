@@ -80,10 +80,10 @@ object Metrics {
       def loop(l:   List[(String, Long)],
                t:   Long,
                acc: List[(Long, String)]): List[(Long, String)] = l match {
-        case Nil ⇒
+        case Nil =>
           acc
 
-        case (word, number) :: tail ⇒
+        case (word, number) :: tail =>
           if (t < number) {
             (t → word) :: acc
           } else {
@@ -98,7 +98,7 @@ object Metrics {
       }
 
     val result = loop(timeWordToDenomination, nanos, List.empty[(Long, String)])
-    result.take(2).map(x ⇒ s"${x._1}${x._2}").mkString(" ")
+    result.take(2).map(x => s"${x._1}${x._2}").mkString(" ")
   }
 
 }

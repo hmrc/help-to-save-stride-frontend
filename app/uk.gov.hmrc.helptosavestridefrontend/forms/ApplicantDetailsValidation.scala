@@ -55,37 +55,37 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
   import configuration.FormValidation._
 
   val forenameFormatter: Formatter[String] = stringFormatter(
-    { forename ⇒
+    { forename =>
       val trimmed = forename.trim
       val tooLongCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.length <= forenameMaxTotalLength, ErrorMessages.forenameTooLong)
       val tooShortCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.forenameEmpty)
 
-      (tooLongCheck, tooShortCheck).mapN{ case _ ⇒ trimmed }
+      (tooLongCheck, tooShortCheck).mapN{ case _ => trimmed }
     },
     ErrorMessages.forenameEmpty
   )
 
   val surnameFormatter: Formatter[String] = stringFormatter(
-    { surname ⇒
+    { surname =>
       val trimmed = surname.trim
       val tooLongCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.length <= surnameMaxTotalLength, ErrorMessages.surnameTooLong)
       val tooShortCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.surnameEmpty)
 
-      (tooLongCheck, tooShortCheck).mapN{ case _ ⇒ trimmed }
+      (tooLongCheck, tooShortCheck).mapN{ case _ => trimmed }
     },
     ErrorMessages.surnameEmpty
   )
 
   val dayOfMonthFormatter: Formatter[Int] =
-    intFormatter(1, () ⇒ 31, // scalastyle:ignore magic.number
+    intFormatter(1, () => 31, // scalastyle:ignore magic.number
       ErrorMessages.dayOfMonthInvalid, ErrorMessages.dayOfMonthInvalid, ErrorMessages.dayOfMonthInvalid, ErrorMessages.dayOfMonthEmpty)
 
   val monthFormatter: Formatter[Int] =
-    intFormatter(1, () ⇒ 12, // scalastyle:ignore magic.number
+    intFormatter(1, () => 12, // scalastyle:ignore magic.number
       ErrorMessages.monthInvalid, ErrorMessages.monthInvalid, ErrorMessages.monthInvalid, ErrorMessages.monthEmpty)
 
   val yearFormatter: Formatter[Int] =
-    intFormatter(1900, () ⇒ clock.instant().atZone(ZoneId.of("Z")).getYear, // scalastyle:ignore magic.number
+    intFormatter(1900, () => clock.instant().atZone(ZoneId.of("Z")).getYear, // scalastyle:ignore magic.number
       ErrorMessages.dateOfBirthInFuture, ErrorMessages.yearTooEarly, ErrorMessages.yearInvalid, ErrorMessages.yearEmpty)
 
   val dateOfBirthFormatter: Formatter[LocalDate] = new Formatter[LocalDate] {
@@ -110,22 +110,22 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
   val addressLine5Formatter: Formatter[Option[String]] = optionalAddressLineValidator(ErrorMessages.address5TooLong)
 
   val postcodeFormatter: Formatter[String] = stringFormatter(
-    { postcode ⇒
+    { postcode =>
       val trimmed = postcode.replaceAllLiterally(" ", "")
       val tooLongCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.length <= postcodeMaxTotalLength, ErrorMessages.postcodeTooLong)
       val tooShortCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.postCodeEmpty)
 
-      (tooLongCheck, tooShortCheck).mapN{ case _ ⇒ postcode.trim }
+      (tooLongCheck, tooShortCheck).mapN{ case _ => postcode.trim }
     },
     ErrorMessages.postCodeEmpty
   )
 
   implicit def toFormErrorSeq[A](keyAndValidated: (String, Validated[NonEmptyList[String], A])): Either[Seq[FormError], A] = {
     val (key, validated) = keyAndValidated
-    validated.toEither.leftMap(_.map(e ⇒ FormError(key, e)).toList)
+    validated.toEither.leftMap(_.map(e => FormError(key, e)).toList)
   }
 
-  private def formatter[A](validate:          String ⇒ Validated[NonEmptyList[String], A],
+  private def formatter[A](validate:          String => Validated[NonEmptyList[String], A],
                            emptyErrorMessage: String,
                            mapping:           Mapping[A]
   ): Formatter[A] = new Formatter[A] {
@@ -135,29 +135,29 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
     override def unbind(key: String, value: A): Map[String, String] = mapping.withPrefix(key).unbind(value)
   }
 
-  private def stringFormatter(validate:          String ⇒ Validated[NonEmptyList[String], String],
+  private def stringFormatter(validate:          String => Validated[NonEmptyList[String], String],
                               emptyErrorMessage: String): Formatter[String] =
     formatter(validate, emptyErrorMessage, text)
 
   private def intFormatter(minValue:                  Int,
-                           maxValue:                  () ⇒ Int,
+                           maxValue:                  () => Int,
                            tooBigErrorMessage:        String,
                            tooSmallErrorMessage:      String,
                            invalidFormatErrorMessage: String,
                            emptyErrorMessage:         String): Formatter[Int] =
     formatter(
-      { string ⇒
+      { string =>
         val trimmed = string.trim
         if (trimmed.isEmpty) {
           invalid[Int](emptyErrorMessage)
         } else {
           Try(trimmed.toInt).fold(
-            _ ⇒ invalid[Int](invalidFormatErrorMessage),
-            { int ⇒
+            _ => invalid[Int](invalidFormatErrorMessage),
+            { int =>
               val tooBigCheck: ValidOrErrorStrings[Int] = validatedFromBoolean(int)(_ <= maxValue(), tooBigErrorMessage)
               val tooSmallCheck: ValidOrErrorStrings[Int] = validatedFromBoolean(int)(_ >= minValue, tooSmallErrorMessage)
 
-              (tooBigCheck, tooSmallCheck).mapN{ case _ ⇒ int }
+              (tooBigCheck, tooSmallCheck).mapN{ case _ => int }
             }
           )
         }
@@ -167,25 +167,25 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
 
   private def mandatoryAddressLineValidator(tooLongErrorMessage: String, emptyErrorMessage: String): Formatter[String] =
     stringFormatter({
-      line ⇒
+      line =>
         val trimmed = line.trim
         val tooLongCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.length <= addressLineMaxTotalLength, tooLongErrorMessage)
         val tooShortCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.nonEmpty, emptyErrorMessage)
 
-        (tooLongCheck, tooShortCheck).mapN{ case _ ⇒ trimmed }
+        (tooLongCheck, tooShortCheck).mapN{ case _ => trimmed }
     }, emptyErrorMessage)
 
   private def optionalAddressLineValidator(tooLongErrorMessage: String): Formatter[Option[String]] = new Formatter[Option[String]] {
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Option[String]] =
       key → {
         data.get(key).map(_.trim).filter(_.nonEmpty) match {
-          case Some(trimmed) ⇒ validatedFromBoolean(trimmed)(_.length <= addressLineMaxTotalLength, tooLongErrorMessage).map(Some(_))
-          case None          ⇒ Valid(None)
+          case Some(trimmed) => validatedFromBoolean(trimmed)(_.length <= addressLineMaxTotalLength, tooLongErrorMessage).map(Some(_))
+          case None          => Valid(None)
         }
       }
 
     override def unbind(key: String, value: Option[String]): Map[String, String] =
-      value.fold(Map.empty[String, String])(v ⇒ text.withPrefix(key).unbind(v))
+      value.fold(Map.empty[String, String])(v => text.withPrefix(key).unbind(v))
   }
 }
 

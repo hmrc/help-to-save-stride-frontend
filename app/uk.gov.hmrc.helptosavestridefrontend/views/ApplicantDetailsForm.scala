@@ -61,7 +61,7 @@ object ApplicantDetailsForm {
         Ids.address3 → addressLine3,
         Ids.address4 → addressLine4,
         Ids.address5 → addressLine5,
-        Ids.postcode → postcode).collect { case (k, Some(e)) ⇒ k → e }
+        Ids.postcode → postcode).collect { case (k, Some(e)) => k → e }
 
     val errorExists: Boolean = errors.nonEmpty
   }
@@ -113,25 +113,25 @@ object ApplicantDetailsForm {
         form.hasDayOfMonthInvalid || form.hasMonthInvalid || form.hasYearInvalid || form.hasYearTooEarly || form.hasDateOfBirthInFuture
 
       val nullFieldErrorMessage: Option[String] = (hasInvalidField, form.hasDayOfMonthEmpty, form.hasMonthEmpty, form.hasYearEmpty) match {
-        case (true, false, false, false) ⇒ None // error message will be defined below
-        case (true, _, _, _)             ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-date-of-birth-and-include"))
-        case (_, true, true, true)       ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-a-date-of-birth"))
-        case (_, true, false, false)     ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day"))
-        case (_, false, true, false)     ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month"))
-        case (_, false, false, true)     ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-year"))
-        case (_, true, true, false)      ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-month"))
-        case (_, true, false, true)      ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-year"))
-        case (_, false, true, true)      ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month-year"))
-        case (_, false, false, false)    ⇒ None
+        case (true, false, false, false) => None // error message will be defined below
+        case (true, _, _, _)             => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-date-of-birth-and-include"))
+        case (_, true, true, true)       => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-a-date-of-birth"))
+        case (_, true, false, false)     => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day"))
+        case (_, false, true, false)     => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month"))
+        case (_, false, false, true)     => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-year"))
+        case (_, true, true, false)      => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-month"))
+        case (_, true, false, true)      => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-year"))
+        case (_, false, true, true)      => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month-year"))
+        case (_, false, false, false)    => None
       }
 
       val invalidFieldErrorMessage: Option[String] =
         (form.hasDayOfMonthInvalid, form.hasMonthInvalid, form.hasYearInvalid, form.hasYearTooEarly || form.hasDateOfBirthInFuture) match {
-          case (false, false, false, _)    ⇒ None
-          case (true, false, false, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day"))
-          case (false, true, false, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month"))
-          case (false, false, true, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year"))
-          case (_, _, _, _)                ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth"))
+          case (false, false, false, _)    => None
+          case (true, false, false, false) => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day"))
+          case (false, true, false, false) => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month"))
+          case (false, false, true, false) => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year"))
+          case (_, _, _, _)                => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth"))
         }
 
       val dateInvalidErrorMessage =
@@ -151,8 +151,8 @@ object ApplicantDetailsForm {
   private def errorMessageKey(x: (Boolean, String)*): Option[String] = {
       @tailrec
       def loop(l: List[(Boolean, String)]): Option[String] = l match {
-        case Nil                               ⇒ None
-        case (predicate, errorMessage) :: tail ⇒ if (predicate) { Some(errorMessage) } else { loop(tail) }
+        case Nil                               => None
+        case (predicate, errorMessage) :: tail => if (predicate) { Some(errorMessage) } else { loop(tail) }
       }
     loop(x.toList)
   }

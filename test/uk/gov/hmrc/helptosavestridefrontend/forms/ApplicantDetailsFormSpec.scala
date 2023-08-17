@@ -106,7 +106,7 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
 
     "have a method" which afterWord("says if the form has"){
 
-        def test(errorFieldId: String, errorMessage: String)(containsError: Form[ApplicantDetails] ⇒ Boolean): Unit = {
+        def test(errorFieldId: String, errorMessage: String)(containsError: Form[ApplicantDetails] => Boolean): Unit = {
           withClue(s"For errorFieldId and errorMessage [$errorFieldId, $errorMessage]: "){
             val errorForm = emptyForm.copy(errors = Seq(FormError(errorFieldId, errorMessage)))
 

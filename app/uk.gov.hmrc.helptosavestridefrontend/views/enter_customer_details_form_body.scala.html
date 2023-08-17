@@ -42,7 +42,7 @@
 @sectionBreak= { <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"> }
 @errorMessagesMap = @{ errorMessages.errors.toMap }
 @transformCountryName(countryName: String) = @{
-  countryName.toLowerCase.foldLeft("" -> true) { case ((acc, captilize), c) ⇒
+  countryName.toLowerCase.foldLeft("" -> true) { case ((acc, captilize), c) =>
   val capitalizeNext = c === ' ' | c === '(' | c === '-'
   if(captilize){
     (acc + c.toUpper.toString) -> capitalizeNext

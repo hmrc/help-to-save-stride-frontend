@@ -33,7 +33,7 @@ object EnrolmentStatus {
     implicit val enrolmentStatusJSONReads: Reads[EnrolmentStatusJSON] = Json.reads[EnrolmentStatusJSON]
 
     override def reads(json: JsValue): JsResult[EnrolmentStatus] =
-      Json.fromJson[EnrolmentStatusJSON](json).map { result ⇒
+      Json.fromJson[EnrolmentStatusJSON](json).map { result =>
         if (result.enrolled) {
           EnrolmentStatus.Enrolled
         } else {

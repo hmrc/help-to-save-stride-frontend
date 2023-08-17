@@ -34,7 +34,7 @@ class SessionEligibilityCheckResultSpec extends AnyWordSpec with Matchers {
         Eligible(eligibilityCheckResult),
         Ineligible(eligibilityCheckResult, manualCreationAllowed = true),
         AlreadyHasAccount
-      ).foreach { result ⇒
+      ).foreach { result =>
           withClue(s"For $result: ") {
             Json.fromJson[SessionEligibilityCheckResult](Json.toJson(result)).asOpt shouldBe Some(result)
           }

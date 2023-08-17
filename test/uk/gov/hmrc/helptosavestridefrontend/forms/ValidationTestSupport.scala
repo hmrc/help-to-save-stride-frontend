@@ -21,13 +21,13 @@ import org.scalatest.matchers.should.Matchers
 import play.api.data.FormError
 import play.api.data.format.Formatter
 
-trait ValidationTestSupport { this: Matchers ⇒
+trait ValidationTestSupport { this: Matchers =>
 
   def testValidation[A](formatter: Formatter[A])(value: Option[String])(expectedResult: Either[Set[String], A]): Unit = {
     val result: Either[Seq[FormError], A] =
-      formatter.bind("key", value.fold(Map.empty[String, String])(v ⇒ Map("key" → v)))
+      formatter.bind("key", value.fold(Map.empty[String, String])(v => Map("key" → v)))
 
-    result.leftMap(_.toSet) shouldBe expectedResult.leftMap(_.map(s ⇒ FormError("key", s)))
+    result.leftMap(_.toSet) shouldBe expectedResult.leftMap(_.map(s => FormError("key", s)))
   }
 
 }

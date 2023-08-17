@@ -29,16 +29,16 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthSupport { this: TestSupport ⇒
+trait AuthSupport { this: TestSupport =>
 
   lazy val roles: List[String] = {
     val base64EncodedRoles = fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-roles").value
-    base64EncodedRoles.map(x ⇒ new String(Base64.getDecoder.decode(x)))
+    base64EncodedRoles.map(x => new String(Base64.getDecoder.decode(x)))
   }
 
   lazy val secureRoles: List[String] = {
     val base64SecureValues = fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-secure-roles").value
-    base64SecureValues.map(x ⇒ new String(Base64.getDecoder.decode(x)))
+    base64SecureValues.map(x => new String(Base64.getDecoder.decode(x)))
   }
 
   type RetrievalsType = Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]

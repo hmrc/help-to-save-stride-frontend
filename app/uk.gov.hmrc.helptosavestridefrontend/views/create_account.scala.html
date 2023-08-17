@@ -70,7 +70,7 @@
   @ul(Seq(
     messages("hts.create.account.terms.ul1-li1"),
     messages("hts.create.account.terms.ul1-li2"),
-    messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r ⇒ if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" })),
+    messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r => if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" })),
     messages("hts.create.account.terms.ul1-li4")
   ))
   @p(messages("hts.create.account.terms.p2"))
