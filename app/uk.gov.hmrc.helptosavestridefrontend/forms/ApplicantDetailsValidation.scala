@@ -111,7 +111,7 @@ class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig
 
   val postcodeFormatter: Formatter[String] = stringFormatter(
     { postcode =>
-      val trimmed = postcode.replaceAllLiterally(" ", "")
+      val trimmed = postcode.replaceAll(" ", "")
       val tooLongCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.length <= postcodeMaxTotalLength, ErrorMessages.postcodeTooLong)
       val tooShortCheck: ValidOrErrorStrings[String] = validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.postCodeEmpty)
 
