@@ -33,10 +33,10 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
   override lazy val additionalConfig: Configuration =
     Configuration(
-      "applicant-details.forename.max-length" → 3,
-      "applicant-details.surname.max-length" → 3,
-      "applicant-details.address-lines.max-length" → 3,
-      "applicant-details.postcode.max-length" → 3
+      "applicant-details.forename.max-length" -> 3,
+      "applicant-details.surname.max-length" -> 3,
+      "applicant-details.address-lines.max-length" -> 3,
+      "applicant-details.postcode.max-length" -> 3
     )
 
   lazy val validation = new ApplicantDetailsValidationImpl(
@@ -117,7 +117,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
       "mark days as valid" when {
 
         "the day exists and is between 1 and 31" in {
-          (1 to 31).foreach { d ⇒
+          (1 to 31).foreach { d =>
             testDay(Some(d.toString))(Right(d))
             testDay(Some(s" ${d.toString} "))(Right(d))
           }
@@ -154,7 +154,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
       "mark months as valid" when {
 
         "the month exists and is between 1 and 12" in {
-          (1 to 12).foreach { d ⇒
+          (1 to 12).foreach { d =>
             testMonth(Some(d.toString))(Right(d))
             testMonth(Some(s" ${d.toString} "))(Right(d))
           }
@@ -192,7 +192,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
       "mark years as valid" when {
 
         "the year exists and is between 1900 and the current year" in {
-          (1900 to currentYear).foreach { d ⇒
+          (1900 to currentYear).foreach { d =>
             testYear(Some(d.toString))(Right(d))
             testYear(Some(s" ${d.toString} "))(Right(d))
           }
@@ -224,7 +224,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
     "validating date of births" must {
 
-      val data = Map(Ids.dobDay → "1", Ids.dobMonth → "2", Ids.dobYear → "1990")
+      val data = Map(Ids.dobDay -> "1", Ids.dobMonth -> "2", Ids.dobYear -> "1990")
 
       "mark years as valid" when {
 
@@ -257,7 +257,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
         "the day, month and year values together do not form a valid date" in {
           // 31st February doesn't exist
-          testDateOfBirthInvalid(Map(Ids.dobDay → "31", Ids.dobMonth → "2", Ids.dobYear → "1990"))
+          testDateOfBirthInvalid(Map(Ids.dobDay -> "31", Ids.dobMonth -> "2", Ids.dobYear -> "1990"))
         }
 
       }

@@ -25,11 +25,7 @@
   button: button
 )
 
-@()(
-  implicit request: Request[_],
-  config: FrontendAppConfig,
-  messages: Messages
-)
+@()(implicit request: Request[_], messages: Messages)
 
 @layout(title = messages("hts.application.cancelled.title.h1")) {
 

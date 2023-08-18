@@ -53,15 +53,15 @@ object ApplicantDetailsForm {
 
     val errors: List[(String, String)] =
       List(
-        Ids.forename → forename,
-        Ids.surname → surname,
-        Ids.dateOfBirth → dateOfBirth,
-        Ids.address1 → addressLine1,
-        Ids.address2 → addressLine2,
-        Ids.address3 → addressLine3,
-        Ids.address4 → addressLine4,
-        Ids.address5 → addressLine5,
-        Ids.postcode → postcode).collect { case (k, Some(e)) ⇒ k → e }
+        Ids.forename -> forename,
+        Ids.surname -> surname,
+        Ids.dateOfBirth -> dateOfBirth,
+        Ids.address1 -> addressLine1,
+        Ids.address2 -> addressLine2,
+        Ids.address3 -> addressLine3,
+        Ids.address4 -> addressLine4,
+        Ids.address5 -> addressLine5,
+        Ids.postcode -> postcode).collect { case (k, Some(e)) => k -> e }
 
     val errorExists: Boolean = errors.nonEmpty
   }
@@ -71,41 +71,41 @@ object ApplicantDetailsForm {
 
     val forenameErrorMessage =
       errorMessageKey(
-        form.hasForenameTooLong → messages("hts.customer-eligible.enter-details.error.forename.too-long", forenameMaxTotalLength),
-        form.hasForenameEmpty → messages("hts.customer-eligible.enter-details.error.forename.empty")
+        form.hasForenameTooLong -> messages("hts.customer-eligible.enter-details.error.forename.too-long", forenameMaxTotalLength),
+        form.hasForenameEmpty -> messages("hts.customer-eligible.enter-details.error.forename.empty")
       )
 
     val surnameErrorMessage =
       errorMessageKey(
-        form.hasSurnameTooLong → messages("hts.customer-eligible.enter-details.error.surname.too-long", surnameMaxTotalLength),
-        form.hasSurnameEmpty → messages("hts.customer-eligible.enter-details.error.surname.empty")
+        form.hasSurnameTooLong -> messages("hts.customer-eligible.enter-details.error.surname.too-long", surnameMaxTotalLength),
+        form.hasSurnameEmpty -> messages("hts.customer-eligible.enter-details.error.surname.empty")
       )
 
     val address1ErrorMessage =
       errorMessageKey(
-        form.hasAddress1TooLong → messages("hts.customer-eligible.enter-details.error.address-1.too-long", addressLineMaxTotalLength),
-        form.hasAddress1Empty → messages("hts.customer-eligible.enter-details.error.address-1.empty")
+        form.hasAddress1TooLong -> messages("hts.customer-eligible.enter-details.error.address-1.too-long", addressLineMaxTotalLength),
+        form.hasAddress1Empty -> messages("hts.customer-eligible.enter-details.error.address-1.empty")
       )
 
     val address2ErrorMessage =
       errorMessageKey(
-        form.hasAddress2TooLong → messages("hts.customer-eligible.enter-details.error.address-2.too-long", addressLineMaxTotalLength),
-        form.hasAddress2Empty → messages("hts.customer-eligible.enter-details.error.address-2.empty")
+        form.hasAddress2TooLong -> messages("hts.customer-eligible.enter-details.error.address-2.too-long", addressLineMaxTotalLength),
+        form.hasAddress2Empty -> messages("hts.customer-eligible.enter-details.error.address-2.empty")
       )
 
     val address3ErrorMessage =
-      errorMessageKey(form.hasAddress3TooLong → messages("hts.customer-eligible.enter-details.error.address-3.too-long", addressLineMaxTotalLength))
+      errorMessageKey(form.hasAddress3TooLong -> messages("hts.customer-eligible.enter-details.error.address-3.too-long", addressLineMaxTotalLength))
 
     val address4ErrorMessage =
-      errorMessageKey(form.hasAddress4TooLong → messages("hts.customer-eligible.enter-details.error.address-4.too-long", addressLineMaxTotalLength))
+      errorMessageKey(form.hasAddress4TooLong -> messages("hts.customer-eligible.enter-details.error.address-4.too-long", addressLineMaxTotalLength))
 
     val address5ErrorMessage =
-      errorMessageKey(form.hasAddress5TooLong → messages("hts.customer-eligible.enter-details.error.address-5.too-long", addressLineMaxTotalLength))
+      errorMessageKey(form.hasAddress5TooLong -> messages("hts.customer-eligible.enter-details.error.address-5.too-long", addressLineMaxTotalLength))
 
     val postcodeErrorMessage =
       errorMessageKey(
-        form.hasPostcodeTooLong → messages("hts.customer-eligible.enter-details.error.postcode.too-long", postcodeMaxTotalLength),
-        form.hasPostcodeEmpty → messages("hts.customer-eligible.enter-details.error.postcode.empty")
+        form.hasPostcodeTooLong -> messages("hts.customer-eligible.enter-details.error.postcode.too-long", postcodeMaxTotalLength),
+        form.hasPostcodeEmpty -> messages("hts.customer-eligible.enter-details.error.postcode.empty")
       )
 
     val dateOfBirthErrorMessage = {
@@ -113,32 +113,32 @@ object ApplicantDetailsForm {
         form.hasDayOfMonthInvalid || form.hasMonthInvalid || form.hasYearInvalid || form.hasYearTooEarly || form.hasDateOfBirthInFuture
 
       val nullFieldErrorMessage: Option[String] = (hasInvalidField, form.hasDayOfMonthEmpty, form.hasMonthEmpty, form.hasYearEmpty) match {
-        case (true, false, false, false) ⇒ None // error message will be defined below
-        case (true, _, _, _)             ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-date-of-birth-and-include"))
-        case (_, true, true, true)       ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-a-date-of-birth"))
-        case (_, true, false, false)     ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day"))
-        case (_, false, true, false)     ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month"))
-        case (_, false, false, true)     ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-year"))
-        case (_, true, true, false)      ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-month"))
-        case (_, true, false, true)      ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-year"))
-        case (_, false, true, true)      ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month-year"))
-        case (_, false, false, false)    ⇒ None
+        case (true, false, false, false) => None // error message will be defined below
+        case (true, _, _, _)             => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-date-of-birth-and-include"))
+        case (_, true, true, true)       => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-a-date-of-birth"))
+        case (_, true, false, false)     => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day"))
+        case (_, false, true, false)     => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month"))
+        case (_, false, false, true)     => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-year"))
+        case (_, true, true, false)      => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-month"))
+        case (_, true, false, true)      => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-day-year"))
+        case (_, false, true, true)      => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.must-include-month-year"))
+        case (_, false, false, false)    => None
       }
 
       val invalidFieldErrorMessage: Option[String] =
         (form.hasDayOfMonthInvalid, form.hasMonthInvalid, form.hasYearInvalid, form.hasYearTooEarly || form.hasDateOfBirthInFuture) match {
-          case (false, false, false, _)    ⇒ None
-          case (true, false, false, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day"))
-          case (false, true, false, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month"))
-          case (false, false, true, false) ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year"))
-          case (_, _, _, _)                ⇒ Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth"))
+          case (false, false, false, _)    => None
+          case (true, false, false, false) => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-day"))
+          case (false, true, false, false) => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-month"))
+          case (false, false, true, false) => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-year"))
+          case (_, _, _, _)                => Some(messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth"))
         }
 
       val dateInvalidErrorMessage =
         errorMessageKey(
-          form.hasDateOfBirthInFuture → messages("hts.customer-eligible.enter-details.error.date-of-birth.must-be-in-past"),
-          form.hasYearTooEarly → messages("hts.customer-eligible.enter-details.error.date-of-birth.day.too-early"),
-          form.hasDateOfBirthInvalid → messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth")
+          form.hasDateOfBirthInFuture -> messages("hts.customer-eligible.enter-details.error.date-of-birth.must-be-in-past"),
+          form.hasYearTooEarly -> messages("hts.customer-eligible.enter-details.error.date-of-birth.day.too-early"),
+          form.hasDateOfBirthInvalid -> messages("hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth")
         )
 
       nullFieldErrorMessage.orElse(invalidFieldErrorMessage).orElse(dateInvalidErrorMessage)
@@ -151,8 +151,8 @@ object ApplicantDetailsForm {
   private def errorMessageKey(x: (Boolean, String)*): Option[String] = {
       @tailrec
       def loop(l: List[(Boolean, String)]): Option[String] = l match {
-        case Nil                               ⇒ None
-        case (predicate, errorMessage) :: tail ⇒ if (predicate) { Some(errorMessage) } else { loop(tail) }
+        case Nil                               => None
+        case (predicate, errorMessage) :: tail => if (predicate) { Some(errorMessage) } else { loop(tail) }
       }
     loop(x.toList)
   }

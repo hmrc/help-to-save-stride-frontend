@@ -40,7 +40,7 @@
 
 @(detailsToConfirm: Option[NSIPayload],
   backUrl: Option[String],
-  eligible: Option[Eligible])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+  eligible: Option[Eligible])(implicit request: Request[_], messages: Messages)
 
 @title = @{messages("hts.create.account.title.h1")}
 
@@ -70,12 +70,12 @@
   @ul(Seq(
     messages("hts.create.account.terms.ul1-li1"),
     messages("hts.create.account.terms.ul1-li2"),
-    messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r ⇒ if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" })),
+    messages(eligible.map(_.response.reasonCode).fold("hts.create.account.terms.ul1-li3-unknown")(r => if(r === 7){ "hts.create.account.terms.ul1-li3-wtc" } else { "hts.create.account.terms.ul1-li3-uc" })),
     messages("hts.create.account.terms.ul1-li4")
   ))
   @p(messages("hts.create.account.terms.p2"))
 
-  @formWithCSRF(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount) {
+  @formWithCSRF(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.createAccount()) {
     @govukButton(Button(
       attributes = Map("id" -> "continue"),
       content = Text(messages("hts.create-account.continue-button"))

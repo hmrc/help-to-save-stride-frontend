@@ -88,7 +88,7 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
       "allows valid input" in {
         mockValidInput(today.minusDays(1L))
 
-        emptyForm.bind(Map(Ids.countryCode → "GB")).errors shouldBe Seq.empty[FormError]
+        emptyForm.bind(Map(Ids.countryCode -> "GB")).errors shouldBe Seq.empty[FormError]
       }
 
       "does not allow an empty country code" in {
@@ -100,13 +100,13 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
       "have a mapping which can tell if the date of birth is in the future" in {
         mockValidInput(today.plusDays(1L))
 
-        emptyForm.bind(Map(Ids.countryCode → "GB")).errors shouldBe Seq(FormError("", ErrorMessages.dateOfBirthInFuture))
+        emptyForm.bind(Map(Ids.countryCode -> "GB")).errors shouldBe Seq(FormError("", ErrorMessages.dateOfBirthInFuture))
       }
     }
 
     "have a method" which afterWord("says if the form has"){
 
-        def test(errorFieldId: String, errorMessage: String)(containsError: Form[ApplicantDetails] ⇒ Boolean): Unit = {
+        def test(errorFieldId: String, errorMessage: String)(containsError: Form[ApplicantDetails] => Boolean): Unit = {
           withClue(s"For errorFieldId and errorMessage [$errorFieldId, $errorMessage]: "){
             val errorForm = emptyForm.copy(errors = Seq(FormError(errorFieldId, errorMessage)))
 

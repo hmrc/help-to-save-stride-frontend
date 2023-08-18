@@ -21,18 +21,14 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.11" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.11" % Provided cross CrossVersion.full,
   "uk.gov.hmrc" %% "play-frontend-hmrc" % s"6.6.0-$playVersion"
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "service-integration-test" % "1.3.0-play-28" % test,
-  "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.73.0" % test,
   "org.scalatest" %% "scalatest" % "3.2.9" % test,
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % test,
+  "org.scalamock" %% "scalamock" % "5.2.0" % test,
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
@@ -77,7 +73,7 @@ lazy val scalariformSettings = {
     .setPreference(NewlineAtEndOfFile, true)
     .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, false)
     .setPreference(PreserveSpaceBeforeArguments, true)
-    .setPreference(RewriteArrowSymbols, true)
+    .setPreference(RewriteArrowSymbols, false)
     .setPreference(SpaceBeforeColon, false)
     .setPreference(SpaceBeforeContextColon, false)
     .setPreference(SpaceInsideBrackets, false)
@@ -98,7 +94,12 @@ lazy val wartRemoverSettings = {
     Wart.Overloading,
     Wart.ToString,
     Wart.Var,
-    Wart.PlatformDefault)
+    Wart.PlatformDefault,
+    Wart.Any,
+    Wart.StringPlusAny,
+    Wart.Throw,
+    Wart.TripleQuestionMark,
+  )
 
   Seq(Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*),
     Test / compile / wartremoverErrors --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
@@ -110,7 +111,6 @@ lazy val wartRemoverSettings = {
 }
 
 lazy val commonSettings = Seq(
-  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
   majorVersion := 2,
   update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
   resolvers ++= Seq(
@@ -120,7 +120,7 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= Seq("-Xcheckinit", "-feature"),
   Compile / scalacOptions -= "utf8"
-) ++ scalaSettings ++ publishingSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
+) ++ scalaSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
 
 
 lazy val microservice = Project(appName, file("."))
@@ -128,9 +128,8 @@ lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin, SbtWeb) ++ plugins: _*)
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
-  .settings(scalaVersion := "2.12.13")
+  .settings(scalaVersion := "2.13.8")
   .settings(PlayKeys.playDefaultPort := 7006)
   .settings(scalariformSettings: _*)
   .settings(wartRemoverSettings)
@@ -147,6 +146,6 @@ lazy val microservice = Project(appName, file("."))
     },
     compile := ((Compile / compile) dependsOn formatMessageQuotes).value
   )
-  .settings(scalacOptions += "-P:silencer:globalFilters=Unused import")
-  .settings(scalacOptions += "-P:silencer:pathFilters=routes")
+  .settings(scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s")
+  .settings(scalacOptions += "-Wconf:src=routes/.*:s")
   .settings(Global / lintUnusedKeysOnLoad := false)

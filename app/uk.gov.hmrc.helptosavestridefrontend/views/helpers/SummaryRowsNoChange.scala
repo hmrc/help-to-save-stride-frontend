@@ -17,8 +17,6 @@
 package uk.gov.hmrc.helptosavestridefrontend.views.helpers
 
 import play.api.i18n.Messages
-import play.api.mvc.Call
-import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.html.components._
 
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
@@ -28,7 +26,7 @@ class SummaryRowsNoChange {
   def summaryListRow(
       question: String,
       answer:   String
-  )(implicit messages: Messages): SummaryListRow = SummaryListRow(
+  ): SummaryListRow = SummaryListRow(
     key   = Key(content = Text(question), classes = "govuk-!-width-one-third"),
     value = Value(content = HtmlContent(answer)),
   )
@@ -56,9 +54,9 @@ class SummaryRowsNoChange {
       s"""
         ${details.contactDetails.address1}<br>
         ${details.contactDetails.address2}<br>
-        ${details.contactDetails.address3.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address4.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address5.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.address3.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address4.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address5.fold("")(a => s"$a <br>")}
         ${details.contactDetails.postcode}
       """
     )
@@ -104,9 +102,9 @@ class SummaryRowsNoChange {
       s"""
         ${details.contactDetails.address1}<br>
         ${details.contactDetails.address2}<br>
-        ${details.contactDetails.address3.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address4.fold("")(a ⇒ s"$a <br>")}
-        ${details.contactDetails.address5.fold("")(a ⇒ s"$a <br>")}
+        ${details.contactDetails.address3.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address4.fold("")(a => s"$a <br>")}
+        ${details.contactDetails.address5.fold("")(a => s"$a <br>")}
         ${details.contactDetails.postcode}
       """
     )

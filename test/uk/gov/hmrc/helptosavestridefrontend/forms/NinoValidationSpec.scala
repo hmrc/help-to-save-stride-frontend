@@ -41,7 +41,7 @@ class NinoValidationSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks wi
     }
 
     "validate against in-valid patterns" in {
-      forAll(genString(5), genString(5)) { (l, d) ⇒
+      forAll(genString(5), genString(5)) { (l, d) =>
         testNino(Some(s"$l@$d"))(Left(Set(ErrorMessages.invalidNinoPattern)))
       }
 
