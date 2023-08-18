@@ -21,8 +21,6 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.12" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.12" % Provided cross CrossVersion.full,
   "uk.gov.hmrc" %% "play-frontend-hmrc" % s"6.6.0-$playVersion"
 )
 
@@ -148,6 +146,6 @@ lazy val microservice = Project(appName, file("."))
     },
     compile := ((Compile / compile) dependsOn formatMessageQuotes).value
   )
-  .settings(scalacOptions += "-P:silencer:globalFilters=Unused import")
-  .settings(scalacOptions += "-P:silencer:pathFilters=routes")
+  .settings(scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s")
+  .settings(scalacOptions += "-Wconf:src=routes/.*:s")
   .settings(Global / lintUnusedKeysOnLoad := false)
