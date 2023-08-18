@@ -27,7 +27,6 @@ lazy val dependencies = Seq(
 )
 
 lazy val testDependencies = Seq(
-  "uk.gov.hmrc" %% "service-integration-test" % "1.3.0-play-28" % test,
   "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.73.0" % test,
   "org.scalatest" %% "scalatest" % "3.2.9" % test,
