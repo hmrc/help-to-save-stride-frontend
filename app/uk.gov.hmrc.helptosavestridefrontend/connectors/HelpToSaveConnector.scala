@@ -186,11 +186,10 @@ class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
           Right(AccountAlreadyExists)
 
         case _ =>
-          logger.warn(s"createAccount returned a status: ${response.status} " +
-            s"with response body: ${maskNino(response.body)}", nSIUserInfo.nino)
+          logger.warn(s"createAccount returned a status: ${response.status}", nSIUserInfo.nino)
+
           pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the create account url")
-          Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status} " +
-            s"with response body: ${maskNino(response.body)}")
+          Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status}")
       }
     }.recover {
       case e =>

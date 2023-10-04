@@ -211,7 +211,7 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
           mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         }
         val result = await(connector.createAccount(createAccountRequest).value)
-        result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400 with response body: null")
+        result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400")
       }
 
       "return a Left when the future fails" in {
