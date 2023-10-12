@@ -17,7 +17,7 @@ val playVersion = "play-28"
 lazy val dependencies = Seq(
   ws,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.73.0",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.25.0",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "7.15.0",
   "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
