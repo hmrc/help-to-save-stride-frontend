@@ -13,11 +13,12 @@ val appName = "help-to-save-stride-frontend"
 lazy val plugins: Seq[Plugins] = Seq.empty
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 val playVersion = "play-28"
+val hmrcBootstrapVersion = "7.15.0"
 
 lazy val dependencies = Seq(
   ws,
   "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.73.0",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "5.25.0",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % hmrcBootstrapVersion,
   "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
@@ -32,7 +33,7 @@ lazy val testDependencies = Seq(
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
   "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
-  "uk.gov.hmrc" %% "bootstrap-test-play-28" % "5.25.0" % "test"
+  "uk.gov.hmrc" %% "bootstrap-test-play-28" % hmrcBootstrapVersion % "test"
 )
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
