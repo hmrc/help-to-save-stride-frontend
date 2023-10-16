@@ -57,7 +57,7 @@
 }
 
 @scripts = {
-  <script src='@controllers.routes.Assets.versioned("javascripts/hts.js")'></script>
+  <script src='@controllers.routes.Assets.versioned("javascripts/hts.js")' @CSPNonce.attr></script>
 }
 
 @actualPageTitle = @{
