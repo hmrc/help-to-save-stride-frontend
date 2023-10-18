@@ -168,7 +168,7 @@ hts.eligibility.not.eligible.no.benefits.p6=Tell customer what they need to do i
 
 hts.eligibility.not.eligible.manually.create.title=Create account manually
 hts.eligibility.not.eligible.manually.create.p1=You can create a Help to Save account for a customer if they are eligible for one but they cannot create one because of a problem with our system.
-hts.eligibility.not.eligible.manually.create.h2=Conditions you must meet
+hts.eligibility.not.eligible.manually.create.h4=Conditions you must meet
 hts.eligibility.not.eligible.manually.create.p2=Before you can create a Help to Save account for a customer, you must have:
 hts.eligibility.not.eligible.manually.create.ul1.li1=evidence the customer is eligible for an account
 hts.eligibility.not.eligible.manually.create.ul1.li2=the approval of a manager
