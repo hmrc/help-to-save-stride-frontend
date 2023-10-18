@@ -68,7 +68,11 @@
 @hmrcLayout(
   pageTitle = actualPageTitle,
   headBlock = Some(hmrcInternalHead(nonce = CSPNonce.get)),
-  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("hts.global.header.nav-title"))))),
+  headerBlock = Some(hmrcInternalHeader(InternalHeader(
+                            homepageUrl = "https://www.gov.uk/government/organisations/hm-revenue-customs",
+                            serviceName = Some(messages("hts.global.header.nav-title")),
+                            serviceUrl = "/help-to-save/hmrc-internal/check-eligibility"
+                            ))),
   scriptsBlock = Some(hmrcScripts(scriptsBlock = Some(scripts))),
   beforeContentBlock = Some(beforeContentBlock)
 )(content)
