@@ -47,24 +47,30 @@
     case Some(f) => f.hasErrors
     case _ => false
 }}
-
+@dateKey = @{"dob"}
+@dateError = @{maybeForm match {
+    case Some(form) => form.errors.find(_.key.startsWith(dateKey))
+    case _ => None
+}}
 @layout(title, hasErrors) {
 
     @maybeForm.map{ form =>
-        @defining(ApplicantDetailsForm.errorMessages(form)){ errorMessages: ApplicantDetailsForm.ErrorMessages =>
-            @if(errorMessages.errorExists) {
-                @govukErrorSummary(
-                  ErrorSummary(
-                      errorList = errorMessages.errors.map(e =>
-                          ErrorLink(
-                              href = Some(if(e._1.matches("dob")) s"#${e._1}-day" else s"#${e._1}"),
-                              content = Text(e._2)
-                          )
-                      ),
-                      title = Text(messages("hts.customer-eligible.enter-details.error.title"))
-                  )
+        @if(hasErrors) {
+            @govukErrorSummary(
+                ErrorSummary(
+                    errorList = form.errors.filter(e => (dateError.fold(false)(d => d.key.matches(e.key))) || !e.key.startsWith(dateKey)).map(e =>
+                        ErrorLink(
+                            href = Some(s"#${e.key}${
+                                if(e.key.matches(dateKey)) {
+                                    "-day"
+                                } else ""
+                            }"),
+                            content = Text(messages(s"${e.key}.${e.message}"))
+                        )
+                    ),
+                    title = Text(messages("hts.customer-eligible.enter-details.error.title"))
                 )
-            }
+            )
         }
     }
 
@@ -135,7 +141,7 @@
     <div class="divider--top subsection--wide push--bottom">
         <h3 class="govuk-heading-m">@messages("hts.eligibility.not.eligible.manually.create.title")</h3>
         <p class="govuk-body">@messages("hts.eligibility.not.eligible.manually.create.p1")</p>
-        <h4 class="govuk-heading-s">@messages("hts.eligibility.not.eligible.manually.create.h4")</h3>
+        <h4 class="govuk-heading-s">@messages("hts.eligibility.not.eligible.manually.create.h4")</h4>
         <p class="govuk-body">@messages("hts.eligibility.not.eligible.manually.create.p2")</p>
         <ul class="govuk-list govuk-list--bullet">
             <li>@messages("hts.eligibility.not.eligible.manually.create.ul1.li1")</li>
@@ -144,28 +150,25 @@
         </ul>
 
         @formWithCSRF(routes.StrideController.allowManualAccountCreation()) {
-            @defining(maybeForm.map(f => f -> ApplicantDetailsForm.errorMessages(f))) { formAndErrorMessages =>
-                @defining(formAndErrorMessages.exists{ case (form, errorMessages) => errorMessages.errorExists || form.data.nonEmpty }) { showForm: Boolean =>
-                    @govukCheckboxes(Checkboxes(
-                        fieldset = Some(Fieldset(
-                            legend = Some(Legend(
-                                content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
-                                classes = "govuk-visually-hidden"
-                            ))
-                        )),
-                        name = "confirm_eligible",
-                        items = Seq(
-                            CheckboxItem(
-                                content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
-                                value = "yes",
-                                checked = showForm,
-                                conditionalHtml = formAndErrorMessages.map { case (form, errorMessages) =>
-                                    customerDetailsFormBody("userDetailsForm", errorMessages, nino, form)
-                                }
-                            )
+            @maybeForm.map { f =>
+                @govukCheckboxes(Checkboxes(
+                    fieldset = Some(Fieldset(
+                        legend = Some(Legend(
+                            content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
+                            classes = "govuk-visually-hidden"
+                        ))
+                    )),
+                    name = "confirm_eligible",
+                    items = Seq(
+                        CheckboxItem(
+                            content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
+                            value = "yes",
+                            checked = f.hasErrors || f.data.nonEmpty,
+                            conditionalHtml = Some(customerDetailsFormBody("userDetailsForm", nino, f))
                         )
-                    ))
-               }
+                    )
+                ))
+
             }
             @govukButton(Button(
                 attributes = Map("id" -> "continue", "disabled" -> "disabled", "aria-disabled" -> "true"),

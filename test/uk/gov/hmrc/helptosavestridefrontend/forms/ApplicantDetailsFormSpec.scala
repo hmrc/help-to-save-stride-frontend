@@ -23,7 +23,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.data.format.Formatter
 import play.api.data.{Form, FormError}
-import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsForm.ApplicantDetailsFormOps
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
@@ -47,19 +46,6 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
 
       override def unbind(key: String, value: A): Map[String, String] = Map.empty[String, String]
     }
-
-    override val forenameFormatter: Formatter[String] = dummyFormatter[String]
-    override val surnameFormatter: Formatter[String] = dummyFormatter[String]
-    override val dayOfMonthFormatter: Formatter[Int] = dummyFormatter[Int]
-    override val monthFormatter: Formatter[Int] = dummyFormatter[Int]
-    override val yearFormatter: Formatter[Int] = dummyFormatter[Int]
-    override val dateOfBirthFormatter: Formatter[LocalDate] = dummyFormatter[LocalDate]
-    override val addressLine1Formatter: Formatter[String] = dummyFormatter[String]
-    override val addressLine2Formatter: Formatter[String] = dummyFormatter[String]
-    override val addressLine3Formatter: Formatter[Option[String]] = dummyFormatter[Option[String]]
-    override val addressLine4Formatter: Formatter[Option[String]] = dummyFormatter[Option[String]]
-    override val addressLine5Formatter: Formatter[Option[String]] = dummyFormatter[Option[String]]
-    override val postcodeFormatter: Formatter[String] = dummyFormatter[String]
   }
 
   val emptyForm = ApplicantDetailsForm.applicantDetailsForm
@@ -99,112 +85,8 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
 
       "have a mapping which can tell if the date of birth is in the future" in {
         mockValidInput(today.plusDays(1L))
-
-        emptyForm.bind(Map(Ids.countryCode -> "GB")).errors shouldBe Seq(FormError("", ErrorMessages.dateOfBirthInFuture))
+        emptyForm.bind(Map(Ids.countryCode -> "GB")).errors shouldBe Seq(FormError(Ids.dateOfBirth, ErrorMessages.afterMax))
       }
-    }
-
-    "have a method" which afterWord("says if the form has"){
-
-        def test(errorFieldId: String, errorMessage: String)(containsError: Form[ApplicantDetails] => Boolean): Unit = {
-          withClue(s"For errorFieldId and errorMessage [$errorFieldId, $errorMessage]: "){
-            val errorForm = emptyForm.copy(errors = Seq(FormError(errorFieldId, errorMessage)))
-
-            containsError(emptyForm) shouldBe false
-            containsError(errorForm) shouldBe true
-          }
-        }
-
-      "a forename which is too long" in {
-        test(Ids.forename, ErrorMessages.forenameTooLong)(_.hasForenameTooLong)
-      }
-
-      "a forename which is empty" in {
-        test(Ids.forename, ErrorMessages.forenameEmpty)(_.hasForenameEmpty)
-      }
-
-      "a surname which is too long" in {
-        test(Ids.surname, ErrorMessages.surnameTooLong)(_.hasSurnameTooLong)
-      }
-
-      "a surname which is empty" in {
-        test(Ids.surname, ErrorMessages.surnameEmpty)(_.hasSurnameEmpty)
-      }
-
-      "a day of month which is empty" in {
-        test(Ids.dobDay, ErrorMessages.dayOfMonthEmpty)(_.hasDayOfMonthEmpty)
-      }
-
-      "a day of month which is invalid" in {
-        test(Ids.dobDay, ErrorMessages.dayOfMonthInvalid)(_.hasDayOfMonthInvalid)
-      }
-
-      "a month which is empty" in {
-        test(Ids.dobMonth, ErrorMessages.monthEmpty)(_.hasMonthEmpty)
-      }
-
-      "a month which is invalid" in {
-        test(Ids.dobMonth, ErrorMessages.monthInvalid)(_.hasMonthInvalid)
-      }
-
-      "a year which is empty" in {
-        test(Ids.dobYear, ErrorMessages.yearEmpty)(_.hasYearEmpty)
-      }
-
-      "a year which is invalid" in {
-        test(Ids.dobYear, ErrorMessages.yearInvalid)(_.hasYearInvalid)
-      }
-
-      "a year which is too early" in {
-        test(Ids.dobYear, ErrorMessages.yearTooEarly)(_.hasYearTooEarly)
-      }
-
-      "a date of birth which is in the future" in {
-        test(Ids.dobYear, ErrorMessages.dateOfBirthInFuture)(_.hasDateOfBirthInFuture)
-        test("", ErrorMessages.dateOfBirthInFuture)(_.hasDateOfBirthInFuture)
-      }
-
-      "a date of birth which is invalid" in {
-        test(Ids.dateOfBirth, ErrorMessages.dateOfBirthInvalid)(_.hasDateOfBirthInvalid)
-        test("", ErrorMessages.dateOfBirthInvalid)(_.hasDateOfBirthInvalid)
-      }
-
-      "an address line 1 which is too long" in {
-        test(Ids.address1, ErrorMessages.address1TooLong)(_.hasAddress1TooLong)
-      }
-
-      "an address line 1 which is empty" in {
-        test(Ids.address1, ErrorMessages.address1Empty)(_.hasAddress1Empty)
-      }
-
-      "an address line 2 which is too long" in {
-        test(Ids.address2, ErrorMessages.address2TooLong)(_.hasAddress2TooLong)
-      }
-
-      "an address line 2 which is empty" in {
-        test(Ids.address2, ErrorMessages.address2Empty)(_.hasAddress2Empty)
-      }
-
-      "an address line 3 which is too long" in {
-        test(Ids.address3, ErrorMessages.address3TooLong)(_.hasAddress3TooLong)
-      }
-
-      "an address line 4 which is too long" in {
-        test(Ids.address4, ErrorMessages.address4TooLong)(_.hasAddress4TooLong)
-      }
-
-      "an address line 5 which is too long" in {
-        test(Ids.address5, ErrorMessages.address5TooLong)(_.hasAddress5TooLong)
-      }
-
-      "an postcode which is too long" in {
-        test(Ids.postcode, ErrorMessages.postcodeTooLong)(_.hasPostcodeTooLong)
-      }
-
-      "an postcode which is empty" in {
-        test(Ids.postcode, ErrorMessages.postCodeEmpty)(_.hasPostcodeEmpty)
-      }
-
     }
 
   }

@@ -34,13 +34,11 @@
 
 @(
         id: String,
-        errorMessages: ApplicantDetailsForm.ErrorMessages,
         nino: String,
         form: Form[ApplicantDetails]
 )(implicit messages: Messages)
 
 @sectionBreak= { <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"> }
-@errorMessagesMap = @{ errorMessages.errors.toMap }
 @transformCountryName(countryName: String) = @{
   countryName.toLowerCase.foldLeft("" -> true) { case ((acc, captilize), c) =>
   val capitalizeNext = c === ' ' | c === '(' | c === '-'
@@ -50,6 +48,19 @@
     (acc + c.toString) -> capitalizeNext
   }
 }._1}
+@dateKey = @{"dob"}
+@dateInputHasErrors(input: String) = @{form.error(s"$dateKey-$input").isDefined || form.error(dateKey).isDefined}
+@dateError = @{
+  if(form.error(dateKey).isDefined) {
+    form.error(dateKey)
+  } else if (form.error(s"$dateKey-day").isDefined) {
+    form.error(s"$dateKey-day")
+  } else if (form.error(s"$dateKey-month").isDefined) {
+    form.error(s"$dateKey-month")
+  } else if (form.error(s"$dateKey-year").isDefined) {
+    form.error(s"$dateKey-year")
+  } else None
+}
 
   <div id="@id">
 
@@ -67,9 +78,9 @@
         )
       ),
       value = form.data.get(Ids.forename),
-      errorMessage = errorMessagesMap.get(Ids.forename).map(e =>
+      errorMessage = form.error(Ids.forename).map(e =>
         ErrorMessage(
-          content = Text(e),
+          content = Text(messages(s"${e.key}.${e.message}")),
           visuallyHiddenText = Some(messages("hts.global.error.prefix"))
         ))
     ))
@@ -84,40 +95,60 @@
         )
       ),
       value = form.data.get(Ids.surname),
-      errorMessage = errorMessagesMap.get(Ids.surname).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.surname).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @sectionBreak
 
-    @defining(errorMessagesMap.get(Ids.dateOfBirth)) { dobErrorMessage: Option[String] =>
-      @govukDateInput(DateInput(
-        id = "dob",
-        namePrefix = Some("dob"),
-        hint = Some(Hint(
-          content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.hint"))
-        )),
-        fieldset = Some(Fieldset(
-          legend = Some(Legend(
-            content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")),
-            classes = "govuk-fieldset__legend--s",
-            isPageHeading = false
-          ))
-        )),
-        errorMessage = dobErrorMessage.map(e => ErrorMessage(
-          content = Text(e),
-          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+    @govukDateInput(DateInput(
+      id = dateKey,
+      namePrefix = Some(dateKey),
+      hint = Some(Hint(
+        content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.hint"))
+      )),
+      fieldset = Some(Fieldset(
+        legend = Some(Legend(
+          content = Text(messages("hts.customer-eligible.enter-details.form.personal-details.date-of-birth.label")),
+          classes = "govuk-fieldset__legend--s",
+          isPageHeading = false
         ))
-      ))
-    }
+      )),
+      errorMessage = dateError map { e => ErrorMessage(
+        content = Text(messages(s"${e.key}.${e.message}")),
+        visuallyHiddenText = Some(messages("generic.errorPrefix"))
+      )},
+      items = Seq(
+        InputItem(
+          name = "day",
+          classes = s"govuk-input--width-2 ${if(dateInputHasErrors("day")){" govuk-input--error"} else {""}}",
+          label=Some("Day"),
+          value = form.data.get(s"$dateKey-day")
+        ),
+        InputItem(
+          name = "month",
+          classes = s"govuk-input--width-2${if(dateInputHasErrors("month")){" govuk-input--error"} else {""}}",
+          label=Some("Month"),
+          value = form.data.get(s"$dateKey-month")
+        ),
+        InputItem(
+          name = "year",
+          classes = s"govuk-input--width-4${if(dateInputHasErrors("year")){" govuk-input--error"} else {""}}",
+          label=Some("Year"),
+          value = form.data.get(s"$dateKey-year")
+        )
+      )
+    ))
 
     @sectionBreak
 
     @govukInput(Input(
       id = "nino",
       name = "nino",
+      classes = "govuk-input--width-10",
       label = Label(
         isPageHeading = false,
         classes = "govuk-label--s",
@@ -127,11 +158,7 @@
       hint = Some(Hint(
         content = Text(Messages("hts.customer-eligible.enter-details.form.personal-details.nino.hint"))
       )),
-      value = Some(nino),
-      errorMessage = errorMessagesMap.get("nino").map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      value = Some(nino)
     ))
 
     @sectionBreak
@@ -150,10 +177,11 @@
         )
       ),
       value = form.data.get(Ids.address1),
-      errorMessage = errorMessagesMap.get(Ids.address1).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.address1).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @govukInput(Input(
@@ -166,10 +194,11 @@
         )
       ),
       value = form.data.get(Ids.address2),
-      errorMessage = errorMessagesMap.get(Ids.address2).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.address2).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @govukInput(Input(
@@ -182,10 +211,11 @@
         )
       ),
       value = form.data.get(Ids.address3),
-      errorMessage = errorMessagesMap.get(Ids.address3).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.address3).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @govukInput(Input(
@@ -198,10 +228,11 @@
         )
       ),
       value = form.data.get(Ids.address4),
-      errorMessage = errorMessagesMap.get(Ids.address4).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.address4).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @govukInput(Input(
@@ -214,10 +245,11 @@
         )
       ),
       value = form.data.get(Ids.address5),
-      errorMessage = errorMessagesMap.get(Ids.address5).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.address5).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @govukInput(Input(
@@ -229,11 +261,13 @@
         content = Text(messages("hts.customer-eligible.enter-details.form.address.title.postcode.label")
         )
       ),
+      classes = "govuk-input--width-10",
       value = form.data.get(Ids.postcode),
-      errorMessage = errorMessagesMap.get(Ids.postcode).map(e => ErrorMessage(
-        content = Text(e),
-        visuallyHiddenText = Some(messages("hts.global.error.prefix"))
-      ))
+      errorMessage = form.error(Ids.postcode).map(e =>
+        ErrorMessage(
+          content = Text(messages(s"${e.key}.${e.message}")),
+          visuallyHiddenText = Some(messages("hts.global.error.prefix"))
+        ))
     ))
 
     @govukSelect(Select(

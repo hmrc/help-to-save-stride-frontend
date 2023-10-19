@@ -22,7 +22,7 @@ lazy val dependencies = Seq(
   "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
   "org.typelevel" %% "cats-core" % "2.8.0",
   "com.github.kxbmap" %% "configs" % "0.6.1",
-  "uk.gov.hmrc" %% "play-frontend-hmrc" % s"6.6.0-$playVersion"
+  "uk.gov.hmrc" %% "play-frontend-hmrc" % s"7.23.0-$playVersion"
 )
 
 lazy val testDependencies = Seq(
