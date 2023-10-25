@@ -50,7 +50,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
   "ApplicationDetailsValidation" when {
 
     val validateDate: Formatter[LocalDate] = DateFormFormatter.dateFormFormatter(
-      maximumDateInclusive = Some(LocalDate.now(epochClock)),
+      maximumDateInclusive = Some(LocalDate.now()),
       minimumDateInclusive = Some(LocalDate.of(1900, 1, 1)),
       "dob-day",
       "dob-month",
@@ -156,15 +156,15 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
         def testMonth(month: Option[String]) = validateDate.bind(Ids.dateOfBirth, Map(
           Ids.dobDay -> "1",
           Ids.dobMonth -> month.getOrElse(""),
-          Ids.dobYear -> "2000"
+          Ids.dobYear -> "1900"
         ))
 
       "mark months as valid" when {
 
         "the month exists and is between 1 and 12" in {
           (1 to 12).foreach { d =>
-            testMonth(Some(d.toString)) shouldBe Right(LocalDate.of(2000, d, 1))
-            testMonth(Some(s" ${d.toString} ")) shouldBe Right(LocalDate.of(2000, d, 1))
+            testMonth(Some(d.toString)) shouldBe Right(LocalDate.of(1900, d, 1))
+            testMonth(Some(s" ${d.toString} ")) shouldBe Right(LocalDate.of(1900, d, 1))
           }
         }
 
@@ -203,7 +203,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
       "mark years as valid" when {
 
         "the year exists and is between 1900 and the current year" in {
-          (1900 to currentYear).foreach { d =>
+          (1900 until currentYear).foreach { d =>
             testYear(Some(d.toString)) shouldBe Right(LocalDate.of(d, 12, 1))
             testYear(Some(s" ${d.toString} ")) shouldBe Right(LocalDate.of(d, 12, 1))
           }
@@ -222,7 +222,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
         }
 
         "the year is greater than the current year" in {
-          testYear(Some((currentYear + 1).toString)) shouldBe Left(Seq(FormError(Ids.dobYear, ErrorMessages.afterMax)))
+          testYear(Some((LocalDate.now().getYear + 1).toString)) shouldBe Left(List(FormError(Ids.dateOfBirth, List(ErrorMessages.afterMax), List("today"))))
         }
 
         "the year is not an int" in {
@@ -235,7 +235,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
     "validating date of births" must {
 
-      val data = Map(Ids.dobDay -> "1", Ids.dobMonth -> "2", Ids.dobYear -> "1990")
+      val data = Map(Ids.dobDay -> "1", Ids.dobMonth -> "2", Ids.dobYear -> "1905")
 
       "mark years as valid" when {
 
@@ -244,7 +244,7 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
           result.map(_.getDayOfMonth) shouldBe Right(1)
           result.map(_.getMonthValue) shouldBe Right(2)
-          result.map(_.getYear) shouldBe Right(1990)
+          result.map(_.getYear) shouldBe Right(1905)
         }
 
       }
@@ -265,15 +265,15 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
             validateDate.bind(Ids.dateOfBirth, data) shouldBe Left(Seq(expectedError))
 
         "the day is missing" in {
-          testDateOfBirthInvalid(data - Ids.dobDay, FormError(Ids.dobDay, ErrorMessages.isInvalid))
+          testDateOfBirthInvalid(data - Ids.dobDay, FormError(Ids.dobDay, ErrorMessages.dayRequired))
         }
 
         "the month is missing" in {
-          testDateOfBirthInvalid(data - Ids.dobMonth, FormError(Ids.dobMonth, ErrorMessages.isInvalid))
+          testDateOfBirthInvalid(data - Ids.dobMonth, FormError(Ids.dobMonth, ErrorMessages.monthRequired))
         }
 
         "the year is missing" in {
-          testDateOfBirthInvalid(data - Ids.dobYear, FormError(Ids.dobYear, ErrorMessages.isInvalid))
+          testDateOfBirthInvalid(data - Ids.dobYear, FormError(Ids.dobYear, ErrorMessages.yearRequired))
         }
 
         "the day, month and year values together do not form a valid date" in {
@@ -325,9 +325,9 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
     "validating address lines 3, 4 and 5" must {
 
-      lazy val testAddressLine3 = testValidation[Option[String]](validation.optionalAddressLineValidator) _
-      lazy val testAddressLine4 = testValidation[Option[String]](validation.optionalAddressLineValidator) _
-      lazy val testAddressLine5 = testValidation[Option[String]](validation.optionalAddressLineValidator) _
+      lazy val testAddressLine3 = testValidation[Option[String]](validation.addressOptionalLineFormatter) _
+      lazy val testAddressLine4 = testValidation[Option[String]](validation.addressOptionalLineFormatter) _
+      lazy val testAddressLine5 = testValidation[Option[String]](validation.addressOptionalLineFormatter) _
 
       "mark address lines as valid" when {
 
