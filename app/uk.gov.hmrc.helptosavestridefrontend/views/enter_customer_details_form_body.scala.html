@@ -126,19 +126,19 @@
           name = "day",
           classes = s"govuk-input--width-2 ${if(dateInputHasErrors("day")){" govuk-input--error"} else {""}}",
           label=Some("Day"),
-          value = form.data.get(s"$dateKey-day")
+          value = form.data.get(s"dob-day")
         ),
         InputItem(
           name = "month",
           classes = s"govuk-input--width-2${if(dateInputHasErrors("month")){" govuk-input--error"} else {""}}",
           label=Some("Month"),
-          value = form.data.get(s"$dateKey-month")
+          value = form.data.get(s"dob-month")
         ),
         InputItem(
           name = "year",
           classes = s"govuk-input--width-4${if(dateInputHasErrors("year")){" govuk-input--error"} else {""}}",
           label=Some("Year"),
-          value = form.data.get(s"$dateKey-year")
+          value = form.data.get(s"dob-year")
         )
       )
     ))
