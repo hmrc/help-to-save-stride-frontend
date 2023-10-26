@@ -50,17 +50,6 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
 
     "have a mapping" which {
 
-      val validateDate: Formatter[LocalDate] = DateFormFormatter.dateFormFormatter(
-        maximumDateInclusive = Some(LocalDate.now()),
-        minimumDateInclusive = Some(LocalDate.of(1900, 1, 1)),
-        "dob-day",
-        "dob-month",
-        "dob-year",
-        "dob",
-        tooRecentArgs        = Seq("today"),
-        tooFarInPastArgs     = Seq.empty
-      )
-
       "allows valid input" in {
 
         applicantDetailsForm.bind(Map(

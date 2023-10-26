@@ -41,24 +41,24 @@ object DateFormFormatter {
     ): Either[Seq[FormError], (String, String, String)] =
       List(dayKey, monthKey, yearKey)
         .map(data.get(_).map(_.trim).filter(_.nonEmpty)) match {
-          case Some(dayString) :: Some(monthString) :: Some(yearString) :: Nil ⇒
+          case Some(dayString) :: Some(monthString) :: Some(yearString) :: Nil =>
             Right((dayString, monthString, yearString))
-          case None :: Some(_) :: Some(_) :: Nil ⇒
+          case None :: Some(_) :: Some(_) :: Nil =>
             Left(Seq(FormError(dayKey, "error.dayRequired")))
-          case Some(_) :: None :: Some(_) :: Nil ⇒
+          case Some(_) :: None :: Some(_) :: Nil =>
             Left(Seq(FormError(monthKey, "error.monthRequired")))
-          case Some(_) :: Some(_) :: None :: Nil ⇒
+          case Some(_) :: Some(_) :: None :: Nil =>
             Left(Seq(FormError(yearKey, "error.yearRequired")))
-          case Some(_) :: None :: None :: Nil ⇒
+          case Some(_) :: None :: None :: Nil =>
             val errorMessage = "error.monthAndYearRequired"
             Left(Seq(FormError(monthKey, errorMessage), FormError(yearKey, errorMessage)))
-          case None :: Some(_) :: None :: Nil ⇒
+          case None :: Some(_) :: None :: Nil =>
             val errorMessage = "error.dayAndYearRequired"
             Left(Seq(FormError(dayKey, errorMessage), FormError(yearKey, errorMessage)))
-          case None :: None :: Some(_) :: Nil ⇒
+          case None :: None :: Some(_) :: Nil =>
             val errorMessage = "error.dayAndMonthRequired"
             Left(Seq(FormError(dayKey, errorMessage), FormError(monthKey, errorMessage)))
-          case _ ⇒
+          case _ =>
             Left(Seq(FormError(dateKey, "error.required")))
         }
 
@@ -68,7 +68,7 @@ object DateFormFormatter {
         key:         String
     ): Either[FormError, Int] =
       Either.fromOption(
-        Try(BigDecimal(stringValue).toIntExact).toOption.filter(i ⇒ i > 0 && maxValue.forall(i <= _)),
+        Try(BigDecimal(stringValue).toIntExact).toOption.filter(i => i > 0 && maxValue.forall(i <= _)),
         FormError(key, "error.invalid")
       )
 
@@ -77,17 +77,17 @@ object DateFormFormatter {
         data: Map[String, String]
     ): Either[Seq[FormError], LocalDate] =
       for {
-        dateFields ← dateFieldStringValues(data)
+        dateFields <- dateFieldStringValues(data)
         (dayStr, monthStr, yearStr) = dateFields
-        month ← toValidInt(monthStr, Some(12), monthKey).leftMap(Seq(_))
-        year ← toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
-        date ← toValidInt(dayStr, Some(31), dayKey).leftMap(Seq(_))
-          .flatMap(_ ⇒
+        month <- toValidInt(monthStr, Some(12), monthKey).leftMap(Seq(_))
+        year <- toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
+        date <- toValidInt(dayStr, Some(31), dayKey).leftMap(Seq(_))
+          .flatMap(_ =>
             Either
               .fromTry(Try(LocalDate.of(year, month, dayStr.toInt)))
-              .leftMap(_ ⇒ Seq(FormError(dateKey, "error.invalid")))
+              .leftMap(_ => Seq(FormError(dateKey, "error.invalid")))
           )
-        _ ← if (maximumDateInclusive.exists(_.isBefore(LocalDate.of(year, month, dayStr.toInt))))
+        _ <- if (maximumDateInclusive.exists(_.isBefore(LocalDate.of(year, month, dayStr.toInt))))
           Left(Seq(FormError(dateKey, "error.tooFuture", tooRecentArgs)))
         else if (minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt))))
           Left(Seq(FormError(s"$dateKey-year", "error.tooFarInPast", tooFarInPastArgs)))

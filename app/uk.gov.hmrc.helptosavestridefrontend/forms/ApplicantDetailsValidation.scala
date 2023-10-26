@@ -16,23 +16,20 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import java.time.{Clock, LocalDate, ZoneId}
-
 import cats.data.Validated.Valid
 import cats.data.{NonEmptyList, Validated}
 import cats.syntax.apply._
 import cats.syntax.either._
 import com.google.inject.{ImplementedBy, Inject, Singleton}
-import play.api.data.Forms.{number, text}
+import play.api.data.Forms.text
 import play.api.data.format.Formatter
 import play.api.data.{FormError, Mapping}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.util.Validation._
-import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
-import scala.language.implicitConversions
 
-import scala.util.Try
+import java.time.Clock
+import scala.language.implicitConversions
 
 @ImplementedBy(classOf[ApplicantDetailsValidationImpl])
 trait ApplicantDetailsValidation {

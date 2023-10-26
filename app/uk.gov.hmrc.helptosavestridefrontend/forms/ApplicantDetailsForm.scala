@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import java.time.{Clock, LocalDate}
-import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
-import uk.gov.hmrc.helptosavestridefrontend.forms.DateFormFormatter._
-import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
-import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import play.api.data.Form
 import play.api.data.Forms._
+import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
+import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
+
+import java.time.{Clock, LocalDate}
 import scala.collection.immutable.Seq
 
 case class ApplicantDetails(forename:    String,
