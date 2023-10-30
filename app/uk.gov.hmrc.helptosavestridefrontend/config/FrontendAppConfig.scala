@@ -31,8 +31,6 @@ class FrontendAppConfig @Inject() (configuration:   Configuration,
 
   lazy val config: Configuration = configuration
 
-  lazy val assetsPrefix: String = loadConfig("assets.url") + loadConfig("assets.version")
-
   val authUrl: String = servicesConfig.baseUrl("auth")
 
   val appName: String = servicesConfig.getString("appName")

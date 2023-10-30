@@ -63,12 +63,6 @@ hts.customer-eligible.enter-details.form.submit=Continue
 hts.customer-eligible.enter-details.cancel-application=Cancel application and end call
 
 hts.customer-eligible.enter-details.error.title=There is a problem
-hts.customer-eligible.enter-details.error.forename.empty=Enter a first name
-hts.customer-eligible.enter-details.error.forename.too-long=First name must be {0} characters or less
-hts.customer-eligible.enter-details.error.surname.empty=Enter a last name
-hts.customer-eligible.enter-details.error.surname.too-long=Last name must be {0} characters or less
-hts.customer-eligible.enter-details.error.date-of-birth.enter-a-date-of-birth=Enter a date of birth
-hts.customer-eligible.enter-details.error.date-of-birth.enter-real-date-of-birth=Enter a real date of birth
 
 hts.customer-eligible.enter-details.error.date-of-birth.must-be-in-past=Date of birth must be in the past
 
@@ -89,16 +83,45 @@ hts.customer-eligible.enter-details.error.date-of-birth.day.too-early=Enter a ye
 hts.customer-eligible.enter-details.error.date-of-birth.day.in-future=Date of birth must be in the past
 
 
-hts.customer-eligible.enter-details.error.address-1.empty=Enter an address line 1
-hts.customer-eligible.enter-details.error.address-1.too-long=Address line 1 must be {0} characters or less
-hts.customer-eligible.enter-details.error.address-2.empty=Enter an address line 2
-hts.customer-eligible.enter-details.error.address-2.too-long=Address line 2 must be {0} characters or less
-hts.customer-eligible.enter-details.error.address-3.too-long=Address line 3 must be {0} characters or less
-hts.customer-eligible.enter-details.error.address-4.too-long=Address line 4 must be {0} characters or less
-hts.customer-eligible.enter-details.error.address-5.too-long=Address line 5 must be {0} characters or less
-hts.customer-eligible.enter-details.error.postcode.empty=Enter a postcode, like AA1 1AA
-hts.customer-eligible.enter-details.error.postcode.too-long=Enter a real postcode
+forename.error.required = Enter a first name
+forename.error.tooLong = First name must be 26 characters or less
+surname.error.tooLong = Last name must be 300 characters or less
+surname.error.required = Enter a last name
 
+address1.address_1_empty = Enter an address line 1
+address2.address_2_empty = Enter an address line 2
+postcode.postcode_empty = Enter a postcode, like AA1 1AA
+
+dob.error.required = Enter a date of birth
+dob.error.invalid = Enter a real date of birth
+dob.error.tooFarInPast = Enter a year after 1900
+dob.error.tooFuture = Date of birth must be in the past
+
+dob-day.error.invalid = Enter a real day of the month
+dob-day.error.dayRequired = Date of birth must include a day
+dob-day.error.dayAndYearRequired = Date of birth must include a day and year
+dob-day.error.dayAndMonthRequired = Date of birth must include the day and month
+
+dob-month.error.required = Enter a month
+dob-month.error.invalid = Enter a real month
+dob-month.error.monthRequired = Date of birth must include a month
+dob-month.error.monthAndYearRequired = Date of birth must include a month and year
+
+dob-year.error.required = Enter a year
+dob-year.error.invalid = Enter a real year
+dob-year.error.yearRequired = Date of birth must include a year
+dob-year.error.yearLength = Enter the year in full (4 numbers)
+dob-year.error.dayAndYearRequired = Date of birth must include a day and year
+dob-year.error.tooFarInPast = Enter a year after 1900
+address1.error.required = Enter an address line 1
+address1.error.tooLong = Address line 1 must be 35 characters or less
+address2.error.required = Enter an address line 2
+address2.error.tooLong = Address line 2 must be 35 characters or less
+address3.error.tooLong = Address line 3 must be 35 characters or less
+address4.error.tooLong = Address line 4 must be 35 characters or less
+address5.error.tooLong = Address line 5 must be 35 characters or less
+postcode.error.required = Enter a postcode, like AA1 1AA
+postcode.error.tooLong = Enter a real postcode
 
 hts.create.account.title.h1=Create an account
 hts.create.account.p1=You need to:

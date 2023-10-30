@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import java.time.{Clock, LocalDate}
-
-import cats.instances.string._
-import cats.syntax.eq._
 import play.api.data.Form
 import play.api.data.Forms._
-import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
+
+import java.time.{Clock, LocalDate}
+import scala.collection.immutable.Seq
 
 case class ApplicantDetails(forename:    String,
                             surname:     String,
@@ -64,79 +62,25 @@ object ApplicantDetailsForm {
 
   def applicantDetailsForm(implicit applicantDetailsValidation: ApplicantDetailsValidation, clock: Clock): Form[ApplicantDetails] = Form(
     mapping(
-      Ids.forename -> of(applicantDetailsValidation.forenameFormatter),
-      Ids.surname -> of(applicantDetailsValidation.surnameFormatter),
-      Ids.dobDay -> of(applicantDetailsValidation.dayOfMonthFormatter),
-      Ids.dobMonth -> of(applicantDetailsValidation.monthFormatter),
-      Ids.dobYear -> of(applicantDetailsValidation.yearFormatter),
-      Ids.dateOfBirth -> of(applicantDetailsValidation.dateOfBirthFormatter),
-      Ids.address1 -> of(applicantDetailsValidation.addressLine1Formatter),
-      Ids.address2 -> of(applicantDetailsValidation.addressLine2Formatter),
-      Ids.address3 -> of(applicantDetailsValidation.addressLine3Formatter),
-      Ids.address4 -> of(applicantDetailsValidation.addressLine4Formatter),
-      Ids.address5 -> of(applicantDetailsValidation.addressLine5Formatter),
+      Ids.forename -> of(applicantDetailsValidation.nameFormatter),
+      Ids.surname -> of(applicantDetailsValidation.nameFormatter),
+      Ids.dateOfBirth -> of(DateFormFormatter.dateFormFormatter(
+        maximumDateInclusive = Some(LocalDate.now(clock)),
+        minimumDateInclusive = Some(LocalDate.of(1900, 1, 1)),
+        "dob-day",
+        "dob-month",
+        "dob-year",
+        "dob",
+        tooRecentArgs        = Seq("today"),
+        tooFarInPastArgs     = Seq.empty
+      )),
+      Ids.address1 -> of(applicantDetailsValidation.addressLineFormatter),
+      Ids.address2 -> of(applicantDetailsValidation.addressLineFormatter),
+      Ids.address3 -> of(applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.address4 -> of(applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.address5 -> of(applicantDetailsValidation.addressOptionalLineFormatter),
       Ids.postcode -> of(applicantDetailsValidation.postcodeFormatter),
       Ids.countryCode -> text
-    ){
-        case (forename, surname, _, _, _, dob, address1, address2, address3, address4, address5, postcode, countryCode) =>
-          ApplicantDetails(forename, surname, dob, address1, address2, address3, address4, address5, postcode, countryCode)
-      }{ details =>
-        Some((details.forename, details.surname, details.dateOfBirth.getDayOfMonth, details.dateOfBirth.getMonthValue,
-          details.dateOfBirth.getYear, details.dateOfBirth, details.address1, details.address2, details.address3, details.address4, details.address5,
-          details.postcode, details.countryCode))
-      }.verifying(ErrorMessages.dateOfBirthInFuture, _.dateOfBirth.isBefore(LocalDate.now(clock)))
+    )(ApplicantDetails.apply)(ApplicantDetails.unapply)
   )
-
-  implicit class ApplicantDetailsFormOps(val a: Form[ApplicantDetails]) extends AnyVal {
-
-    private def hasErrorMessage(id: String, errorMessage: String): Boolean =
-      a.error(id).exists(_.message === errorMessage)
-
-    def hasForenameTooLong: Boolean = hasErrorMessage(Ids.forename, ErrorMessages.forenameTooLong)
-
-    def hasForenameEmpty: Boolean = hasErrorMessage(Ids.forename, ErrorMessages.forenameEmpty)
-
-    def hasSurnameTooLong: Boolean = hasErrorMessage(Ids.surname, ErrorMessages.surnameTooLong)
-
-    def hasSurnameEmpty: Boolean = hasErrorMessage(Ids.surname, ErrorMessages.surnameEmpty)
-
-    def hasDayOfMonthEmpty: Boolean = hasErrorMessage(Ids.dobDay, ErrorMessages.dayOfMonthEmpty)
-
-    def hasDayOfMonthInvalid: Boolean = hasErrorMessage(Ids.dobDay, ErrorMessages.dayOfMonthInvalid)
-
-    def hasMonthEmpty: Boolean = hasErrorMessage(Ids.dobMonth, ErrorMessages.monthEmpty)
-
-    def hasMonthInvalid: Boolean = hasErrorMessage(Ids.dobMonth, ErrorMessages.monthInvalid)
-
-    def hasYearEmpty: Boolean = hasErrorMessage(Ids.dobYear, ErrorMessages.yearEmpty)
-
-    def hasYearInvalid: Boolean = hasErrorMessage(Ids.dobYear, ErrorMessages.yearInvalid)
-
-    def hasYearTooEarly: Boolean = hasErrorMessage(Ids.dobYear, ErrorMessages.yearTooEarly)
-
-    def hasDateOfBirthInvalid: Boolean = a.errors.exists(_.message === ErrorMessages.dateOfBirthInvalid)
-
-    def hasDateOfBirthInFuture: Boolean = a.errors.exists(_.message === ErrorMessages.dateOfBirthInFuture)
-
-    def hasAddress1TooLong: Boolean = hasErrorMessage(Ids.address1, ErrorMessages.address1TooLong)
-
-    def hasAddress1Empty: Boolean = hasErrorMessage(Ids.address1, ErrorMessages.address1Empty)
-
-    def hasAddress2TooLong: Boolean = hasErrorMessage(Ids.address2, ErrorMessages.address2TooLong)
-
-    def hasAddress2Empty: Boolean = hasErrorMessage(Ids.address2, ErrorMessages.address2Empty)
-
-    def hasAddress3TooLong: Boolean = hasErrorMessage(Ids.address3, ErrorMessages.address3TooLong)
-
-    def hasAddress4TooLong: Boolean = hasErrorMessage(Ids.address4, ErrorMessages.address4TooLong)
-
-    def hasAddress5TooLong: Boolean = hasErrorMessage(Ids.address5, ErrorMessages.address5TooLong)
-
-    def hasPostcodeTooLong: Boolean = hasErrorMessage(Ids.postcode, ErrorMessages.postcodeTooLong)
-
-    def hasPostcodeEmpty: Boolean = hasErrorMessage(Ids.postcode, ErrorMessages.postCodeEmpty)
-
-  }
-
 }
-
