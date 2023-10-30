@@ -150,7 +150,7 @@
         </ul>
 
         @formWithCSRF(routes.StrideController.allowManualAccountCreation()) {
-            @maybeForm.map { f =>
+
                 @govukCheckboxes(Checkboxes(
                     fieldset = Some(Fieldset(
                         legend = Some(Legend(
@@ -163,13 +163,13 @@
                         CheckboxItem(
                             content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
                             value = "yes",
-                            checked = f.hasErrors || f.data.nonEmpty,
-                            conditionalHtml = Some(customerDetailsFormBody("userDetailsForm", nino, f))
+                            checked = hasErrors,
+                            conditionalHtml = maybeForm.map { form => customerDetailsFormBody("userDetailsForm", nino, form) }
                         )
                     )
                 ))
 
-            }
+
             @govukButton(Button(
                 attributes = Map("id" -> "continue", "disabled" -> "disabled", "aria-disabled" -> "true"),
                 content = Text(messages("hts.global.continue-button"))
