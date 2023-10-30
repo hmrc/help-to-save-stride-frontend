@@ -47,6 +47,10 @@
     case Some(f) => f.hasErrors
     case _ => false
 }}
+@hasData = @{maybeForm match {
+    case Some(f) => f.data.nonEmpty
+    case _ => false
+}}
 @dateKey = @{"dob"}
 @dateError = @{maybeForm match {
     case Some(form) => form.errors.find(_.key.startsWith(dateKey))
@@ -163,7 +167,7 @@
                         CheckboxItem(
                             content = Text(messages("hts.eligibility.not.eligible.manually.create.confirm.eligible.label")),
                             value = "yes",
-                            checked = hasErrors,
+                            checked = hasErrors || hasData,
                             conditionalHtml = maybeForm.map { form => customerDetailsFormBody("userDetailsForm", nino, form) }
                         )
                     )
