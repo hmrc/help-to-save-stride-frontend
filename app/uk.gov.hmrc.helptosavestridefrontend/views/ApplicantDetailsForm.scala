@@ -34,32 +34,4 @@ object ApplicantDetailsForm {
     val countryCode: String = "countryCode"
   }
 
-  case class ErrorMessages(forename:     Option[String],
-                           surname:      Option[String],
-                           dateOfBirth:  Option[String],
-                           dobDay:       Option[String],
-                           dobMonth:     Option[String],
-                           dobYear:      Option[String],
-                           addressLine1: Option[String],
-                           addressLine2: Option[String],
-                           addressLine3: Option[String],
-                           addressLine4: Option[String],
-                           addressLine5: Option[String],
-                           postcode:     Option[String]) {
-
-    val errors: List[(String, String)] =
-      List(
-        Ids.forename -> forename,
-        Ids.surname -> surname,
-        Ids.dateOfBirth -> dateOfBirth,
-        Ids.address1 -> addressLine1,
-        Ids.address2 -> addressLine2,
-        Ids.address3 -> addressLine3,
-        Ids.address4 -> addressLine4,
-        Ids.address5 -> addressLine5,
-        Ids.postcode -> postcode).collect { case (k, Some(e)) => k -> e }
-
-    val errorExists: Boolean = errors.nonEmpty
-  }
-
 }

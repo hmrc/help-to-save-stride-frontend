@@ -19,14 +19,13 @@ package uk.gov.hmrc.helptosavestridefrontend.forms
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.data.format.Formatter
 import play.api.data.{Form, FormError}
 import play.api.test.Helpers.baseApplicationBuilder.injector
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Clock, Instant, ZoneId}
 
 class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactory {
 
