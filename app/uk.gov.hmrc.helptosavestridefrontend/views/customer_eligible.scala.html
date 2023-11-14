@@ -58,16 +58,11 @@
 
   @form(uk.gov.hmrc.helptosavestridefrontend.controllers.routes.StrideController.customerEligibleSubmit()) {
     @button(classes = ("govuk-!-display-block"), attrs = Map("id" -> "continue"), msgKey = ("hts.you.are.eligible.continue-button"))
-    @a(
-      href = routes.StrideController.getApplicationCancelledPage().url,
-      id= Some("end-call"),
-      key = ("hts.you.are.eligible.end-call.button"),
-      classes = Some("govuk-body"),
-      attrs = Map(
-        "role" -> "button",
-        "data-button" -> "submit-disabled"
-      )
-    )
+    <p class="govuk-body">
+      <a id="end-call" class="govuk-link" href="@{routes.StrideController.getApplicationCancelledPage().url}">
+        @messages("hts.you.are.eligible.end-call.button")
+      </a>
+    </p>
   }
 
 }
