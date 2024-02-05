@@ -1,4 +1,3 @@
-import play.core.PlayVersion
 import play.sbt.PlayImport.ws
 import sbt.*
 
@@ -17,13 +16,9 @@ object AppDependencies {
   )
 
   def test(scope: String = "test"): Seq[ModuleID] = Seq(
-    "com.vladsch.flexmark" % "flexmark-all"              % "0.35.10"            % scope,
-    "uk.gov.hmrc.mongo"    %% "hmrc-mongo-test-play-28"  % hmrcMongoVersion     % scope,
-    "org.scalatest"        %% "scalatest"                % "3.2.9"              % scope,
-    "org.scalamock"        %% "scalamock"                % "5.2.0"              % scope,
-    "org.scalatestplus"    %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"        % scope,
-    "com.typesafe.play"    %% "play-test"                % PlayVersion.current  % scope,
-    "com.typesafe.play"    %% "play-ws"                  % PlayVersion.current  % scope,
-    "uk.gov.hmrc"          %% "bootstrap-test-play-28"   % hmrcBootstrapVersion % scope
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28"  % hmrcMongoVersion     % scope,
+    "org.scalamock"     %% "scalamock"                % "5.2.0"              % scope,
+    "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"        % scope,
+    "uk.gov.hmrc"       %% "bootstrap-test-play-28"   % hmrcBootstrapVersion % scope
   )
 }
