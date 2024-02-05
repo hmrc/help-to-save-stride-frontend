@@ -13,18 +13,6 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
-lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
-  Seq(
-    // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes|JsErrorOps).*;.*views.html.*",
-    ScoverageKeys.coverageMinimumStmtTotal := 94,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true,
-    Test /parallelExecution := false
-  )
-}
-
 lazy val scalariformSettings = {
   import com.typesafe.sbt.SbtScalariform.ScalariformKeys
   import scalariform.formatter.preferences.*
@@ -96,13 +84,13 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= Seq("-Xcheckinit", "-feature"),
   Compile / scalacOptions -= "utf8"
-) ++ scalaSettings ++ defaultSettings() ++ scalariformSettings ++ scoverageSettings ++ playSettings
+) ++ scalaSettings ++ defaultSettings() ++ scalariformSettings ++ playSettings
 
 
 lazy val microservice = Project(appName, file("."))
   .settings(commonSettings: _*)
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin, SbtWeb) ++ plugins: _*)
-  .settings(playSettings ++ scoverageSettings: _*)
+  .settings(playSettings ++ CodeCoverageSettings.settings: _*)
   .settings(scalaSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(scalaVersion := "2.13.8")
