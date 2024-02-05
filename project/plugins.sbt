@@ -19,7 +19,7 @@ addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
 
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "3.0.7")
 
-addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.5.1")
+addSbtPlugin("io.github.irundaia" % "sbt-sassify" % "1.5.2")
 
 addSbtPlugin("net.ground5hark.sbt" % "sbt-concat" % "0.2.0")
 
