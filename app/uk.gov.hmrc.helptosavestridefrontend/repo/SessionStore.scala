@@ -43,81 +43,94 @@ trait SessionStore {
 }
 
 @Singleton
-class SessionStoreImpl @Inject() (mongo:             MongoComponent,
-                                  metrics:           HTSMetrics,
-                                  timeStampSupport:  TimestampSupport,
-                                  pagerDutyAlerting: PagerDutyAlerting)(implicit appConfig: FrontendAppConfig, ec: ExecutionContext)
-  extends SessionStore {
+class SessionStoreImpl @Inject()(
+  mongo: MongoComponent,
+  metrics: HTSMetrics,
+  timeStampSupport: TimestampSupport,
+  pagerDutyAlerting: PagerDutyAlerting)(implicit appConfig: FrontendAppConfig, ec: ExecutionContext)
+    extends SessionStore {
 
   private val expireAfterSeconds = appConfig.mongoSessionExpireAfter.toSeconds
 
   private val cacheRepository =
-    new MongoCacheRepository[String](mongo, "sessions", ttl = Duration(expireAfterSeconds, SECONDS), timestampSupport = timeStampSupport, cacheIdType = CacheIdType.SimpleCacheId)
+    new MongoCacheRepository[String](
+      mongo,
+      "sessions",
+      ttl = Duration(expireAfterSeconds, SECONDS),
+      timestampSupport = timeStampSupport,
+      cacheIdType = CacheIdType.SimpleCacheId)
 
   private type EitherStringOr[A] = Either[String, A]
 
-  override def get(implicit reads: Reads[HtsSession], hc: HeaderCarrier): Result[Option[HtsSession]] = {
-
+  override def get(implicit reads: Reads[HtsSession], hc: HeaderCarrier): Result[Option[HtsSession]] =
     EitherT(hc.sessionId.map(_.value) match {
       case Some(sessionId) =>
-
         val timerContext = metrics.sessionStoreReadTimer.time()
 
-        cacheRepository.findById(sessionId).map { maybeCache =>
-          val response: OptionT[EitherStringOr, HtsSession] = for {
-            cache <- OptionT.fromOption[EitherStringOr](maybeCache)
-            data <- OptionT.fromOption[EitherStringOr](Some(cache.data))
-            result <- OptionT.liftF[EitherStringOr, HtsSession](
-              (data \ "htsSession").validate[HtsSession].asEither.leftMap(e => s"Could not parse session data from mongo: ${e.mkString("; ")}"))
-          } yield result
+        cacheRepository
+          .findById(sessionId)
+          .map {
+            maybeCache =>
+              val response: OptionT[EitherStringOr, HtsSession] = for {
+                cache <- OptionT.fromOption[EitherStringOr](maybeCache)
+                data  <- OptionT.fromOption[EitherStringOr](Some(cache.data))
+                result <- OptionT.liftF[EitherStringOr, HtsSession](
+                           (data \ "htsSession")
+                             .validate[HtsSession]
+                             .asEither
+                             .leftMap(e => s"Could not parse session data from mongo: ${e.mkString("; ")}"))
+              } yield result
 
-          val _ = timerContext.stop()
+              val _ = timerContext.stop()
 
-          response.value
+              response.value
 
-        }.recover {
-          case e =>
-            val _ = timerContext.stop()
-            metrics.sessionStoreReadErrorCounter.inc()
-            pagerDutyAlerting.alert("unexpected error when reading stride HtsSession from mongo")
-            Left(e.getMessage)
-        }
+          }
+          .recover {
+            case e =>
+              val _ = timerContext.stop()
+              metrics.sessionStoreReadErrorCounter.inc()
+              pagerDutyAlerting.alert("unexpected error when reading stride HtsSession from mongo")
+              Left(e.getMessage)
+          }
 
       case None =>
         Left("can't query mongo dueto no sessionId in the HeaderCarrier")
     })
-  }
 
-  override def store(newSession: HtsSession)(implicit writes: Writes[HtsSession], hc: HeaderCarrier): Result[Unit] = {
+  override def store(newSession: HtsSession)(implicit writes: Writes[HtsSession], hc: HeaderCarrier): Result[Unit] =
     EitherT(hc.sessionId.map(_.value) match {
       case Some(sessionId) =>
         val timerContext = metrics.sessionStoreWriteTimer.time()
-        cacheRepository.put(sessionId)(DataKey("htsSession"), Json.toJson(newSession)).map{ _ =>
-          val _ = timerContext.stop()
-          Right(())
-        }.recover {
-          case e =>
-            val _ = timerContext.stop()
-            metrics.sessionStoreWriteErrorCounter.inc()
-            pagerDutyAlerting.alert("unexpected error when writing stride HtsSession to mongo")
-            Left(e.getMessage)
-        }
-
-      case None =>
-        Left("can't store HTSSession in mongo dueto no sessionId in the HeaderCarrier")
-    }
-    )
-  }
-
-  def delete(implicit hc: HeaderCarrier): Result[Unit] = {
-    EitherT(hc.sessionId.map(_.value) match {
-      case Some(sessionId) =>
-        val timerContext = metrics.sessionStoreDeleteTimer.time()
-        cacheRepository.deleteEntity(sessionId)
+        cacheRepository
+          .put(sessionId)(DataKey("htsSession"), Json.toJson(newSession))
           .map { _ =>
             val _ = timerContext.stop()
             Right(())
-          }.recover {
+          }
+          .recover {
+            case e =>
+              val _ = timerContext.stop()
+              metrics.sessionStoreWriteErrorCounter.inc()
+              pagerDutyAlerting.alert("unexpected error when writing stride HtsSession to mongo")
+              Left(e.getMessage)
+          }
+
+      case None =>
+        Left("can't store HTSSession in mongo dueto no sessionId in the HeaderCarrier")
+    })
+
+  def delete(implicit hc: HeaderCarrier): Result[Unit] =
+    EitherT(hc.sessionId.map(_.value) match {
+      case Some(sessionId) =>
+        val timerContext = metrics.sessionStoreDeleteTimer.time()
+        cacheRepository
+          .deleteEntity(sessionId)
+          .map { _ =>
+            val _ = timerContext.stop()
+            Right(())
+          }
+          .recover {
             case e =>
               val _ = timerContext.stop()
               metrics.sessionStoreDeleteErrorCounter.inc()
@@ -127,7 +140,5 @@ class SessionStoreImpl @Inject() (mongo:             MongoComponent,
 
       case None =>
         Left("can't delete HTSSession in mongo dueto no sessionId in the HeaderCarrier")
-    }
-    )
-  }
+    })
 }

@@ -29,8 +29,7 @@ object CountryCode {
     val content = Source.fromInputStream(getClass.getResourceAsStream("/resources/country.json")).mkString
     Json.parse(content) match {
       case JsObject(fields) =>
-        fields
-          .toList
+        fields.toList
           .map(x => ((x._2 \ "short_name").asOpt[String], (x._2 \ "alpha_two_code").asOpt[String]))
           .collect {
             case (Some(countryName), Some(countryCode)) =>

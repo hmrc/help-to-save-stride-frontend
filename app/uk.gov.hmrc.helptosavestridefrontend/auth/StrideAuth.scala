@@ -53,40 +53,45 @@ trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
     base64SecureValues.map(x => new String(Base64.getDecoder.decode(x)))
   }
 
-  private val getRedirectUrl: (Request[AnyContent], Call) => String = if (config.underlying.get[Boolean]("stride.redirect-with-absolute-urls").value) {
-    case (r, c) => c.absoluteURL()(r)
-  } else {
-    case (_, c) => c.url
-  }
-
-  def authorisedFromStride(action: Request[AnyContent] => RoleType => Future[Result])(redirectCall: Call)(implicit ec: ExecutionContext): Action[AnyContent] =
-    Action.async { implicit request =>
-      authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments){
-        enrolments =>
-          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")){
-            roles =>
-              action(request)(roles)
-          }
-      }.recover{
-        case _: NoActiveSession =>
-          toStrideLogin(getRedirectUrl(request, redirectCall))
-      }
+  private val getRedirectUrl: (Request[AnyContent], Call) => String =
+    if (config.underlying.get[Boolean]("stride.redirect-with-absolute-urls").value) {
+      case (r, c) => c.absoluteURL()(r)
+    } else {
+      case (_, c) => c.url
     }
 
-  def authorisedFromStrideWithDetails(action: Request[AnyContent] => OperatorDetails => RoleType => Future[Result])(redirectCall: Call)(implicit ec: ExecutionContext): Action[AnyContent] =
+  def authorisedFromStride(action: Request[AnyContent] => RoleType => Future[Result])(redirectCall: Call)(
+    implicit ec: ExecutionContext): Action[AnyContent] =
     Action.async { implicit request =>
-      authorised(AuthProviders(PrivilegedApplication)).retrieve(allEnrolments and credentials and name and email) {
-        case enrolments ~ creds ~ name ~ email =>
-          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) {
-            roles =>
-              action(request)(OperatorDetails(roles.roleNames, creds.map(_.providerId), getName(name), email.getOrElse("")))(
+      authorised(AuthProviders(PrivilegedApplication))
+        .retrieve(allEnrolments) { enrolments =>
+          necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) { roles =>
+            action(request)(roles)
+          }
+        }
+        .recover {
+          case _: NoActiveSession =>
+            toStrideLogin(getRedirectUrl(request, redirectCall))
+        }
+    }
+
+  def authorisedFromStrideWithDetails(action: Request[AnyContent] => OperatorDetails => RoleType => Future[Result])(
+    redirectCall: Call)(implicit ec: ExecutionContext): Action[AnyContent] =
+    Action.async { implicit request =>
+      authorised(AuthProviders(PrivilegedApplication))
+        .retrieve(allEnrolments and credentials and name and email) {
+          case enrolments ~ creds ~ name ~ email =>
+            necessaryRoles(enrolments).fold[Future[Result]](Unauthorized("Insufficient roles")) { roles =>
+              action(request)(
+                OperatorDetails(roles.roleNames, creds.map(_.providerId), getName(name), email.getOrElse("")))(
                 roles
               )
-          }
-      }.recover {
-        case _: NoActiveSession =>
-          toStrideLogin(getRedirectUrl(request, redirectCall))
-      }
+            }
+        }
+        .recover {
+          case _: NoActiveSession =>
+            toStrideLogin(getRedirectUrl(request, redirectCall))
+        }
     }
 
   private def necessaryRoles(enrolments: Enrolments): Option[RoleType] = {

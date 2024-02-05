@@ -24,23 +24,18 @@ import play.api.libs.json.Writes.temporalWrites
 import play.api.libs.json._
 import uk.gov.hmrc.helptosavestridefrontend.models.NSIPayload.ContactDetails
 
-case class PayePersonalDetails(name:        Name,
-                               dateOfBirth: LocalDate,
-                               address:     Address,
-                               phoneNumber: Option[String])
+case class PayePersonalDetails(name: Name, dateOfBirth: LocalDate, address: Address, phoneNumber: Option[String])
 
-case class Name(firstForenameOrInitial: String,
-                surname:                String
-)
+case class Name(firstForenameOrInitial: String, surname: String)
 
-case class Address(line1:       String,
-                   line2:       String,
-                   line3:       Option[String],
-                   line4:       Option[String],
-                   line5:       Option[String],
-                   postcode:    String,
-                   countryCode: Option[String]
-)
+case class Address(
+  line1: String,
+  line2: String,
+  line3: Option[String],
+  line4: Option[String],
+  line5: Option[String],
+  postcode: String,
+  countryCode: Option[String])
 
 object PayePersonalDetails {
 
@@ -57,14 +52,16 @@ object PayePersonalDetails {
 
   implicit class PayePersonalDetailsOps(val ppd: PayePersonalDetails) extends AnyVal {
     def convertToNSIUserInfo(nino: String): NSIPayload = {
-      val contactDetails: ContactDetails = ContactDetails(ppd.address.line1,
-                                                          ppd.address.line2,
-                                                          ppd.address.line3,
-                                                          ppd.address.line4,
-                                                          ppd.address.line5,
-                                                          ppd.address.postcode,
-                                                          ppd.address.countryCode,
-                                                          ppd.phoneNumber)
+      val contactDetails: ContactDetails = ContactDetails(
+        ppd.address.line1,
+        ppd.address.line2,
+        ppd.address.line3,
+        ppd.address.line4,
+        ppd.address.line5,
+        ppd.address.postcode,
+        ppd.address.countryCode,
+        ppd.phoneNumber
+      )
 
       NSIPayload(ppd.name.firstForenameOrInitial, ppd.name.surname, ppd.dateOfBirth, nino, contactDetails)
     }

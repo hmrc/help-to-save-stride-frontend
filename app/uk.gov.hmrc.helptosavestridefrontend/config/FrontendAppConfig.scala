@@ -23,9 +23,10 @@ import uk.gov.hmrc.play.bootstrap.config.{ServicesConfig}
 import scala.concurrent.duration.Duration
 
 @Singleton
-class FrontendAppConfig @Inject() (configuration:   Configuration,
-                                   servicesConfig:  ServicesConfig,
-                                   val environment: Environment) {
+class FrontendAppConfig @Inject()(
+  configuration: Configuration,
+  servicesConfig: ServicesConfig,
+  val environment: Environment) {
 
   private def loadConfig(key: String) = servicesConfig.getString(key)
 

@@ -31,9 +31,11 @@ import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HttpResponse
 
-class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData with HttpSupport {
+class HelpToSaveConnectorSpec
+    extends TestSupport with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData with HttpSupport {
 
-  val connector = new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, servicesConfig, environment)
+  val connector =
+    new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, servicesConfig, environment)
 
   private val eligibilityUrl: String = "http://localhost:7001/help-to-save/eligibility-check"
   private val payePersonalDetailsUrl: String = "http://localhost:7001/help-to-save/paye-personal-details"
@@ -49,31 +51,38 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
   "HelpToSaveConnector" when {
 
     "checking eligibility" must {
-        def eligibilityCheckResponse(resultCode: Int): JsValue =
-          JsObject(Map("eligibilityCheckResult" -> Json.toJson(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1))))
+      def eligibilityCheckResponse(resultCode: Int): JsValue =
+        JsObject(Map(
+          "eligibilityCheckResult" -> Json.toJson(EligibilityCheckResponse("eligible", resultCode, "Tax credits", 1))))
 
       "return a successful eligibility response for a valid NINO" in {
-        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, eligibilityCheckResponse(1), emptyHeaderParameters))) // scalastyle:ignore magic.number
+        mockGet(eligibilityUrl, Map("nino" -> nino))(
+          Some(HttpResponse(200, eligibilityCheckResponse(1), emptyHeaderParameters))) // scalastyle:ignore magic.number
 
         await(connector.getEligibility(nino).value) shouldBe Right(
           Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1)))
       }
 
       "handles the case of success response but user is not eligible" in {
-        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, eligibilityCheckResponse(2), emptyHeaderParameters))) // scalastyle:ignore magic.number
+        mockGet(eligibilityUrl, Map("nino" -> nino))(
+          Some(HttpResponse(200, eligibilityCheckResponse(2), emptyHeaderParameters))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           Ineligible(EligibilityCheckResponse("eligible", 2, "Tax credits", 1)))
       }
 
       "handles the case of success response but user has hot an account already" in {
-        mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, eligibilityCheckResponse(3), emptyHeaderParameters))) // scalastyle:ignore magic.number
+        mockGet(eligibilityUrl, Map("nino" -> nino))(
+          Some(HttpResponse(200, eligibilityCheckResponse(3), emptyHeaderParameters))) // scalastyle:ignore magic.number
         await(connector.getEligibility(nino).value) shouldBe Right(
           AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 1)))
       }
 
       "handles the case of success response but invalid eligibility result code" in {
         (4 to 10).foreach { resultCode =>
-          mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(200, eligibilityCheckResponse(resultCode), emptyHeaderParameters))) // scalastyle:ignore magic.number
+          mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(
+            200,
+            eligibilityCheckResponse(resultCode),
+            emptyHeaderParameters))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
           await(connector.getEligibility(nino).value).isLeft shouldBe true
@@ -93,7 +102,9 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
       "handle responses when they contain invalid json" in {
         inSequence {
           mockGet(eligibilityUrl, Map("nino" -> nino))(Some(HttpResponse(
-            200, Json.parse("""{"invalid": "foo"}"""), emptyHeaderParameters))) // scalastyle:ignore magic.number
+            200,
+            Json.parse("""{"invalid": "foo"}"""),
+            emptyHeaderParameters))) // scalastyle:ignore magic.number
           mockPagerDutyAlert("Could not parse JSON in eligibility check response")
         }
         await(connector.getEligibility(nino).value).isLeft shouldBe true
@@ -131,18 +142,23 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
     "getting paye-personal-details and converting to nsi-user-info" must {
 
       "return a successful paye-details response for a valid NINO and convert to nsi-user-info" in {
-        mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(Some(HttpResponse(200, Json.parse(payeDetailsJson), emptyHeaderParameters))) // scalastyle:ignore magic.number
+        mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(
+          Some(HttpResponse(200, Json.parse(payeDetailsJson), emptyHeaderParameters))) // scalastyle:ignore magic.number
         await(connector.getNSIUserInfo(nino).value) shouldBe Right(nsiUserInfo)
       }
 
       "handle responses when they contain invalid json" in {
-        mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(Some(HttpResponse(200, Json.parse("""{"invalid": "foo"}"""), emptyHeaderParameters))) // scalastyle:ignore magic.number
+        mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(Some(HttpResponse(
+          200,
+          Json.parse("""{"invalid": "foo"}"""),
+          emptyHeaderParameters))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
         await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
       }
 
       "handle responses when they contain empty json" in {
-        mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(Some(HttpResponse(200, Json.parse("""{}"""), emptyHeaderParameters))) // scalastyle:ignore magic.number
+        mockGet(payePersonalDetailsUrl, Map("nino" -> nino))(
+          Some(HttpResponse(200, Json.parse("""{}"""), emptyHeaderParameters))) // scalastyle:ignore magic.number
         mockPagerDutyAlert("Could not parse JSON in the paye-personal-details response")
         await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
       }
@@ -183,7 +199,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
       val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride", false)
 
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Json.parse("""{"accountNumber":"123456789"}"""), emptyHeaderParameters)))
+        mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(
+          Some(HttpResponse(CREATED, Json.parse("""{"accountNumber":"123456789"}"""), emptyHeaderParameters)))
 
         val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Right(AccountCreated("123456789"))
@@ -191,7 +208,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
       "return an error if the createAccount returns 201 but with invalid or no accountNumber json body" in {
         inSequence {
-          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(CREATED, Json.parse("""{"blah":"blah"}"""), emptyHeaderParameters)))
+          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(
+            Some(HttpResponse(CREATED, Json.parse("""{"blah":"blah"}"""), emptyHeaderParameters)))
           mockPagerDutyAlert("createAccount returned 201 but couldn't parse the accountNumber from response body")
         }
         val result = await(connector.createAccount(createAccountRequest).value)
@@ -207,7 +225,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
         inSequence {
-          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(Some(HttpResponse(BAD_REQUEST, "null")))
+          mockPost(createAccountUrl, emptyQueryParameters, createAccountRequest)(
+            Some(HttpResponse(BAD_REQUEST, "null")))
           mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         }
         val result = await(connector.createAccount(createAccountRequest).value)
@@ -220,7 +239,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
           mockPagerDutyAlert("Failed to make call to the back end create account url")
         }
         val result = await(connector.createAccount(createAccountRequest).value)
-        result shouldBe Left("Encountered error while trying to make createAccount call, with message: Test exception message")
+        result shouldBe Left(
+          "Encountered error while trying to make createAccount call, with message: Test exception message")
       }
     }
 
@@ -252,7 +272,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
       "return the enrolment status" in {
         statusToJSON.foreach {
           case (s, j) =>
-            mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(200, Json.parse(j), emptyHeaderParameters)))
+            mockGet(enrolmentStatusUrl, Map("nino" -> nino))(
+              Some(HttpResponse(200, Json.parse(j), emptyHeaderParameters)))
 
             val result = connector.getEnrolmentStatus(nino)
             await(result.value) shouldBe Right(s)
@@ -269,7 +290,8 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
         }
 
         "there is unexpected JSON" in {
-          mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(200, Json.parse("""{ "a" : 1 }"""), emptyHeaderParameters)))
+          mockGet(enrolmentStatusUrl, Map("nino" -> nino))(
+            Some(HttpResponse(200, Json.parse("""{ "a" : 1 }"""), emptyHeaderParameters)))
 
           val result = connector.getEnrolmentStatus(nino)
           await(result.value).isLeft shouldBe true
@@ -281,8 +303,10 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
               statusToJSON.foreach {
                 case (_, j) =>
                   inSequence {
-                    mockGet(enrolmentStatusUrl, Map("nino" -> nino))(Some(HttpResponse(status, Json.parse(j), emptyHeaderParameters)))
-                    mockPagerDutyAlert("Received unexpected http status from the back end when calling the get enrolment status url")
+                    mockGet(enrolmentStatusUrl, Map("nino" -> nino))(
+                      Some(HttpResponse(status, Json.parse(j), emptyHeaderParameters)))
+                    mockPagerDutyAlert(
+                      "Received unexpected http status from the back end when calling the get enrolment status url")
                   }
 
                   val result = connector.getEnrolmentStatus(nino)
@@ -310,15 +334,16 @@ class HelpToSaveConnectorSpec extends TestSupport with MockPagerDuty with ScalaC
     "getAccount" must {
 
       val accountNumber = "12345678"
-      val validJSON = Json.parse(s"""{ "accountNumber" : "${accountNumber}"}""")
+      val validJSON = Json.parse(s"""{ "accountNumber" : "$accountNumber"}""")
 
-        def mockGetAccount(httpResponse: Option[HttpResponse]): Either[String, AccountDetails] = {
-          mockGet(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> "*"))(httpResponse)
-          await(connector.getAccount(nino).value)
-        }
+      def mockGetAccount(httpResponse: Option[HttpResponse]): Either[String, AccountDetails] = {
+        mockGet(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> "*"))(httpResponse)
+        await(connector.getAccount(nino).value)
+      }
 
       "return the account details" in {
-        mockGetAccount(Some(HttpResponse(200, validJSON, emptyHeaderParameters))) shouldBe Right(AccountDetails(accountNumber))
+        mockGetAccount(Some(HttpResponse(200, validJSON, emptyHeaderParameters))) shouldBe Right(
+          AccountDetails(accountNumber))
       }
 
       "return an error" when {

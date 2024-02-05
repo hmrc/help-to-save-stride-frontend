@@ -29,4 +29,3 @@ object EligibilityCheckResult {
   case class AlreadyHasAccount(value: EligibilityCheckResponse) extends EligibilityCheckResult
 
 }
-

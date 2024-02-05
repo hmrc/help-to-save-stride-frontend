@@ -47,14 +47,14 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
   implicit lazy val fakeApplication: Application =
     new GuiceApplicationBuilder()
-      .configure(Configuration(
-        ConfigFactory.parseString(
-          """
-            | metrics.enabled = true
-            | metrics.jvm = false
-            | mongodb.session.expireAfter = 5 seconds
+      .configure(
+        Configuration(
+          ConfigFactory.parseString("""
+                                      | metrics.enabled = true
+                                      | metrics.jvm = false
+                                      | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
-      ) withFallback additionalConfig)
+        ) withFallback additionalConfig)
       .build()
 
   lazy val injector: Injector = fakeApplication.injector
@@ -67,7 +67,8 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
   implicit lazy val ec: ExecutionContext = injector.instanceOf[ExecutionContext]
 
-  implicit lazy val ninoLogMessageTransfromer: NINOLogMessageTransformer = injector.instanceOf[NINOLogMessageTransformer]
+  implicit lazy val ninoLogMessageTransfromer: NINOLogMessageTransformer =
+    injector.instanceOf[NINOLogMessageTransformer]
 
   implicit val headerCarrier: HeaderCarrier =
     HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))

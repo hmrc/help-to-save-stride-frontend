@@ -65,8 +65,14 @@ lazy val wartRemoverSettings = {
     Wart.TripleQuestionMark,
   )
 
-  Seq(Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*),
-    Test / compile / wartremoverErrors --= Seq(Wart.Any, Wart.Equals, Wart.Null, Wart.NonUnitStatements, Wart.PublicInference),
+  Seq(
+    Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*),
+    Test / compile / wartremoverErrors --= Seq(
+      Wart.Any,
+      Wart.Equals,
+      Wart.Null,
+      Wart.NonUnitStatements,
+      Wart.PublicInference),
     wartremoverExcluded ++=
       (Compile / routes).value ++
         (baseDirectory.value ** "*.sc").get ++
@@ -86,7 +92,6 @@ lazy val commonSettings = Seq(
   Compile / scalacOptions -= "utf8"
 ) ++ scalaSettings ++ defaultSettings() ++ scalariformSettings ++ playSettings
 
-
 lazy val microservice = Project(appName, file("."))
   .settings(commonSettings: _*)
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin, SbtWeb) ++ plugins: _*)
@@ -101,11 +106,13 @@ lazy val microservice = Project(appName, file("."))
   // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
   // imcompatible with a lot of WordSpec
   .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test())
+  .settings(scalafmtOnCompile := true)
   .settings(retrieveManaged := true)
   .settings(
     formatMessageQuotes := {
       import sys.process.*
-      val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
+      val result =
+        (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
       if (result != 0) logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes")
     },
     compile := ((Compile / compile) dependsOn formatMessageQuotes).value

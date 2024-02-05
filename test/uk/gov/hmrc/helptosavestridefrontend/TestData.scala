@@ -45,7 +45,15 @@ trait TestData { // scalastyle:off magic.number
             "phoneNumber": "07841097845"
      }""".stripMargin
 
-  val contactDetails = ContactDetails("1 Station Road", "Town Centre", Some("Sometown"), Some("Anyshire"), Some("County"), "AB12 3CD", Some("GB"), Some("07841097845"))
+  val contactDetails = ContactDetails(
+    "1 Station Road",
+    "Town Centre",
+    Some("Sometown"),
+    Some("Anyshire"),
+    Some("County"),
+    "AB12 3CD",
+    Some("GB"),
+    Some("07841097845"))
 
   val nsiUserInfo = NSIPayload("A", "Smith", LocalDate.parse("1960-01-01"), "AE123456C", contactDetails)
 
@@ -61,7 +69,8 @@ trait TestData { // scalastyle:off magic.number
 
   val ineligibleEligibilityResult = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, false)
 
-  val ineligibleManualOverrideEligibilityResult = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, true)
+  val ineligibleManualOverrideEligibilityResult =
+    SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, true)
 
   val accountExistsEligibilityResult = SessionEligibilityCheckResult.AlreadyHasAccount
 }

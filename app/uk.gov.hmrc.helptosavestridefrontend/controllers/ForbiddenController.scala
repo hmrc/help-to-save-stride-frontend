@@ -22,9 +22,9 @@ import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppCon
 //import uk.gov.hmrc.play.bootstrap.controller.ActionWithMdc
 
 @Singleton
-class ForbiddenController @Inject() (mcc:          MessagesControllerComponents,
-                                     errorHandler: ErrorHandler)(implicit appConfig: FrontendAppConfig)
-  extends StrideFrontendController(appConfig, mcc, errorHandler) {
+class ForbiddenController @Inject()(mcc: MessagesControllerComponents, errorHandler: ErrorHandler)(
+  implicit appConfig: FrontendAppConfig)
+    extends StrideFrontendController(appConfig, mcc, errorHandler) {
 
   def forbidden: Action[AnyContent] = Action {
     Forbidden("Please ask the HtS Dev team for permissions to access this site")

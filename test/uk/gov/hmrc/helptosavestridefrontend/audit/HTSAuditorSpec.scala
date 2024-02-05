@@ -44,7 +44,8 @@ class HTSAuditorSpec extends TestSupport {
           override val value = dataEvent
         }
 
-        (mockAuditConnector.sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext))
+        (mockAuditConnector
+          .sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext))
           .expects(dataEvent, *, *)
           .returning(Future.failed(new Exception))
 

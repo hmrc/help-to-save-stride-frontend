@@ -35,16 +35,19 @@ class SessionEligibilityCheckResultSpec extends AnyWordSpec with Matchers {
         Ineligible(eligibilityCheckResult, manualCreationAllowed = true),
         AlreadyHasAccount
       ).foreach { result =>
-          withClue(s"For $result: ") {
-            Json.fromJson[SessionEligibilityCheckResult](Json.toJson(result)).asOpt shouldBe Some(result)
-          }
+        withClue(s"For $result: ") {
+          Json.fromJson[SessionEligibilityCheckResult](Json.toJson(result)).asOpt shouldBe Some(result)
         }
+      }
 
     }
 
     "have a method which converts from EligibilityCheckResult" in {
-      fromEligibilityCheckResult(EligibilityCheckResult.Eligible(eligibilityCheckResult)) shouldBe Eligible(eligibilityCheckResult)
-      fromEligibilityCheckResult(EligibilityCheckResult.Ineligible(eligibilityCheckResult)) shouldBe Ineligible(eligibilityCheckResult, false)
+      fromEligibilityCheckResult(EligibilityCheckResult.Eligible(eligibilityCheckResult)) shouldBe Eligible(
+        eligibilityCheckResult)
+      fromEligibilityCheckResult(EligibilityCheckResult.Ineligible(eligibilityCheckResult)) shouldBe Ineligible(
+        eligibilityCheckResult,
+        false)
       fromEligibilityCheckResult(EligibilityCheckResult.AlreadyHasAccount(eligibilityCheckResult)) shouldBe AlreadyHasAccount
 
     }

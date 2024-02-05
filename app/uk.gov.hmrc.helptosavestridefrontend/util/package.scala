@@ -35,12 +35,11 @@ package object util {
 
   private val ninoRegex: Regex = """[A-Za-z]{2}[0-9]{6}[A-Za-z]{1}""".r
 
-  def maskNino(original: String): String = {
+  def maskNino(original: String): String =
     Option(original) match {
       case Some(text) => ninoRegex.replaceAllIn(text, "<NINO>")
       case None       => original
     }
-  }
 
   def base64Encode(input: String): String = new String(Base64.getEncoder.encode(input.getBytes))
 

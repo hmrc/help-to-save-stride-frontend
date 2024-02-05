@@ -24,10 +24,10 @@ import uk.gov.hmrc.helptosavestridefrontend.util.browserDateFormat
 
 class SummaryRowsNoChange {
   def summaryListRow(
-      question: String,
-      answer:   String
+    question: String,
+    answer: String
   ): SummaryListRow = SummaryListRow(
-    key   = Key(content = Text(question), classes = "govuk-!-width-one-third"),
+    key = Key(content = Text(question), classes = "govuk-!-width-one-third"),
     value = Value(content = HtmlContent(answer)),
   )
 
@@ -114,4 +114,3 @@ class SummaryRowsNoChange {
     )
   }
 }
-

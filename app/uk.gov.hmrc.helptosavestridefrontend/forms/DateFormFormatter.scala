@@ -26,46 +26,46 @@ import cats.syntax.either._
 
 object DateFormFormatter {
   def dateFormFormatter(
-      maximumDateInclusive: Option[LocalDate],
-      minimumDateInclusive: Option[LocalDate],
-      dayKey:               String,
-      monthKey:             String,
-      yearKey:              String,
-      dateKey:              String,
-      tooRecentArgs:        Seq[String]       = Seq.empty,
-      tooFarInPastArgs:     Seq[String]       = Seq.empty
+    maximumDateInclusive: Option[LocalDate],
+    minimumDateInclusive: Option[LocalDate],
+    dayKey: String,
+    monthKey: String,
+    yearKey: String,
+    dateKey: String,
+    tooRecentArgs: Seq[String] = Seq.empty,
+    tooFarInPastArgs: Seq[String] = Seq.empty
   ): Formatter[LocalDate] = new Formatter[LocalDate] {
 
     def dateFieldStringValues(
-        data: Map[String, String]
+      data: Map[String, String]
     ): Either[Seq[FormError], (String, String, String)] =
       List(dayKey, monthKey, yearKey)
         .map(data.get(_).map(_.trim).filter(_.nonEmpty)) match {
-          case Some(dayString) :: Some(monthString) :: Some(yearString) :: Nil =>
-            Right((dayString, monthString, yearString))
-          case None :: Some(_) :: Some(_) :: Nil =>
-            Left(Seq(FormError(dayKey, "error.dayRequired")))
-          case Some(_) :: None :: Some(_) :: Nil =>
-            Left(Seq(FormError(monthKey, "error.monthRequired")))
-          case Some(_) :: Some(_) :: None :: Nil =>
-            Left(Seq(FormError(yearKey, "error.yearRequired")))
-          case Some(_) :: None :: None :: Nil =>
-            val errorMessage = "error.monthAndYearRequired"
-            Left(Seq(FormError(monthKey, errorMessage), FormError(yearKey, errorMessage)))
-          case None :: Some(_) :: None :: Nil =>
-            val errorMessage = "error.dayAndYearRequired"
-            Left(Seq(FormError(dayKey, errorMessage), FormError(yearKey, errorMessage)))
-          case None :: None :: Some(_) :: Nil =>
-            val errorMessage = "error.dayAndMonthRequired"
-            Left(Seq(FormError(dayKey, errorMessage), FormError(monthKey, errorMessage)))
-          case _ =>
-            Left(Seq(FormError(dateKey, "error.required")))
-        }
+        case Some(dayString) :: Some(monthString) :: Some(yearString) :: Nil =>
+          Right((dayString, monthString, yearString))
+        case None :: Some(_) :: Some(_) :: Nil =>
+          Left(Seq(FormError(dayKey, "error.dayRequired")))
+        case Some(_) :: None :: Some(_) :: Nil =>
+          Left(Seq(FormError(monthKey, "error.monthRequired")))
+        case Some(_) :: Some(_) :: None :: Nil =>
+          Left(Seq(FormError(yearKey, "error.yearRequired")))
+        case Some(_) :: None :: None :: Nil =>
+          val errorMessage = "error.monthAndYearRequired"
+          Left(Seq(FormError(monthKey, errorMessage), FormError(yearKey, errorMessage)))
+        case None :: Some(_) :: None :: Nil =>
+          val errorMessage = "error.dayAndYearRequired"
+          Left(Seq(FormError(dayKey, errorMessage), FormError(yearKey, errorMessage)))
+        case None :: None :: Some(_) :: Nil =>
+          val errorMessage = "error.dayAndMonthRequired"
+          Left(Seq(FormError(dayKey, errorMessage), FormError(monthKey, errorMessage)))
+        case _ =>
+          Left(Seq(FormError(dateKey, "error.required")))
+      }
 
     def toValidInt(
-        stringValue: String,
-        maxValue:    Option[Int],
-        key:         String
+      stringValue: String,
+      maxValue: Option[Int],
+      key: String
     ): Either[FormError, Int] =
       Either.fromOption(
         Try(BigDecimal(stringValue).toIntExact).toOption.filter(i => i > 0 && maxValue.forall(i <= _)),
@@ -73,33 +73,34 @@ object DateFormFormatter {
       )
 
     override def bind(
-        key:  String,
-        data: Map[String, String]
+      key: String,
+      data: Map[String, String]
     ): Either[Seq[FormError], LocalDate] =
       for {
         dateFields <- dateFieldStringValues(data)
         (dayStr, monthStr, yearStr) = dateFields
         month <- toValidInt(monthStr, Some(12), monthKey).leftMap(Seq(_))
-        year <- toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
-        date <- toValidInt(dayStr, Some(31), dayKey).leftMap(Seq(_))
-          .flatMap(_ =>
-            Either
-              .fromTry(Try(LocalDate.of(year, month, dayStr.toInt)))
-              .leftMap(_ => Seq(FormError(dateKey, "error.invalid")))
-          )
+        year  <- toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
+        date <- toValidInt(dayStr, Some(31), dayKey)
+                 .leftMap(Seq(_))
+                 .flatMap(
+                   _ =>
+                     Either
+                       .fromTry(Try(LocalDate.of(year, month, dayStr.toInt)))
+                       .leftMap(_ => Seq(FormError(dateKey, "error.invalid"))))
         _ <- if (maximumDateInclusive.exists(_.isBefore(LocalDate.of(year, month, dayStr.toInt))))
-          Left(Seq(FormError(dateKey, "error.tooFuture", tooRecentArgs)))
-        else if (minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt))))
-          Left(Seq(FormError(s"$dateKey-year", "error.tooFarInPast", tooFarInPastArgs)))
-        else
-          Right(date)
+              Left(Seq(FormError(dateKey, "error.tooFuture", tooRecentArgs)))
+            else if (minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt))))
+              Left(Seq(FormError(s"$dateKey-year", "error.tooFarInPast", tooFarInPastArgs)))
+            else
+              Right(date)
       } yield date
 
     override def unbind(key: String, value: LocalDate): Map[String, String] =
       Map(
-        dayKey -> value.getDayOfMonth.toString,
+        dayKey   -> value.getDayOfMonth.toString,
         monthKey -> value.getMonthValue.toString,
-        yearKey -> value.getYear.toString
+        yearKey  -> value.getYear.toString
       )
   }
 }

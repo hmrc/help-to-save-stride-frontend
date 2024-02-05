@@ -27,7 +27,8 @@ object SessionEligibilityCheckResult {
 
   case class Eligible(response: EligibilityCheckResponse) extends SessionEligibilityCheckResult
 
-  case class Ineligible(response: EligibilityCheckResponse, manualCreationAllowed: Boolean) extends SessionEligibilityCheckResult
+  case class Ineligible(response: EligibilityCheckResponse, manualCreationAllowed: Boolean)
+      extends SessionEligibilityCheckResult
 
   case object AlreadyHasAccount extends SessionEligibilityCheckResult
 
@@ -46,36 +47,47 @@ object SessionEligibilityCheckResult {
       }
 
       val fields: List[(String, JsValue)] =
-        List("code" -> Some(JsNumber(code)),
-          "result" -> result.map(Json.toJson(_)),
-          "manualCreationAllowed" -> manualCreationAllowed.map(Json.toJson(_))
-        ).collect {
-            case (key, Some(value)) => key -> value
-          }
+        List(
+          "code"                  -> Some(JsNumber(code)),
+          "result"                -> result.map(Json.toJson(_)),
+          "manualCreationAllowed" -> manualCreationAllowed.map(Json.toJson(_))).collect {
+          case (key, Some(value)) => key -> value
+        }
 
       JsObject(fields)
     }
 
-    override def reads(json: JsValue): JsResult[SessionEligibilityCheckResult] = {
-      ((json \ "code").validate[Int],
+    override def reads(json: JsValue): JsResult[SessionEligibilityCheckResult] =
+      (
+        (json \ "code").validate[Int],
         (json \ "result").validateOpt[EligibilityCheckResponse],
         (json \ "manualCreationAllowed").validate[Boolean]) match {
-          case (JsSuccess(1, _), JsSuccess(Some(value), _), _) => JsSuccess(Eligible(value))
-          case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) => JsSuccess(Ineligible(value, manualCreationAllowed))
-          case (JsSuccess(3, _), JsSuccess(None, _), _) => JsSuccess(AlreadyHasAccount)
-          case _ => JsError(s"error during parsing eligibility from json $json")
-        }
-    }
+        case (JsSuccess(1, _), JsSuccess(Some(value), _), _) => JsSuccess(Eligible(value))
+        case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) =>
+          JsSuccess(Ineligible(value, manualCreationAllowed))
+        case (JsSuccess(3, _), JsSuccess(None, _), _) => JsSuccess(AlreadyHasAccount)
+        case _                                        => JsError(s"error during parsing eligibility from json $json")
+      }
   }
 }
 
-case class HtsStandardSession(userInfo: SessionEligibilityCheckResult, nSIUserInfo: NSIPayload, detailsConfirmed: Boolean = false, accountNumber: Option[String] = None) extends HtsSession
+case class HtsStandardSession(
+  userInfo: SessionEligibilityCheckResult,
+  nSIUserInfo: NSIPayload,
+  detailsConfirmed: Boolean = false,
+  accountNumber: Option[String] = None)
+    extends HtsSession
 
 object HtsStandardSession {
   implicit val format: Format[HtsStandardSession] = Json.format[HtsStandardSession]
 }
 
-case class HtsSecureSession(nino: String, userInfo: SessionEligibilityCheckResult, nSIUserInfo: Option[NSIPayload], accountNumber: Option[String] = None) extends HtsSession
+case class HtsSecureSession(
+  nino: String,
+  userInfo: SessionEligibilityCheckResult,
+  nSIUserInfo: Option[NSIPayload],
+  accountNumber: Option[String] = None)
+    extends HtsSession
 
 object HtsSecureSession {
   implicit val format: Format[HtsSecureSession] = Json.format[HtsSecureSession]
@@ -89,17 +101,17 @@ object HtsSession {
 
       val (sessionType, json) = s match {
         case s: HtsStandardSession => "standard" -> HtsStandardSession.format.writes(s)
-        case s: HtsSecureSession   => "secure" -> HtsSecureSession.format.writes(s)
+        case s: HtsSecureSession   => "secure"   -> HtsSecureSession.format.writes(s)
       }
 
       val fields: List[(String, JsValue)] = List(
-        "type" -> JsString(sessionType),
+        "type"    -> JsString(sessionType),
         "session" -> json
       )
       JsObject(fields)
     }
 
-    override def reads(json: JsValue): JsResult[HtsSession] = {
+    override def reads(json: JsValue): JsResult[HtsSession] =
       for {
         sessionType <- (json \ "type").validate[String]
         session <- {
@@ -111,6 +123,5 @@ object HtsSession {
           sessionParseResult
         }
       } yield session
-    }
   }
 }

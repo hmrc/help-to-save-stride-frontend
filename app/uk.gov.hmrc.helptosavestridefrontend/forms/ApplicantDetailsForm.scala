@@ -24,62 +24,68 @@ import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import java.time.{Clock, LocalDate}
 import scala.collection.immutable.Seq
 
-case class ApplicantDetails(forename:    String,
-                            surname:     String,
-                            dateOfBirth: LocalDate,
-                            address1:    String,
-                            address2:    String,
-                            address3:    Option[String],
-                            address4:    Option[String],
-                            address5:    Option[String],
-                            postcode:    String,
-                            countryCode: String)
+case class ApplicantDetails(
+  forename: String,
+  surname: String,
+  dateOfBirth: LocalDate,
+  address1: String,
+  address2: String,
+  address3: Option[String],
+  address4: Option[String],
+  address5: Option[String],
+  postcode: String,
+  countryCode: String)
 
 object ApplicantDetailsForm {
 
-  def apply(nsiPayload: NSIPayload)(implicit applicantDetailsValidation: ApplicantDetailsValidation, clock: Clock): Form[ApplicantDetails] = {
+  def apply(nsiPayload: NSIPayload)(
+    implicit applicantDetailsValidation: ApplicantDetailsValidation,
+    clock: Clock): Form[ApplicantDetails] = {
     val maybeFields = Map(
-      Ids.address3 -> nsiPayload.contactDetails.address3,
-      Ids.address4 -> nsiPayload.contactDetails.address4,
-      Ids.address5 -> nsiPayload.contactDetails.address5,
+      Ids.address3    -> nsiPayload.contactDetails.address3,
+      Ids.address4    -> nsiPayload.contactDetails.address4,
+      Ids.address5    -> nsiPayload.contactDetails.address5,
       Ids.countryCode -> nsiPayload.contactDetails.countryCode
     )
 
-    applicantDetailsForm.copy(data =
-      Map(
-        Ids.forename -> nsiPayload.forename,
-        Ids.surname -> nsiPayload.surname,
-        Ids.dobDay -> nsiPayload.dateOfBirth.getDayOfMonth.toString,
-        Ids.dobMonth -> nsiPayload.dateOfBirth.getMonthValue.toString,
-        Ids.dobYear -> nsiPayload.dateOfBirth.getYear.toString,
-        Ids.address1 -> nsiPayload.contactDetails.address1,
-        Ids.address2 -> nsiPayload.contactDetails.address2,
-        Ids.postcode -> nsiPayload.contactDetails.postcode
-      ) ++
-        maybeFields.collect{ case (key, Some(value)) => key -> value }
-    )
+    applicantDetailsForm.copy(
+      data =
+        Map(
+          Ids.forename -> nsiPayload.forename,
+          Ids.surname  -> nsiPayload.surname,
+          Ids.dobDay   -> nsiPayload.dateOfBirth.getDayOfMonth.toString,
+          Ids.dobMonth -> nsiPayload.dateOfBirth.getMonthValue.toString,
+          Ids.dobYear  -> nsiPayload.dateOfBirth.getYear.toString,
+          Ids.address1 -> nsiPayload.contactDetails.address1,
+          Ids.address2 -> nsiPayload.contactDetails.address2,
+          Ids.postcode -> nsiPayload.contactDetails.postcode
+        ) ++
+          maybeFields.collect { case (key, Some(value)) => key -> value })
   }
 
-  def applicantDetailsForm(implicit applicantDetailsValidation: ApplicantDetailsValidation, clock: Clock): Form[ApplicantDetails] = Form(
+  def applicantDetailsForm(
+    implicit applicantDetailsValidation: ApplicantDetailsValidation,
+    clock: Clock): Form[ApplicantDetails] = Form(
     mapping(
       Ids.forename -> of(applicantDetailsValidation.nameFormatter),
-      Ids.surname -> of(applicantDetailsValidation.nameFormatter),
-      Ids.dateOfBirth -> of(DateFormFormatter.dateFormFormatter(
-        maximumDateInclusive = Some(LocalDate.now(clock)),
-        minimumDateInclusive = Some(LocalDate.of(1900, 1, 1)),
-        "dob-day",
-        "dob-month",
-        "dob-year",
-        "dob",
-        tooRecentArgs        = Seq("today"),
-        tooFarInPastArgs     = Seq.empty
-      )),
-      Ids.address1 -> of(applicantDetailsValidation.addressLineFormatter),
-      Ids.address2 -> of(applicantDetailsValidation.addressLineFormatter),
-      Ids.address3 -> of(applicantDetailsValidation.addressOptionalLineFormatter),
-      Ids.address4 -> of(applicantDetailsValidation.addressOptionalLineFormatter),
-      Ids.address5 -> of(applicantDetailsValidation.addressOptionalLineFormatter),
-      Ids.postcode -> of(applicantDetailsValidation.postcodeFormatter),
+      Ids.surname  -> of(applicantDetailsValidation.nameFormatter),
+      Ids.dateOfBirth -> of(
+        DateFormFormatter.dateFormFormatter(
+          maximumDateInclusive = Some(LocalDate.now(clock)),
+          minimumDateInclusive = Some(LocalDate.of(1900, 1, 1)),
+          "dob-day",
+          "dob-month",
+          "dob-year",
+          "dob",
+          tooRecentArgs = Seq("today"),
+          tooFarInPastArgs = Seq.empty
+        )),
+      Ids.address1    -> of(applicantDetailsValidation.addressLineFormatter),
+      Ids.address2    -> of(applicantDetailsValidation.addressLineFormatter),
+      Ids.address3    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.address4    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.address5    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.postcode    -> of(applicantDetailsValidation.postcodeFormatter),
       Ids.countryCode -> text
     )(ApplicantDetails.apply)(ApplicantDetails.unapply)
   )

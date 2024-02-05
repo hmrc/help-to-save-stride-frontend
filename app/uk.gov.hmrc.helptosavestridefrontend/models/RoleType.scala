@@ -23,4 +23,3 @@ object RoleType {
   case class Secure(roleNames: List[String]) extends RoleType
 
 }
-

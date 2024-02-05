@@ -28,18 +28,21 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.mongo.test.MongoSupport
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport}
-class SessionStoreSpec extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
+class SessionStoreSpec
+    extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
 
   val timeStampSupport = new CurrentTimestampSupport()
-  val sessionStore = new SessionStoreImpl(mongoComponent, mockMetrics, timeStampSupport = timeStampSupport, mockPagerDuty)
+  val sessionStore =
+    new SessionStoreImpl(mongoComponent, mockMetrics, timeStampSupport = timeStampSupport, mockPagerDuty)
   implicit override val patienceConfig =
-    PatienceConfig(timeout  = scaled(Span(200, Millis)), interval = scaled(Span(5, Millis)))
+    PatienceConfig(timeout = scaled(Span(200, Millis)), interval = scaled(Span(5, Millis)))
 
   "SessionStore" when {
 
     val htsSession = HtsStandardSession(SessionEligibilityCheckResult.Eligible(eligibleResponse.value), nsiUserInfo)
 
-    val htsSecureSession = HtsSecureSession("AE123456C", SessionEligibilityCheckResult.Eligible(eligibleResponse.value), Some(nsiUserInfo))
+    val htsSecureSession =
+      HtsSecureSession("AE123456C", SessionEligibilityCheckResult.Eligible(eligibleResponse.value), Some(nsiUserInfo))
 
     "be able to insert a HtsStandardSession into and read from mongo" in {
 
