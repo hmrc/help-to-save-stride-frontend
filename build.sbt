@@ -1,40 +1,15 @@
-import com.typesafe.sbt.uglify.Import
-import play.core.PlayVersion
-import sbt.Keys.{libraryDependencies, resolvers, _}
-import uk.gov.hmrc.DefaultBuildSettings._
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+import sbt.Keys.{libraryDependencies, resolvers, *}
+import uk.gov.hmrc.DefaultBuildSettings.*
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.*
+import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
 import wartremover.Warts
-import wartremover.WartRemover.autoImport.{wartremoverExcluded, wartremoverErrors}
+
 import scala.language.postfixOps
 
-val test = "test"
 val appName = "help-to-save-stride-frontend"
 
 lazy val plugins: Seq[Plugins] = Seq.empty
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
-val playVersion = "play-28"
-val hmrcBootstrapVersion = "7.15.0"
-
-lazy val dependencies = Seq(
-  ws,
-  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.73.0",
-  "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % hmrcBootstrapVersion,
-  "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
-  "org.typelevel" %% "cats-core" % "2.8.0",
-  "com.github.kxbmap" %% "configs" % "0.6.1",
-  "uk.gov.hmrc" %% "play-frontend-hmrc" % s"7.23.0-$playVersion"
-)
-
-lazy val testDependencies = Seq(
-  "com.vladsch.flexmark" % "flexmark-all"  % "0.35.10" % test,
-  "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.73.0" % test,
-  "org.scalatest" %% "scalatest" % "3.2.9" % test,
-  "org.scalamock" %% "scalamock" % "5.2.0" % test,
-  "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % test,
-  "com.typesafe.play" %% "play-test" % PlayVersion.current % test,
-  "com.typesafe.play" %% "play-ws" % PlayVersion.current % test,
-  "uk.gov.hmrc" %% "bootstrap-test-play-28" % hmrcBootstrapVersion % "test"
-)
 
 lazy val formatMessageQuotes = taskKey[Unit]("Makes sure smart quotes are used in all messages")
 
@@ -52,7 +27,7 @@ lazy val scoverageSettings = {
 
 lazy val scalariformSettings = {
   import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-  import scalariform.formatter.preferences._
+  import scalariform.formatter.preferences.*
 
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(AlignArguments, true)
@@ -137,11 +112,11 @@ lazy val microservice = Project(appName, file("."))
   // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
   // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
   // imcompatible with a lot of WordSpec
-  .settings(libraryDependencies ++= dependencies ++ testDependencies)
+  .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test())
   .settings(retrieveManaged := true)
   .settings(
     formatMessageQuotes := {
-      import sys.process._
+      import sys.process.*
       val result = (List("sed", "-i", s"""s/&rsquo;\\|''/’/g""", s"${baseDirectory.value.getAbsolutePath}/conf/messages") !)
       if (result != 0) logger.log(Level.Warn, "WARNING: could not replace quotes with smart quotes")
     },
