@@ -41,7 +41,7 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
       .expects(expectedKey, *)
       .returning(result)
   val binder: TestBinder = mock[TestBinder]
-  implicit lazy val frontendAppConfig: FrontendAppConfig = injector.instanceOf[FrontendAppConfig]
+  implicit lazy val frontendAppConfig: FrontendAppConfig = injector().instanceOf[FrontendAppConfig]
   implicit val testValidation: ApplicantDetailsValidation =
     new ApplicantDetailsValidationImpl(frontendAppConfig: FrontendAppConfig, clock: Clock)
 
