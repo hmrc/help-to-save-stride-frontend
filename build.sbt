@@ -150,3 +150,5 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s")
   .settings(scalacOptions += "-Wconf:src=routes/.*:s")
   .settings(Global / lintUnusedKeysOnLoad := false)
+
+libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
