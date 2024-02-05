@@ -16,9 +16,6 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
-import java.util.Base64
-
-import configs.syntax._
 import org.scalamock.handlers.CallHandler4
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
@@ -27,19 +24,19 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthSupport { this: TestSupport =>
-
-  lazy val roles: List[String] = {
+  private lazy val roles = {
     val base64EncodedRoles =
-      fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-roles").value
+      fakeApplication.configuration.get[Seq[String]]("stride.base64-encoded-roles")
     base64EncodedRoles.map(x => new String(Base64.getDecoder.decode(x)))
   }
 
-  lazy val secureRoles: List[String] = {
+  private lazy val secureRoles = {
     val base64SecureValues =
-      fakeApplication.configuration.underlying.get[List[String]]("stride.base64-encoded-secure-roles").value
+      fakeApplication.configuration.get[Seq[String]]("stride.base64-encoded-secure-roles")
     base64SecureValues.map(x => new String(Base64.getDecoder.decode(x)))
   }
 

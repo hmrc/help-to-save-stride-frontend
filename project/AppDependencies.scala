@@ -13,7 +13,6 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % hmrcBootstrapVersion,
     "uk.gov.hmrc"       %% "domain"                     % "8.1.0-play-28",
     "org.typelevel"     %% "cats-core"                  % "2.9.0",
-    "com.github.kxbmap" %% "configs"                    % "0.6.1",
     "uk.gov.hmrc"       %% "play-frontend-hmrc"         % s"7.29.0-$playVersion"
   )
 
