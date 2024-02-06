@@ -29,38 +29,38 @@ trait HTSEvent {
 }
 
 object HTSEvent {
-  def apply(appName:         String,
-            auditType:       String,
-            detail:          JsValue,
-            transactionName: String,
-            path:            String)(implicit hc: HeaderCarrier): ExtendedDataEvent =
+  def apply(appName: String, auditType: String, detail: JsValue, transactionName: String, path: String)(
+    implicit hc: HeaderCarrier): ExtendedDataEvent =
     ExtendedDataEvent(appName, auditType, detail = detail, tags = hc.toAuditTags(transactionName, path))
 
 }
 
-case class PersonalInformationDisplayedToOperator(piDisplayed:     PersonalInformationDisplayed,
-                                                  operatorDetails: OperatorDetails,
-                                                  path:            String)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig) extends HTSEvent {
+case class PersonalInformationDisplayedToOperator(
+  piDisplayed: PersonalInformationDisplayed,
+  operatorDetails: OperatorDetails,
+  path: String)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig)
+    extends HTSEvent {
   val value: ExtendedDataEvent = HTSEvent(
     appConfig.appName,
     "PersonalInformationDisplayedToOperator",
     Json.obj(
       "detailsDisplayed" -> Json.toJson(piDisplayed),
-      "operatorDetails" -> Json.toJson(operatorDetails)
+      "operatorDetails"  -> Json.toJson(operatorDetails)
     ),
     "personal-information-displayed-to-stride-operator",
     path
   )
 }
 
-case class ManualAccountCreationSelected(nino:            NINO,
-                                         path:            String,
-                                         operatorDetails: OperatorDetails)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig) extends HTSEvent {
+case class ManualAccountCreationSelected(nino: NINO, path: String, operatorDetails: OperatorDetails)(
+  implicit hc: HeaderCarrier,
+  appConfig: FrontendAppConfig)
+    extends HTSEvent {
   val value: ExtendedDataEvent = HTSEvent(
     appConfig.appName,
     "ManualAccountCreationSelected",
     Json.obj(
-      "nino" -> nino,
+      "nino"            -> nino,
       "operatorDetails" -> Json.toJson(operatorDetails)
     ),
     "manual-account-created",

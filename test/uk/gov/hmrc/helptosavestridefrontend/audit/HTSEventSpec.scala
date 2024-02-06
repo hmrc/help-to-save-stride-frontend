@@ -33,7 +33,11 @@ class HTSEventSpec extends TestSupport {
     "be created with appropriate fields" in {
 
       val event = PersonalInformationDisplayedToOperator(
-        PersonalInformationDisplayed("AE123456C", "foo bar", Some(LocalDate.of(1900, 1, 1)), List("address1", "address2")),
+        PersonalInformationDisplayed(
+          "AE123456C",
+          "foo bar",
+          Some(LocalDate.of(1900, 1, 1)),
+          List("address1", "address2")),
         operatorDetails,
         "path"
       )

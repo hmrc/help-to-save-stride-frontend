@@ -46,19 +46,20 @@ class StrideAuthSpec extends TestSupport {
   def base64Encode(s: String): String = new String(Base64.getEncoder.encode(s.getBytes()))
 
   override lazy val additionalConfig: Configuration = Configuration(
-    "stride.base64-encoded-roles" -> standardRoles.map(base64Encode),
+    "stride.base64-encoded-roles"        -> standardRoles.map(base64Encode),
     "stride.base64-encoded-secure-roles" -> secureRoles.map(base64Encode)
   )
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
-  def mockAuthorised[A](expectedPredicate: Predicate,
-                        expectedRetrieval: Retrieval[A])(result: Either[Throwable, A]) =
-    (mockAuthConnector.authorise(_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
+  def mockAuthorised[A](expectedPredicate: Predicate, expectedRetrieval: Retrieval[A])(result: Either[Throwable, A]) =
+    (mockAuthConnector
+      .authorise(_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
       .expects(expectedPredicate, expectedRetrieval, *, *)
       .returning(result.fold(Future.failed, Future.successful))
 
-  class TestStrideAuth(val frontendAppConfig: FrontendAppConfig) extends StrideFrontendController(frontendAppConfig, testMcc, errorHandler) with StrideAuth {
+  class TestStrideAuth(val frontendAppConfig: FrontendAppConfig)
+      extends StrideFrontendController(frontendAppConfig, testMcc, errorHandler) with StrideAuth {
 
     val authConnector: AuthConnector = mockAuthConnector
 
@@ -66,7 +67,9 @@ class StrideAuthSpec extends TestSupport {
 
   lazy val test = new TestStrideAuth(frontendAppConfig)
 
-  lazy val action = test.authorisedFromStride { _ => _ => Ok }(controllers.routes.Default.redirect())
+  lazy val action = test.authorisedFromStride { _ => _ =>
+    Ok
+  }(controllers.routes.Default.redirect())
 
   "StrideAuth" must {
 
@@ -78,10 +81,8 @@ class StrideAuthSpec extends TestSupport {
 
         val result = action(request)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(test.strideLoginUrl + s"?successURL=${
-          URLEncoder.encode(
-            controllers.routes.Default.redirect().absoluteURL(), "UTF-8")
-        }&origin=help-to-save-stride-frontend")
+        redirectLocation(result) shouldBe Some(
+          test.strideLoginUrl + s"?successURL=${URLEncoder.encode(controllers.routes.Default.redirect().absoluteURL(), "UTF-8")}&origin=help-to-save-stride-frontend")
       }
 
       "returns an Unauthorised status" when {
@@ -92,12 +93,13 @@ class StrideAuthSpec extends TestSupport {
             Set("aa", "bb"),
             Set.empty
           ).foreach { enrolments =>
-              withClue(s"For enrolments $enrolments:") {
-                mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(enrolments.map(Enrolment(_)))))
+            withClue(s"For enrolments $enrolments:") {
+              mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
+                Right(Enrolments(enrolments.map(Enrolment(_)))))
 
-                status(action(FakeRequest())) shouldBe UNAUTHORIZED
-              }
+              status(action(FakeRequest())) shouldBe UNAUTHORIZED
             }
+          }
         }
       }
 
@@ -107,19 +109,25 @@ class StrideAuthSpec extends TestSupport {
           Set("b"),
           Set("a", "b")
         ).foreach { enrolments =>
-            withClue(s"For enrolments $enrolments:") {
-              mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(enrolments.map(Enrolment(_)))))
-              status(action(FakeRequest())) shouldBe OK
-            }
+          withClue(s"For enrolments $enrolments:") {
+            mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
+              Right(Enrolments(enrolments.map(Enrolment(_)))))
+            status(action(FakeRequest())) shouldBe OK
           }
+        }
       }
 
       "should return standard stride operator details when requested" in {
-        val retrievals = new ~(new ~(new ~(Enrolments(standardRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
+        val retrievals = new ~(
+          new ~(
+            new ~(Enrolments(standardRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))),
+            Some(Name(Some("name"), None))),
+          Some("email"))
 
-        mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(Right(retrievals))
-        val action = test.authorisedFromStrideWithDetails { _ => operatorDetails =>
-          roleType => {
+        mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
+          Right(retrievals))
+        val action = test.authorisedFromStrideWithDetails { _ => operatorDetails => roleType =>
+          {
             operatorDetails shouldBe OperatorDetails(List("a", "b"), Some("PID"), "name", "email")
             roleType shouldBe RoleType.Standard(List("a", "b"))
             Ok
@@ -135,27 +143,34 @@ class StrideAuthSpec extends TestSupport {
           Set("d"),
           Set("c", "d")
         ).foreach { enrolments =>
-            withClue(s"For enrolments $enrolments:") {
-              mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Right(Enrolments(enrolments.map(Enrolment(_)))))
+          withClue(s"For enrolments $enrolments:") {
+            mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
+              Right(Enrolments(enrolments.map(Enrolment(_)))))
 
-              val action = test.authorisedFromStride { _ => roleType => {
+            val action = test.authorisedFromStride { _ => roleType =>
+              {
                 roleType shouldBe RoleType.Secure(enrolments.toList)
                 Ok
               }
-              }(controllers.routes.Default.redirect())
+            }(controllers.routes.Default.redirect())
 
-              status(action(FakeRequest())) shouldBe OK
-            }
+            status(action(FakeRequest())) shouldBe OK
           }
+        }
       }
 
       "return the Secure RoleType given the secure enrolment when using authorisedFromStrideWithDetails" in {
-        val retrievals = new ~(new ~(new ~(Enrolments(secureRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))), Some(Name(Some("name"), None))), Some("email"))
+        val retrievals = new ~(
+          new ~(
+            new ~(Enrolments(secureRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))),
+            Some(Name(Some("name"), None))),
+          Some("email"))
 
-        mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(Right(retrievals))
+        mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
+          Right(retrievals))
 
-        val action = test.authorisedFromStrideWithDetails { _ => operatorDetails =>
-          roleType => {
+        val action = test.authorisedFromStrideWithDetails { _ => operatorDetails => roleType =>
+          {
             operatorDetails shouldBe OperatorDetails(List("c", "d"), Some("PID"), "name", "email")
             roleType shouldBe RoleType.Secure(List("c", "d"))
             Ok
@@ -175,4 +190,3 @@ object StrideAuthSpec {
   case object NotLoggedInException extends NoActiveSession("uh oh")
 
 }
-

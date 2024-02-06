@@ -62,11 +62,13 @@ class HttpResponseOpsSpec extends TestSupport {
       HttpResponse(status, Json.toJson(data), emptyHeaderParameters).parseJson[Test1]() shouldBe Right(data)
 
       // test the path
-      HttpResponse(status, Json.parse(
-        s"""{
-          |"data": ${Json.toJson(data)}
-          |}
-        """.stripMargin), emptyHeaderParameters).parseJson[Test1](_ \ "data") shouldBe Right(data)
+      HttpResponse(
+        status,
+        Json.parse(s"""{
+                      |"data": ${Json.toJson(data)}
+                      |}
+        """.stripMargin),
+        emptyHeaderParameters).parseJson[Test1](_ \ "data") shouldBe Right(data)
     }
   }
 }

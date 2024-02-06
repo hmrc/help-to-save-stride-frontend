@@ -26,7 +26,7 @@ class NinoValidationSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks wi
 
   "EmailValidation" must {
 
-      def genString(length: Int) = Gen.listOfN(length, Gen.alphaChar).map(_.mkString(""))
+    def genString(length: Int) = Gen.listOfN(length, Gen.alphaChar).map(_.mkString(""))
 
     val testNino = testValidation[String](ninoFormatter) _
 
@@ -60,4 +60,3 @@ class NinoValidationSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks wi
 }
 
 // scalastyle:on magic.number
-

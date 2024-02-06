@@ -31,4 +31,3 @@ class TryOps[A](val t: Try[A]) extends AnyVal {
   }
 
 }
-

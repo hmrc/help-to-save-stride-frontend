@@ -28,22 +28,24 @@ import uk.gov.hmrc.helptosavestridefrontend.forms.DateFormFormatter
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPropertyChecks with ValidationTestSupport {
+class ApplicantDetailsValidationSpec
+    extends TestSupport with ScalaCheckDrivenPropertyChecks with ValidationTestSupport {
 
   val epochClock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
   override lazy val additionalConfig: Configuration =
     Configuration(
-      "applicant-details.forename.max-length" -> 3,
-      "applicant-details.surname.max-length" -> 3,
+      "applicant-details.forename.max-length"      -> 3,
+      "applicant-details.surname.max-length"       -> 3,
       "applicant-details.address-lines.max-length" -> 3,
-      "applicant-details.postcode.max-length" -> 3
+      "applicant-details.postcode.max-length"      -> 3
     )
 
   val validation = new ApplicantDetailsValidationImpl(
-    new FrontendAppConfig(fakeApplication.configuration,
-                          fakeApplication.injector.instanceOf[ServicesConfig],
-                          fakeApplication.injector.instanceOf[Environment]),
+    new FrontendAppConfig(
+      fakeApplication.configuration,
+      fakeApplication.injector.instanceOf[ServicesConfig],
+      fakeApplication.injector.instanceOf[Environment]),
     epochClock
   )
 
@@ -56,8 +58,8 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
       "dob-month",
       "dob-year",
       "dob",
-      tooRecentArgs        = Seq("today"),
-      tooFarInPastArgs     = Seq.empty
+      tooRecentArgs = Seq("today"),
+      tooFarInPastArgs = Seq.empty
     )
 
     "validating forenames" must {
@@ -124,11 +126,14 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
     "validating days" must {
 
-        def testDay(day: Option[String]) = validateDate.bind(Ids.dateOfBirth, Map(
-          Ids.dobDay -> day.getOrElse(""),
-          Ids.dobMonth -> "12",
-          Ids.dobYear -> "2000"
-        ))
+      def testDay(day: Option[String]) =
+        validateDate.bind(
+          Ids.dateOfBirth,
+          Map(
+            Ids.dobDay   -> day.getOrElse(""),
+            Ids.dobMonth -> "12",
+            Ids.dobYear  -> "2000"
+          ))
       "mark days as invalid" when {
 
         "the day does not exist" in {
@@ -153,11 +158,14 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
     "validating months" must {
 
-        def testMonth(month: Option[String]) = validateDate.bind(Ids.dateOfBirth, Map(
-          Ids.dobDay -> "1",
-          Ids.dobMonth -> month.getOrElse(""),
-          Ids.dobYear -> "1900"
-        ))
+      def testMonth(month: Option[String]) =
+        validateDate.bind(
+          Ids.dateOfBirth,
+          Map(
+            Ids.dobDay   -> "1",
+            Ids.dobMonth -> month.getOrElse(""),
+            Ids.dobYear  -> "1900"
+          ))
 
       "mark months as valid" when {
 
@@ -193,11 +201,14 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
     }
 
     "validating years" must {
-        def testYear(year: Option[String]) = validateDate.bind(Ids.dateOfBirth, Map(
-          Ids.dobDay -> "1",
-          Ids.dobMonth -> "12",
-          Ids.dobYear -> year.getOrElse("")
-        ))
+      def testYear(year: Option[String]) =
+        validateDate.bind(
+          Ids.dateOfBirth,
+          Map(
+            Ids.dobDay   -> "1",
+            Ids.dobMonth -> "12",
+            Ids.dobYear  -> year.getOrElse("")
+          ))
       val currentYear = epochClock.instant().atZone(ZoneId.of("Z")).getYear
 
       "mark years as valid" when {
@@ -222,7 +233,8 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
         }
 
         "the year is greater than the current year" in {
-          testYear(Some((LocalDate.now().getYear + 1).toString)) shouldBe Left(List(FormError(Ids.dateOfBirth, List(ErrorMessages.afterMax), List("today"))))
+          testYear(Some((LocalDate.now().getYear + 1).toString)) shouldBe Left(
+            List(FormError(Ids.dateOfBirth, List(ErrorMessages.afterMax), List("today"))))
         }
 
         "the year is not an int" in {
@@ -253,7 +265,10 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
         "the day exists and is between 1 and 31" in {
           (1 to 31).foreach { d =>
-            validateDate.bind(Ids.dateOfBirth, Map(Ids.dobDay -> d.toString, Ids.dobMonth -> "12", Ids.dobYear -> "2000")) shouldBe Right(LocalDate.of(2000, 12, d))
+            validateDate.bind(
+              Ids.dateOfBirth,
+              Map(Ids.dobDay -> d.toString, Ids.dobMonth -> "12", Ids.dobYear -> "2000")) shouldBe Right(
+              LocalDate.of(2000, 12, d))
           }
         }
 
@@ -261,8 +276,8 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
       "mark fields as invalid" when {
 
-          def testDateOfBirthInvalid(data: Map[String, String], expectedError: FormError): Unit =
-            validateDate.bind(Ids.dateOfBirth, data) shouldBe Left(Seq(expectedError))
+        def testDateOfBirthInvalid(data: Map[String, String], expectedError: FormError): Unit =
+          validateDate.bind(Ids.dateOfBirth, data) shouldBe Left(Seq(expectedError))
 
         "the day is missing" in {
           testDateOfBirthInvalid(data - Ids.dobDay, FormError(Ids.dobDay, ErrorMessages.dayRequired))
@@ -278,7 +293,9 @@ class ApplicantDetailsValidationSpec extends TestSupport with ScalaCheckDrivenPr
 
         "the day, month and year values together do not form a valid date" in {
           // 31st February doesn't exist
-          testDateOfBirthInvalid(Map(Ids.dobDay -> "31", Ids.dobMonth -> "2", Ids.dobYear -> "1990"), FormError(Ids.dateOfBirth, ErrorMessages.isInvalid))
+          testDateOfBirthInvalid(
+            Map(Ids.dobDay -> "31", Ids.dobMonth -> "2", Ids.dobYear -> "1990"),
+            FormError(Ids.dateOfBirth, ErrorMessages.isInvalid))
         }
 
       }

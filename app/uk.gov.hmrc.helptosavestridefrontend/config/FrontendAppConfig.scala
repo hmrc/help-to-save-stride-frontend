@@ -16,22 +16,18 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.config
 
-import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.bootstrap.config.{ServicesConfig}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.Duration
 
 @Singleton
-class FrontendAppConfig @Inject() (configuration:   Configuration,
-                                   servicesConfig:  ServicesConfig,
-                                   val environment: Environment) {
-
-  private def loadConfig(key: String) = servicesConfig.getString(key)
-
+class FrontendAppConfig @Inject()(
+  configuration: Configuration,
+  servicesConfig: ServicesConfig,
+  val environment: Environment) {
   lazy val config: Configuration = configuration
-
-  val authUrl: String = servicesConfig.baseUrl("auth")
 
   val appName: String = servicesConfig.getString("appName")
 
@@ -45,11 +41,8 @@ class FrontendAppConfig @Inject() (configuration:   Configuration,
   object FormValidation {
     val forenameMaxTotalLength: Int = servicesConfig.getInt("applicant-details.forename.max-length")
 
-    val surnameMaxTotalLength: Int = servicesConfig.getInt("applicant-details.surname.max-length")
-
     val addressLineMaxTotalLength: Int = servicesConfig.getInt("applicant-details.address-lines.max-length")
 
     val postcodeMaxTotalLength: Int = servicesConfig.getInt("applicant-details.postcode.max-length")
   }
-
 }

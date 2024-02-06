@@ -46,7 +46,9 @@ trait HelpToSaveConnector {
 
   def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload]
 
-  def createAccount(createAccountRequest: CreateAccountRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
+  def createAccount(createAccountRequest: CreateAccountRequest)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Result[CreateAccountResult]
 
   def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus]
 
@@ -55,13 +57,14 @@ trait HelpToSaveConnector {
 }
 
 @Singleton
-class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
-                                         metrics:           HTSMetrics,
-                                         pagerDutyAlerting: PagerDutyAlerting,
-                                         configuration:     Configuration,
-                                         servicesConfig:    ServicesConfig,
-                                         environment:       Environment)(implicit transformer: NINOLogMessageTransformer)
-  extends FrontendAppConfig(configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
+class HelpToSaveConnectorImpl @Inject()(
+  http: HttpClient,
+  metrics: HTSMetrics,
+  pagerDutyAlerting: PagerDutyAlerting,
+  configuration: Configuration,
+  servicesConfig: ServicesConfig,
+  environment: Environment)(implicit transformer: NINOLogMessageTransformer)
+    extends FrontendAppConfig(configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
 
   private val htsUrl = servicesConfig.baseUrl("help-to-save")
 
@@ -77,46 +80,57 @@ class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
 
   type EitherStringOr[A] = Either[String, A]
 
-  override def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult] = {
+  override def getEligibility(
+    nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult] =
     EitherT[Future, String, EligibilityCheckResult](
       {
         val timerContext = metrics.eligibilityCheckTimer.time()
 
-        http.get(eligibilityUrl, Map("nino" -> nino)).map { response =>
-          val time = timerContext.stop()
+        http
+          .get(eligibilityUrl, Map("nino" -> nino))
+          .map {
+            response =>
+              val time = timerContext.stop()
 
-          response.status match {
-            case OK =>
-              val result = {
-                response.parseJson[EligibilityCheckResponse](_ \ "eligibilityCheckResult").flatMap(toEligibilityCheckResult)
-              }
-              result.fold({
-                e =>
+              response.status match {
+                case OK =>
+                  val result = {
+                    response
+                      .parseJson[EligibilityCheckResponse](_ \ "eligibilityCheckResult")
+                      .flatMap(toEligibilityCheckResult)
+                  }
+                  result.fold(
+                    { e =>
+                      metrics.eligibilityCheckErrorCounter.inc()
+                      logger.warn(
+                        s"Could not parse JSON response from eligibility check, received 200 (OK): $e ${timeString(time)}",
+                        nino)
+                      pagerDutyAlerting.alert("Could not parse JSON in eligibility check response")
+                    },
+                    _ =>
+                      logger.info(s"Call to check eligibility successful, received 200 (OK) ${timeString(time)}", nino)
+                  )
+                  result
+
+                case other: Int =>
+                  logger.warn(
+                    s"Call to check eligibility unsuccessful. Received unexpected status $other ${timeString(time)}",
+                    nino)
                   metrics.eligibilityCheckErrorCounter.inc()
-                  logger.warn(s"Could not parse JSON response from eligibility check, received 200 (OK): $e ${timeString(time)}", nino)
-                  pagerDutyAlerting.alert("Could not parse JSON in eligibility check response")
-              }, _ =>
-                logger.info(s"Call to check eligibility successful, received 200 (OK) ${timeString(time)}", nino)
-              )
-              result
+                  pagerDutyAlerting.alert("Received unexpected http status in response to eligibility check")
+                  Left(s"Received unexpected status $other")
 
-            case other: Int =>
-              logger.warn(s"Call to check eligibility unsuccessful. Received unexpected status $other ${timeString(time)}", nino)
-              metrics.eligibilityCheckErrorCounter.inc()
-              pagerDutyAlerting.alert("Received unexpected http status in response to eligibility check")
-              Left(s"Received unexpected status $other")
-
+              }
           }
-        }.recover {
-          case e =>
-            val time = timerContext.stop()
-            pagerDutyAlerting.alert("Failed to make call to check eligibility")
-            metrics.eligibilityCheckErrorCounter.inc()
-            Left(s"Call to check eligibility unsuccessful: ${e.getMessage} (round-trip time: ${timeString(time)})")
-        }
+          .recover {
+            case e =>
+              val time = timerContext.stop()
+              pagerDutyAlerting.alert("Failed to make call to check eligibility")
+              metrics.eligibilityCheckErrorCounter.inc()
+              Left(s"Call to check eligibility unsuccessful: ${e.getMessage} (round-trip time: ${timeString(time)})")
+          }
       }
     )
-  }
 
   // scalastyle:off magic.number
   private def toEligibilityCheckResult(r: EligibilityCheckResponse): Either[String, EligibilityCheckResult] =
@@ -133,29 +147,38 @@ class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
     EitherT {
       val timerContext = metrics.payePersonalDetailsTimer.time()
 
-      http.get(payePersonalDetailsUrl, Map("nino" -> nino))
+      http
+        .get(payePersonalDetailsUrl, Map("nino" -> nino))
         .map { response =>
           val time = timerContext.stop()
           response.status match {
             case OK =>
               val result = response.parseJson[PayePersonalDetails]().map(_.convertToNSIUserInfo(nino))
-              result.fold({
-                e =>
+              result.fold(
+                { e =>
                   metrics.payePersonalDetailsErrorCounter.inc()
-                  logger.warn(s"Could not parse JSON response from paye-personal-details, received 200 (OK): $e ${timeString(time)}", nino)
+                  logger.warn(
+                    s"Could not parse JSON response from paye-personal-details, received 200 (OK): $e ${timeString(time)}",
+                    nino)
                   pagerDutyAlerting.alert("Could not parse JSON in the paye-personal-details response")
-              }, _ =>
-                logger.info(s"Call to check paye-personal-details successful, received 200 (OK) ${timeString(time)}", nino)
+                },
+                _ =>
+                  logger.info(
+                    s"Call to check paye-personal-details successful, received 200 (OK) ${timeString(time)}",
+                    nino)
               )
               result
 
             case other: Int =>
-              logger.warn(s"Call to paye-personal-details unsuccessful. Received unexpected status $other ${timeString(time)}", nino)
+              logger.warn(
+                s"Call to paye-personal-details unsuccessful. Received unexpected status $other ${timeString(time)}",
+                nino)
               metrics.payePersonalDetailsErrorCounter.inc()
               pagerDutyAlerting.alert("Received unexpected http status in response to paye-personal-details")
               Left(s"Received unexpected status $other")
           }
-        }.recover {
+        }
+        .recover {
           case e =>
             val time = timerContext.stop()
             pagerDutyAlerting.alert("Failed to make call to paye-personal-details")
@@ -164,81 +187,97 @@ class HelpToSaveConnectorImpl @Inject() (http:              HttpClient,
         }
     }
 
-  override def createAccount(createAccountRequest: CreateAccountRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
+  override def createAccount(createAccountRequest: CreateAccountRequest)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Result[CreateAccountResult] = {
 
     val nSIUserInfo = createAccountRequest.payload
 
-    EitherT(http.post(createAccountUrl, createAccountRequest).map[Either[String, CreateAccountResult]] { response =>
-      response.status match {
-        case Status.CREATED =>
-          Try((response.json \ "accountNumber").as[String]) match {
-            case Success(accountNumber) => Right(AccountCreated(accountNumber))
-            case Failure(e) =>
-              val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body"
-              logger.warn(s"$message, error = $e", nSIUserInfo.nino)
-              pagerDutyAlerting.alert(message)
-              Left(message)
+    EitherT(
+      http
+        .post(createAccountUrl, createAccountRequest)
+        .map[Either[String, CreateAccountResult]] { response =>
+          response.status match {
+            case Status.CREATED =>
+              Try((response.json \ "accountNumber").as[String]) match {
+                case Success(accountNumber) => Right(AccountCreated(accountNumber))
+                case Failure(e) =>
+                  val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body"
+                  logger.warn(s"$message, error = $e", nSIUserInfo.nino)
+                  pagerDutyAlerting.alert(message)
+                  Left(message)
+              }
+
+            case Status.CONFLICT =>
+              logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
+              Right(AccountAlreadyExists)
+
+            case _ =>
+              logger.warn(s"createAccount returned a status: ${response.status}", nSIUserInfo.nino)
+
+              pagerDutyAlerting.alert(
+                "Received unexpected http status from the back end when calling the create account url")
+              Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status}")
           }
-
-        case Status.CONFLICT =>
-          logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
-          Right(AccountAlreadyExists)
-
-        case _ =>
-          logger.warn(s"createAccount returned a status: ${response.status}", nSIUserInfo.nino)
-
-          pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the create account url")
-          Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status}")
-      }
-    }.recover {
-      case e =>
-        logger.warn(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}", nSIUserInfo.nino)
-        pagerDutyAlerting.alert("Failed to make call to the back end create account url")
-        Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
-    })
+        }
+        .recover {
+          case e =>
+            logger.warn(
+              s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}",
+              nSIUserInfo.nino)
+            pagerDutyAlerting.alert("Failed to make call to the back end create account url")
+            Left(s"Encountered error while trying to make createAccount call, with message: ${e.getMessage}")
+        })
   }
 
-  override def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] = {
-    EitherT(http.get(enrolmentStatusUrl, Map("nino" -> nino)).map[Either[String, EnrolmentStatus]]{ response =>
-      response.status match {
-        case OK =>
-          val result = response.parseJson[EnrolmentStatus]()
-          result.fold({
-            e =>
-              logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK): $e", nino)
-          }, _ =>
-            logger.debug(s"Call to get enrolment status successful, received 200 (OK)", nino)
-          )
-          result
+  override def getEnrolmentStatus(
+    nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] =
+    EitherT(
+      http
+        .get(enrolmentStatusUrl, Map("nino" -> nino))
+        .map[Either[String, EnrolmentStatus]] { response =>
+          response.status match {
+            case OK =>
+              val result = response.parseJson[EnrolmentStatus]()
+              result.fold(
+                { e =>
+                  logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK): $e", nino)
+                },
+                _ => logger.debug(s"Call to get enrolment status successful, received 200 (OK)", nino)
+              )
+              result
 
-        case other =>
-          logger.warn(s"Call to get enrolment status unsuccessful. Received unexpected status $other", nino)
-          pagerDutyAlerting.alert("Received unexpected http status from the back end when calling the get enrolment status url")
-          Left(s"Received unexpected status $other")
-      }
-    }.recover {
-      case e =>
-        logger.warn(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}", nino)
-        pagerDutyAlerting.alert("Failed to make call to the back end get enrolment status url")
-        Left(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}")
-    })
-
-  }
+            case other =>
+              logger.warn(s"Call to get enrolment status unsuccessful. Received unexpected status $other", nino)
+              pagerDutyAlerting.alert(
+                "Received unexpected http status from the back end when calling the get enrolment status url")
+              Left(s"Received unexpected status $other")
+          }
+        }
+        .recover {
+          case e =>
+            logger.warn(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}", nino)
+            pagerDutyAlerting.alert("Failed to make call to the back end get enrolment status url")
+            Left(s"Encountered error while trying to getEnrolmentStatus, with message: ${e.getMessage}")
+        })
 
   override def getAccount(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[AccountDetails] = {
     val corrlelationId = UUID.randomUUID().toString
 
-    EitherT(http.get(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> corrlelationId)).map[Either[String, AccountDetails]]{ response =>
-      response.status match {
-        case OK    => response.parseJson[AccountDetails]()
-        case other => Left(s"Could not get account details for correlation Id $corrlelationId. Got status $other")
-      }
-    }.recover{
-      case e =>
-        Left(s"Encountered error while trying to getAccount, with message ${e.getMessage}")
-    })
+    EitherT(
+      http
+        .get(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> corrlelationId))
+        .map[Either[String, AccountDetails]] { response =>
+          response.status match {
+            case OK    => response.parseJson[AccountDetails]()
+            case other => Left(s"Could not get account details for correlation Id $corrlelationId. Got status $other")
+          }
+        }
+        .recover {
+          case e =>
+            Left(s"Encountered error while trying to getAccount, with message ${e.getMessage}")
+        })
 
   }
 
 }
-
