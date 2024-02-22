@@ -19,7 +19,6 @@ package uk.gov.hmrc.helptosavestridefrontend
 import java.util.UUID
 
 import com.codahale.metrics._
-import com.kenshoo.play.metrics.{Metrics => PlayMetrics}
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -37,6 +36,7 @@ import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import java.util
 
 import scala.concurrent.ExecutionContext
 
@@ -75,12 +75,16 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
   val nino = "AE123456C"
 
-  val mockMetrics = new HTSMetrics(stub[PlayMetrics]) {
+  class StubMetricRegistry extends MetricRegistry {
+    override def getGauges(filter: MetricFilter): util.SortedMap[String, Gauge[_]] =
+      new util.TreeMap[String, Gauge[_]]()
+  }
+
+  val mockMetrics = new HTSMetrics(stub[MetricRegistry]) {
     override def timer(name: String): Timer = new Timer()
 
     override def counter(name: String): Counter = new Counter()
   }
-
   override def beforeAll(): Unit = {
     Play.start(fakeApplication)
     super.beforeAll()

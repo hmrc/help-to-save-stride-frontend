@@ -27,12 +27,10 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
-import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-
 import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
-trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
+trait StrideAuth extends AuthorisedFunctions with StrideAuthRedirects {
   this: StrideFrontendController =>
 
   val frontendAppConfig: FrontendAppConfig
