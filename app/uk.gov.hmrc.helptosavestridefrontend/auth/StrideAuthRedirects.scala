@@ -61,7 +61,7 @@ trait StrideAuthRedirects {
       strideLoginUrl,
       Map(
         "successURL" -> Seq(successUrl),
-        "origin"     -> Seq(origin)
+        "origin" -> Seq(origin)
       ) ++ failureUrl.map(f => Map("failureURL" -> Seq(f))).getOrElse(Map()))
 
 }

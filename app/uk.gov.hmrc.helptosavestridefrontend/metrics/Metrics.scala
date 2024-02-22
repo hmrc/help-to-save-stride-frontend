@@ -57,10 +57,10 @@ object Metrics {
     "ns" -> 1000L,
     "μs" -> 1000L,
     "ms" -> 1000L,
-    "s"  -> 60L,
-    "m"  -> 60L,
-    "h"  -> 24L,
-    "d"  -> 7L
+    "s" -> 60L,
+    "m" -> 60L,
+    "h" -> 24L,
+    "d" -> 7L
   )
 
   /** Return the integer part and the remainder of the result of dividing th enumerator by the denominator */
@@ -68,12 +68,12 @@ object Metrics {
     (numerator / denominator) -> (numerator % denominator)
 
   /**
-    * Convert `nanos` to a human-friendly string - will return the time in terms of
-    * the two highest time resolutions that are appropriate. For example:
-    *
-    * 2 nanoseconds      -> "2ns"
-    * 1.23456789 seconds -> "1s 234ms"
-    */
+   * Convert `nanos` to a human-friendly string - will return the time in terms of
+   * the two highest time resolutions that are appropriate. For example:
+   *
+   * 2 nanoseconds      -> "2ns"
+   * 1.23456789 seconds -> "1s 234ms"
+   */
   def nanosToPrettyString(nanos: Long): String = {
 
     @tailrec

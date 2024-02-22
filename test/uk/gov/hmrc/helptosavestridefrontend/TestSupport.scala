@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
-import java.util.UUID
-
 import com.codahale.metrics._
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
@@ -33,11 +31,11 @@ import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppCon
 import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
 import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.SessionId
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import java.util
 
+import java.util
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport {
@@ -49,10 +47,11 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     new GuiceApplicationBuilder()
       .configure(
         Configuration(
-          ConfigFactory.parseString("""
-                                      | metrics.enabled = true
-                                      | metrics.jvm = false
-                                      | mongodb.session.expireAfter = 5 seconds
+          ConfigFactory.parseString(
+            """
+              | metrics.enabled = true
+              | metrics.jvm = false
+              | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
         ) withFallback additionalConfig)
       .build()
@@ -85,6 +84,7 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
     override def counter(name: String): Counter = new Counter()
   }
+
   override def beforeAll(): Unit = {
     Play.start(fakeApplication)
     super.beforeAll()
