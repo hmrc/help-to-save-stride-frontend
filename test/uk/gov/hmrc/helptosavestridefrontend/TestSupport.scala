@@ -47,11 +47,10 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     new GuiceApplicationBuilder()
       .configure(
         Configuration(
-          ConfigFactory.parseString(
-            """
-              | metrics.enabled = true
-              | metrics.jvm = false
-              | mongodb.session.expireAfter = 5 seconds
+          ConfigFactory.parseString("""
+                                      | metrics.enabled = true
+                                      | metrics.jvm = false
+                                      | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
         ) withFallback additionalConfig)
       .build()
