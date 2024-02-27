@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@ package uk.gov.hmrc.helptosavestridefrontend.metrics
 
 import cats.instances.long._
 import cats.syntax.eq._
-import com.codahale.metrics.{Counter, Timer}
+import com.codahale.metrics.{Counter, MetricRegistry, Timer}
 import com.google.inject.{Inject, Singleton}
 
 import scala.annotation.tailrec
 
 @Singleton
-class HTSMetrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
+class HTSMetrics @Inject()(metrics: MetricRegistry) {
 
-  protected def timer(name: String): Timer = metrics.defaultRegistry.timer(name)
+  protected def timer(name: String): Timer = metrics.timer(name)
 
-  protected def counter(name: String): Counter = metrics.defaultRegistry.counter(name)
+  protected def counter(name: String): Counter = metrics.counter(name)
 
   val eligibilityCheckTimer: Timer = timer("stride.frontend.eligibility-check-time")
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,10 @@ import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
 import uk.gov.hmrc.helptosavestridefrontend.models.RoleType._
 import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
 import uk.gov.hmrc.helptosavestridefrontend.util.toFuture
-import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-
 import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
-trait StrideAuth extends AuthorisedFunctions with AuthRedirects {
+trait StrideAuth extends AuthorisedFunctions with StrideAuthRedirects {
   this: StrideFrontendController =>
 
   val frontendAppConfig: FrontendAppConfig

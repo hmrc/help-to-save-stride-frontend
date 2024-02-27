@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
-import java.util.UUID
-
 import com.codahale.metrics._
-import com.kenshoo.play.metrics.{Metrics => PlayMetrics}
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -34,10 +31,11 @@ import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppCon
 import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
 import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.SessionId
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import java.util
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport {
@@ -75,7 +73,12 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
 
   val nino = "AE123456C"
 
-  val mockMetrics = new HTSMetrics(stub[PlayMetrics]) {
+  class StubMetricRegistry extends MetricRegistry {
+    override def getGauges(filter: MetricFilter): util.SortedMap[String, Gauge[_]] =
+      new util.TreeMap[String, Gauge[_]]()
+  }
+
+  val mockMetrics = new HTSMetrics(stub[MetricRegistry]) {
     override def timer(name: String): Timer = new Timer()
 
     override def counter(name: String): Counter = new Counter()
