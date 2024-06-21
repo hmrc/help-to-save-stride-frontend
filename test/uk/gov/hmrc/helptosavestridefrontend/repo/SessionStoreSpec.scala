@@ -27,7 +27,7 @@ import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.mongo.test.MongoSupport
-import uk.gov.hmrc.mongo.{CurrentTimestampSupport}
+import uk.gov.hmrc.mongo.CurrentTimestampSupport
 class SessionStoreSpec
     extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
 

@@ -54,7 +54,8 @@ class StrideAuthRedirectsSpec extends AnyWordSpec with ScalaFutures with Matcher
         Map(
           "appName"  -> "app",
           "run.mode" -> mode.toString
-        ) ++ extraConfig)
+        ) ++ extraConfig
+      )
     }
 
     object Redirect extends TestRedirects

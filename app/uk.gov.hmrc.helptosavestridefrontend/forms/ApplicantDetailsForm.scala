@@ -34,13 +34,14 @@ case class ApplicantDetails(
   address4: Option[String],
   address5: Option[String],
   postcode: String,
-  countryCode: String)
+  countryCode: String
+)
 
 object ApplicantDetailsForm {
 
-  def apply(nsiPayload: NSIPayload)(
-    implicit applicantDetailsValidation: ApplicantDetailsValidation,
-    clock: Clock): Form[ApplicantDetails] = {
+  def apply(
+    nsiPayload: NSIPayload
+  )(implicit applicantDetailsValidation: ApplicantDetailsValidation, clock: Clock): Form[ApplicantDetails] = {
     val maybeFields = Map(
       Ids.address3    -> nsiPayload.contactDetails.address3,
       Ids.address4    -> nsiPayload.contactDetails.address4,
@@ -49,23 +50,24 @@ object ApplicantDetailsForm {
     )
 
     applicantDetailsForm.copy(
-      data =
-        Map(
-          Ids.forename -> nsiPayload.forename,
-          Ids.surname  -> nsiPayload.surname,
-          Ids.dobDay   -> nsiPayload.dateOfBirth.getDayOfMonth.toString,
-          Ids.dobMonth -> nsiPayload.dateOfBirth.getMonthValue.toString,
-          Ids.dobYear  -> nsiPayload.dateOfBirth.getYear.toString,
-          Ids.address1 -> nsiPayload.contactDetails.address1,
-          Ids.address2 -> nsiPayload.contactDetails.address2,
-          Ids.postcode -> nsiPayload.contactDetails.postcode
-        ) ++
-          maybeFields.collect { case (key, Some(value)) => key -> value })
+      data = Map(
+        Ids.forename -> nsiPayload.forename,
+        Ids.surname  -> nsiPayload.surname,
+        Ids.dobDay   -> nsiPayload.dateOfBirth.getDayOfMonth.toString,
+        Ids.dobMonth -> nsiPayload.dateOfBirth.getMonthValue.toString,
+        Ids.dobYear  -> nsiPayload.dateOfBirth.getYear.toString,
+        Ids.address1 -> nsiPayload.contactDetails.address1,
+        Ids.address2 -> nsiPayload.contactDetails.address2,
+        Ids.postcode -> nsiPayload.contactDetails.postcode
+      ) ++
+        maybeFields.collect { case (key, Some(value)) => key -> value }
+    )
   }
 
-  def applicantDetailsForm(
-    implicit applicantDetailsValidation: ApplicantDetailsValidation,
-    clock: Clock): Form[ApplicantDetails] = Form(
+  def applicantDetailsForm(implicit
+    applicantDetailsValidation: ApplicantDetailsValidation,
+    clock: Clock
+  ): Form[ApplicantDetails] = Form(
     mapping(
       Ids.forename -> of(applicantDetailsValidation.nameFormatter),
       Ids.surname  -> of(applicantDetailsValidation.nameFormatter),
@@ -79,7 +81,8 @@ object ApplicantDetailsForm {
           "dob",
           tooRecentArgs = Seq("today"),
           tooFarInPastArgs = Seq.empty
-        )),
+        )
+      ),
       Ids.address1    -> of(applicantDetailsValidation.addressLineFormatter),
       Ids.address2    -> of(applicantDetailsValidation.addressLineFormatter),
       Ids.address3    -> of(applicantDetailsValidation.addressOptionalLineFormatter),

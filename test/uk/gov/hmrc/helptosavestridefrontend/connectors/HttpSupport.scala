@@ -33,12 +33,14 @@ trait HttpSupport { this: MockFactory with Matchers =>
   // for the query params, to check that a query parameter for a key is defined but to not check it's actual value enter
   // the value "*" for the key in the `queryParms` input
   def mockGet(url: String, queryParams: Map[String, String] = emptyMap, headers: Map[String, String] = emptyMap)(
-    response: Option[HttpResponse]) =
+    response: Option[HttpResponse]
+  ) =
     (mockHttp
       .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
         _: HttpReads[HttpResponse],
         _: HeaderCarrier,
-        _: ExecutionContext))
+        _: ExecutionContext
+      ))
       .expects(where {
         (
           u: String,
@@ -46,14 +48,16 @@ trait HttpSupport { this: MockFactory with Matchers =>
           _: Seq[(String, String)],
           _: HttpReads[HttpResponse],
           h: HeaderCarrier,
-          _: ExecutionContext) =>
+          _: ExecutionContext
+        ) =>
           val (ignoreQueryParams, checkQueryParams) = queryParams.partition(_._2 === "*")
 
           // use matchers here to get useful error messages when the following predicates
           // are not satisfied - otherwise it is difficult to tell in the logs what went wrong
           u shouldBe url
           ignoreQueryParams.keys.foreach(k =>
-            withClue(s"For query parameter $k: ") { q.exists(_._1 === k) shouldBe true })
+            withClue(s"For query parameter $k: ")(q.exists(_._1 === k) shouldBe true)
+          )
           q.filterNot { case (key, _) => ignoreQueryParams.isDefinedAt(key) } shouldBe checkQueryParams.toSeq
           h.extraHeaders shouldBe headers.toSeq
           true
@@ -61,13 +65,15 @@ trait HttpSupport { this: MockFactory with Matchers =>
       .returning(response.fold(Future.failed[HttpResponse](new Exception("Test exception message")))(Future.successful))
 
   def mockPut[A](url: String, body: A, headers: Map[String, String] = Map.empty[String, String])(
-    result: Option[HttpResponse]): Unit =
+    result: Option[HttpResponse]
+  ): Unit =
     (mockHttp
       .PUT(_: String, _: A, _: Seq[(String, String)])(
         _: Writes[A],
         _: HttpReads[HttpResponse],
         _: HeaderCarrier,
-        _: ExecutionContext))
+        _: ExecutionContext
+      ))
       .expects(where {
         (
           u: String,
@@ -76,14 +82,16 @@ trait HttpSupport { this: MockFactory with Matchers =>
           _: Writes[A],
           _: HttpReads[HttpResponse],
           h: HeaderCarrier,
-          _: ExecutionContext) =>
+          _: ExecutionContext
+        ) =>
           u shouldBe url
           a shouldBe body
           h.extraHeaders shouldBe headers.toSeq
           true
       })
       .returning(
-        result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful))
+        result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful)
+      )
 
   def mockPost[A](url: String, headers: Map[String, String], body: A)(result: Option[HttpResponse]): Unit =
     (mockHttp
@@ -91,13 +99,16 @@ trait HttpSupport { this: MockFactory with Matchers =>
         _: Writes[A],
         _: HttpReads[HttpResponse],
         _: HeaderCarrier,
-        _: ExecutionContext))
+        _: ExecutionContext
+      ))
       .expects(url, body, headers.toSeq, *, *, *, *)
       .returning(
-        result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful))
+        result.fold[Future[HttpResponse]](Future.failed(new Exception("Test exception message")))(Future.successful)
+      )
 
-  def mockDelete[O](url: String)(response: Option[O])
-    : CallHandler5[String, Seq[(String, String)], HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
+  def mockDelete[O](url: String)(
+    response: Option[O]
+  ): CallHandler5[String, Seq[(String, String)], HttpReads[O], HeaderCarrier, ExecutionContext, Future[O]] =
     (mockHttp
       .DELETE[O](_: String, _: Seq[(String, String)])(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
       .expects(url, *, *, *, *)

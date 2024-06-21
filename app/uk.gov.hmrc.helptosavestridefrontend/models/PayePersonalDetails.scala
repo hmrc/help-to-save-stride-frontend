@@ -35,7 +35,8 @@ case class Address(
   line4: Option[String],
   line5: Option[String],
   postcode: String,
-  countryCode: Option[String])
+  countryCode: Option[String]
+)
 
 object PayePersonalDetails {
 

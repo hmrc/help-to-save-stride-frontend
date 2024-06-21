@@ -23,7 +23,8 @@ case class CreateAccountRequest(
   payload: NSIPayload,
   eligibilityReason: Int,
   source: String,
-  detailsManuallyEntered: Boolean)
+  detailsManuallyEntered: Boolean
+)
 
 object CreateAccountRequest {
   implicit val createAccountRequestFormat: Format[CreateAccountRequest] = Json.format[CreateAccountRequest]

@@ -44,11 +44,15 @@ class SessionEligibilityCheckResultSpec extends AnyWordSpec with Matchers {
 
     "have a method which converts from EligibilityCheckResult" in {
       fromEligibilityCheckResult(EligibilityCheckResult.Eligible(eligibilityCheckResult)) shouldBe Eligible(
-        eligibilityCheckResult)
+        eligibilityCheckResult
+      )
       fromEligibilityCheckResult(EligibilityCheckResult.Ineligible(eligibilityCheckResult)) shouldBe Ineligible(
         eligibilityCheckResult,
-        false)
-      fromEligibilityCheckResult(EligibilityCheckResult.AlreadyHasAccount(eligibilityCheckResult)) shouldBe AlreadyHasAccount
+        false
+      )
+      fromEligibilityCheckResult(
+        EligibilityCheckResult.AlreadyHasAccount(eligibilityCheckResult)
+      ) shouldBe AlreadyHasAccount
 
     }
 

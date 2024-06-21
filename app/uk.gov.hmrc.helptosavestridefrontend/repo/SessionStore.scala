@@ -43,11 +43,12 @@ trait SessionStore {
 }
 
 @Singleton
-class SessionStoreImpl @Inject()(
+class SessionStoreImpl @Inject() (
   mongo: MongoComponent,
   metrics: HTSMetrics,
   timeStampSupport: TimestampSupport,
-  pagerDutyAlerting: PagerDutyAlerting)(implicit appConfig: FrontendAppConfig, ec: ExecutionContext)
+  pagerDutyAlerting: PagerDutyAlerting
+)(implicit appConfig: FrontendAppConfig, ec: ExecutionContext)
     extends SessionStore {
   private val expireAfterSeconds = appConfig.mongoSessionExpireAfter.toSeconds
 
@@ -57,7 +58,8 @@ class SessionStoreImpl @Inject()(
       "sessions",
       ttl = Duration(expireAfterSeconds, SECONDS),
       timestampSupport = timeStampSupport,
-      cacheIdType = CacheIdType.SimpleCacheId)
+      cacheIdType = CacheIdType.SimpleCacheId
+    )
 
   private type EitherStringOr[A] = Either[String, A]
 
@@ -69,28 +71,27 @@ class SessionStoreImpl @Inject()(
         preservingMdc {
           cacheRepository
             .findById(sessionId)
-            .map {
-              maybeCache =>
-                val response: OptionT[EitherStringOr, HtsSession] = for {
-                  cache <- OptionT.fromOption[EitherStringOr](maybeCache)
-                  data  <- OptionT.fromOption[EitherStringOr](Some(cache.data))
-                  result <- OptionT.liftF[EitherStringOr, HtsSession](
-                             (data \ "htsSession")
-                               .validate[HtsSession]
-                               .asEither
-                               .leftMap(e => s"Could not parse session data from mongo: ${e.mkString("; ")}"))
-                } yield result
+            .map { maybeCache =>
+              val response: OptionT[EitherStringOr, HtsSession] = for {
+                cache <- OptionT.fromOption[EitherStringOr](maybeCache)
+                data  <- OptionT.fromOption[EitherStringOr](Some(cache.data))
+                result <- OptionT.liftF[EitherStringOr, HtsSession](
+                            (data \ "htsSession")
+                              .validate[HtsSession]
+                              .asEither
+                              .leftMap(e => s"Could not parse session data from mongo: ${e.mkString("; ")}")
+                          )
+              } yield result
 
-                val _ = timerContext.stop()
+              val _ = timerContext.stop()
 
-                response.value
+              response.value
             }
-            .recover {
-              case e =>
-                val _ = timerContext.stop()
-                metrics.sessionStoreReadErrorCounter.inc()
-                pagerDutyAlerting.alert("unexpected error when reading stride HtsSession from mongo")
-                Left(e.getMessage)
+            .recover { case e =>
+              val _ = timerContext.stop()
+              metrics.sessionStoreReadErrorCounter.inc()
+              pagerDutyAlerting.alert("unexpected error when reading stride HtsSession from mongo")
+              Left(e.getMessage)
             }
         }
 
@@ -109,12 +110,11 @@ class SessionStoreImpl @Inject()(
               val _ = timerContext.stop()
               Right(())
             }
-            .recover {
-              case e =>
-                val _ = timerContext.stop()
-                metrics.sessionStoreWriteErrorCounter.inc()
-                pagerDutyAlerting.alert("unexpected error when writing stride HtsSession to mongo")
-                Left(e.getMessage)
+            .recover { case e =>
+              val _ = timerContext.stop()
+              metrics.sessionStoreWriteErrorCounter.inc()
+              pagerDutyAlerting.alert("unexpected error when writing stride HtsSession to mongo")
+              Left(e.getMessage)
             }
         }
 
@@ -133,12 +133,11 @@ class SessionStoreImpl @Inject()(
               val _ = timerContext.stop()
               Right(())
             }
-            .recover {
-              case e =>
-                val _ = timerContext.stop()
-                metrics.sessionStoreDeleteErrorCounter.inc()
-                pagerDutyAlerting.alert("unexpected error when deleting stride HtsSession from mongo")
-                Left(e.getMessage)
+            .recover { case e =>
+              val _ = timerContext.stop()
+              metrics.sessionStoreDeleteErrorCounter.inc()
+              pagerDutyAlerting.alert("unexpected error when deleting stride HtsSession from mongo")
+              Left(e.getMessage)
             }
         }
 

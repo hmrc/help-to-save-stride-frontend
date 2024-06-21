@@ -33,7 +33,8 @@ case class NSIPayload(
   nino: String,
   contactDetails: ContactDetails,
   registrationChannel: String,
-  systemId: String)
+  systemId: String
+)
 
 object NSIPayload {
 
@@ -46,7 +47,8 @@ object NSIPayload {
     postcode: String,
     countryCode: Option[String],
     phoneNumber: Option[String] = None,
-    communicationPreference: String = "00")
+    communicationPreference: String = "00"
+  )
 
   implicit val dateFormat: Format[LocalDate] = {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
@@ -62,7 +64,8 @@ object NSIPayload {
     surname: String,
     dateOfBirth: LocalDate,
     nino: String,
-    contactDetails: ContactDetails): NSIPayload =
+    contactDetails: ContactDetails
+  ): NSIPayload =
     NSIPayload(forename, surname, dateOfBirth, nino, contactDetails, "callCentre", "STRIDE")
 
   def apply(details: ApplicantDetails, nino: NINO): NSIPayload =
@@ -78,7 +81,8 @@ object NSIPayload {
         details.address4,
         details.address5,
         details.postcode,
-        Some(details.countryCode))
+        Some(details.countryCode)
+      )
     )
 
 }

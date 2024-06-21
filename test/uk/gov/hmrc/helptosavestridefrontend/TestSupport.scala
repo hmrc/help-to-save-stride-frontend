@@ -52,7 +52,8 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
                                       | metrics.jvm = false
                                       | mongodb.session.expireAfter = 5 seconds
           """.stripMargin)
-        ) withFallback additionalConfig)
+        ) withFallback additionalConfig
+      )
       .build()
 
   lazy val injector: Injector = fakeApplication.injector

@@ -47,12 +47,11 @@ trait StrideAuthRedirects {
 
   def strideLoginUrl: String = host("stride-auth-frontend") + "/stride/sign-in"
 
-  final lazy val defaultOrigin: String = {
+  final lazy val defaultOrigin: String =
     config
       .getOptional[String]("sosOrigin")
       .orElse(config.getOptional[String]("appName"))
       .getOrElse("undefined")
-  }
 
   def origin: String = defaultOrigin
 
@@ -62,6 +61,7 @@ trait StrideAuthRedirects {
       Map(
         "successURL" -> Seq(successUrl),
         "origin"     -> Seq(origin)
-      ) ++ failureUrl.map(f => Map("failureURL" -> Seq(f))).getOrElse(Map()))
+      ) ++ failureUrl.map(f => Map("failureURL" -> Seq(f))).getOrElse(Map())
+    )
 
 }

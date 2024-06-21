@@ -68,7 +68,8 @@ class HttpResponseOpsSpec extends TestSupport {
                       |"data": ${Json.toJson(data)}
                       |}
         """.stripMargin),
-        emptyHeaderParameters).parseJson[Test1](_ \ "data") shouldBe Right(data)
+        emptyHeaderParameters
+      ).parseJson[Test1](_ \ "data") shouldBe Right(data)
     }
   }
 }
