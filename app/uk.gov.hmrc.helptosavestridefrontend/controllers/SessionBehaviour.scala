@@ -37,8 +37,7 @@ trait SessionBehaviour extends StrideAuth {
 
   type NINO = String
 
-  private def checkSessionInternal(noSessionData: => Future[Result], whenSession: HtsSession => Future[Result])(
-    implicit
+  private def checkSessionInternal(noSessionData: => Future[Result], whenSession: HtsSession => Future[Result])(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Result] =
@@ -63,9 +62,8 @@ trait SessionBehaviour extends StrideAuth {
     whenIneligibleSecure: (Ineligible, NINO, Option[NSIPayload], Option[AccountReferenceNumber]) => Future[Result] =
       (_, _, _, _) => SeeOther(routes.StrideController.customerNotEligible().url),
     whenAlreadyHasAccount: (Option[NSIPayload], Option[AccountReferenceNumber]) => Future[Result] = (_, _) =>
-      SeeOther(routes.StrideController.accountAlreadyExists().url))(
-    implicit request: Request[_],
-    ec: ExecutionContext): Future[Result] =
+      SeeOther(routes.StrideController.accountAlreadyExists().url)
+  )(implicit request: Request[_], ec: ExecutionContext): Future[Result] =
     checkSessionInternal(
       noSessionData,
       htsSession =>
@@ -73,7 +71,7 @@ trait SessionBehaviour extends StrideAuth {
 
           case (session: HtsStandardSession, _: Standard) =>
             session.userInfo match {
-              case e: Eligible       => whenEligible(e, session.detailsConfirmed, session.nSIUserInfo, session.accountNumber)
+              case e: Eligible => whenEligible(e, session.detailsConfirmed, session.nSIUserInfo, session.accountNumber)
               case i: Ineligible     => whenIneligible(i, session.nSIUserInfo, session.accountNumber)
               case AlreadyHasAccount => whenAlreadyHasAccount(Some(session.nSIUserInfo), session.accountNumber)
             }
@@ -82,12 +80,12 @@ trait SessionBehaviour extends StrideAuth {
             session.userInfo match {
               case e: Eligible       => whenEligibleSecure(e, session.nino, session.nSIUserInfo, session.accountNumber)
               case AlreadyHasAccount => whenAlreadyHasAccount(session.nSIUserInfo, session.accountNumber)
-              case i: Ineligible     => whenIneligibleSecure(i, session.nino, session.nSIUserInfo, session.accountNumber)
+              case i: Ineligible => whenIneligibleSecure(i, session.nino, session.nSIUserInfo, session.accountNumber)
             }
 
           case (_, _) =>
             Forbidden
-      }
+        }
     )
 
 }

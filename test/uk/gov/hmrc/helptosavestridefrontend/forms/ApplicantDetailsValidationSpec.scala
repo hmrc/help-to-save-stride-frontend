@@ -45,7 +45,8 @@ class ApplicantDetailsValidationSpec
     new FrontendAppConfig(
       fakeApplication.configuration,
       fakeApplication.injector.instanceOf[ServicesConfig],
-      fakeApplication.injector.instanceOf[Environment]),
+      fakeApplication.injector.instanceOf[Environment]
+    ),
     epochClock
   )
 
@@ -133,7 +134,8 @@ class ApplicantDetailsValidationSpec
             Ids.dobDay   -> day.getOrElse(""),
             Ids.dobMonth -> "12",
             Ids.dobYear  -> "2000"
-          ))
+          )
+        )
       "mark days as invalid" when {
 
         "the day does not exist" in {
@@ -165,7 +167,8 @@ class ApplicantDetailsValidationSpec
             Ids.dobDay   -> "1",
             Ids.dobMonth -> month.getOrElse(""),
             Ids.dobYear  -> "1900"
-          ))
+          )
+        )
 
       "mark months as valid" when {
 
@@ -208,7 +211,8 @@ class ApplicantDetailsValidationSpec
             Ids.dobDay   -> "1",
             Ids.dobMonth -> "12",
             Ids.dobYear  -> year.getOrElse("")
-          ))
+          )
+        )
       val currentYear = epochClock.instant().atZone(ZoneId.of("Z")).getYear
 
       "mark years as valid" when {
@@ -234,7 +238,8 @@ class ApplicantDetailsValidationSpec
 
         "the year is greater than the current year" in {
           testYear(Some((LocalDate.now().getYear + 1).toString)) shouldBe Left(
-            List(FormError(Ids.dateOfBirth, List(ErrorMessages.afterMax), List("today"))))
+            List(FormError(Ids.dateOfBirth, List(ErrorMessages.afterMax), List("today")))
+          )
         }
 
         "the year is not an int" in {
@@ -267,8 +272,8 @@ class ApplicantDetailsValidationSpec
           (1 to 31).foreach { d =>
             validateDate.bind(
               Ids.dateOfBirth,
-              Map(Ids.dobDay -> d.toString, Ids.dobMonth -> "12", Ids.dobYear -> "2000")) shouldBe Right(
-              LocalDate.of(2000, 12, d))
+              Map(Ids.dobDay -> d.toString, Ids.dobMonth -> "12", Ids.dobYear -> "2000")
+            ) shouldBe Right(LocalDate.of(2000, 12, d))
           }
         }
 
@@ -295,7 +300,8 @@ class ApplicantDetailsValidationSpec
           // 31st February doesn't exist
           testDateOfBirthInvalid(
             Map(Ids.dobDay -> "31", Ids.dobMonth -> "2", Ids.dobYear -> "1990"),
-            FormError(Ids.dateOfBirth, ErrorMessages.isInvalid))
+            FormError(Ids.dateOfBirth, ErrorMessages.isInvalid)
+          )
         }
 
       }

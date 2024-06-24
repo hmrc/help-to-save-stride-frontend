@@ -25,11 +25,11 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 @Singleton
-class StrideFrontendController @Inject()(
+class StrideFrontendController @Inject() (
   appConfig: FrontendAppConfig,
   mcc: MessagesControllerComponents,
-  errorHandler: ErrorHandler)
-    extends FrontendController(mcc) {
+  errorHandler: ErrorHandler
+) extends FrontendController(mcc) {
 
   override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(rh, rh.session)

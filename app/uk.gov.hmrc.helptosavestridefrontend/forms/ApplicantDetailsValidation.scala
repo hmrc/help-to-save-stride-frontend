@@ -40,38 +40,35 @@ trait ApplicantDetailsValidation {
 }
 
 @Singleton
-class ApplicantDetailsValidationImpl @Inject()(configuration: FrontendAppConfig, clock: Clock)
+class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig, clock: Clock)
     extends ApplicantDetailsValidation {
   import configuration.FormValidation._
 
-  val nameFormatter: Formatter[String] = stringFormatter(
-    { forename =>
-      val trimmed = forename.trim
-      val tooLongCheck: ValidOrErrorStrings[String] =
-        validatedFromBoolean(trimmed)(_.length <= forenameMaxTotalLength, ErrorMessages.tooLong)
-      val tooShortCheck: ValidOrErrorStrings[String] =
-        validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.isRequired)
+  val nameFormatter: Formatter[String] = stringFormatter { forename =>
+    val trimmed = forename.trim
+    val tooLongCheck: ValidOrErrorStrings[String] =
+      validatedFromBoolean(trimmed)(_.length <= forenameMaxTotalLength, ErrorMessages.tooLong)
+    val tooShortCheck: ValidOrErrorStrings[String] =
+      validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.isRequired)
 
-      (tooLongCheck, tooShortCheck).mapN { case _ => trimmed }
-    }
-  )
+    (tooLongCheck, tooShortCheck).mapN { case _ => trimmed }
+  }
 
   val addressLineFormatter: Formatter[String] = mandatoryAddressLineValidator
   val addressOptionalLineFormatter: Formatter[Option[String]] = optionalAddressLineValidator
-  val postcodeFormatter: Formatter[String] = stringFormatter(
-    { postcode =>
-      val trimmed = postcode.replaceAll(" ", "")
-      val tooLongCheck: ValidOrErrorStrings[String] =
-        validatedFromBoolean(trimmed)(_.length <= postcodeMaxTotalLength, ErrorMessages.tooLong)
-      val tooShortCheck: ValidOrErrorStrings[String] =
-        validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.isRequired)
+  val postcodeFormatter: Formatter[String] = stringFormatter { postcode =>
+    val trimmed = postcode.replaceAll(" ", "")
+    val tooLongCheck: ValidOrErrorStrings[String] =
+      validatedFromBoolean(trimmed)(_.length <= postcodeMaxTotalLength, ErrorMessages.tooLong)
+    val tooShortCheck: ValidOrErrorStrings[String] =
+      validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.isRequired)
 
-      (tooLongCheck, tooShortCheck).mapN { case _ => postcode.trim }
-    }
-  )
+    (tooLongCheck, tooShortCheck).mapN { case _ => postcode.trim }
+  }
 
   implicit def toFormErrorSeq[A](
-    keyAndValidated: (String, Validated[NonEmptyList[String], A])): Either[Seq[FormError], A] = {
+    keyAndValidated: (String, Validated[NonEmptyList[String], A])
+  ): Either[Seq[FormError], A] = {
     val (key, validated) = keyAndValidated
     validated.toEither.leftMap(_.map(e => FormError(key, e)).toList)
   }
@@ -88,7 +85,7 @@ class ApplicantDetailsValidationImpl @Inject()(configuration: FrontendAppConfig,
     formatter(validate, text)
 
   private def mandatoryAddressLineValidator: Formatter[String] =
-    stringFormatter({ line =>
+    stringFormatter { line =>
       val trimmed = line.trim
       val tooLongCheck: ValidOrErrorStrings[String] =
         validatedFromBoolean(trimmed)(_.length <= addressLineMaxTotalLength, ErrorMessages.tooLong)
@@ -96,7 +93,7 @@ class ApplicantDetailsValidationImpl @Inject()(configuration: FrontendAppConfig,
         validatedFromBoolean(trimmed)(_.nonEmpty, ErrorMessages.isRequired)
 
       (tooLongCheck, tooShortCheck).mapN { case _ => trimmed }
-    })
+    }
 
   private def optionalAddressLineValidator: Formatter[Option[String]] = new Formatter[Option[String]] {
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Option[String]] =

@@ -23,8 +23,9 @@ import play.api.data.format.Formatter
 
 trait ValidationTestSupport { this: Matchers =>
 
-  def testValidation[A](formatter: Formatter[A])(value: Option[String])(
-    expectedResult: Either[Set[String], A]): Unit = {
+  def testValidation[A](
+    formatter: Formatter[A]
+  )(value: Option[String])(expectedResult: Either[Set[String], A]): Unit = {
     val result: Either[Seq[FormError], A] =
       formatter.bind("key", value.fold(Map.empty[String, String])(v => Map("key" -> v)))
 

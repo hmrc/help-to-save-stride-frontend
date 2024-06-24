@@ -44,18 +44,23 @@ trait AuthSupport { this: TestSupport =>
   val retrievals = new ~(
     new ~(
       new ~(Enrolments(roles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))),
-      Some(Name(Some("name"), None))),
-    Some("email"))
+      Some(Name(Some("name"), None))
+    ),
+    Some("email")
+  )
   val secureRetrievals = new ~(
     new ~(
       new ~(Enrolments(secureRoles.map(Enrolment(_)).toSet), Some(Credentials("PID", "pidType"))),
-      Some(Name(Some("name"), None))),
-    Some("email"))
+      Some(Name(Some("name"), None))
+    ),
+    Some("email")
+  )
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
   def mockAuthorised[A](expectedPredicate: Predicate, expectedRetrieval: Retrieval[A])(
-    result: Either[Throwable, A]): CallHandler4[Predicate, Retrieval[A], HeaderCarrier, ExecutionContext, Future[A]] =
+    result: Either[Throwable, A]
+  ): CallHandler4[Predicate, Retrieval[A], HeaderCarrier, ExecutionContext, Future[A]] =
     (mockAuthConnector
       .authorise(_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
       .expects(expectedPredicate, expectedRetrieval, *, *)
@@ -64,24 +69,29 @@ trait AuthSupport { this: TestSupport =>
   def mockSuccessfulAuthorisation()
     : CallHandler4[Predicate, Retrieval[Enrolments], HeaderCarrier, ExecutionContext, Future[Enrolments]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
-      Right(Enrolments(roles.map(Enrolment(_)).toSet)))
+      Right(Enrolments(roles.map(Enrolment(_)).toSet))
+    )
 
   def mockSuccessfulSecureAuthorisation()
     : CallHandler4[Predicate, Retrieval[Enrolments], HeaderCarrier, ExecutionContext, Future[Enrolments]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
-      Right(Enrolments(secureRoles.map(Enrolment(_)).toSet)))
+      Right(Enrolments(secureRoles.map(Enrolment(_)).toSet))
+    )
 
   def mockSuccessfulAuthorisationWithDetails()
     : CallHandler4[Predicate, Retrieval[RetrievalsType], HeaderCarrier, ExecutionContext, Future[RetrievalsType]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
-      Right(retrievals))
+      Right(retrievals)
+    )
 
   def mockSuccessfulSecureAuthorisationWithDetails()
     : CallHandler4[Predicate, Retrieval[RetrievalsType], HeaderCarrier, ExecutionContext, Future[RetrievalsType]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
-      Right(secureRetrievals))
+      Right(secureRetrievals)
+    )
 
   def mockAuthFail(): Unit =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
-      Left(BearerTokenExpired("no login session exists")))
+      Left(BearerTokenExpired("no login session exists"))
+    )
 }

@@ -54,59 +54,65 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
       "allows valid input" in {
 
         applicantDetailsForm
-          .bind(Map(
-            Ids.forename    -> "forename",
-            Ids.surname     -> "surname",
-            Ids.dobDay      -> "1",
-            Ids.dobMonth    -> "12",
-            Ids.dobYear     -> "1901",
-            Ids.address1    -> "address1",
-            Ids.address2    -> "address2",
-            Ids.address3    -> "address3",
-            Ids.address4    -> "address4",
-            Ids.address5    -> "address5",
-            Ids.postcode    -> "AB11 1CD",
-            Ids.countryCode -> "GB"
-          ))
+          .bind(
+            Map(
+              Ids.forename    -> "forename",
+              Ids.surname     -> "surname",
+              Ids.dobDay      -> "1",
+              Ids.dobMonth    -> "12",
+              Ids.dobYear     -> "1901",
+              Ids.address1    -> "address1",
+              Ids.address2    -> "address2",
+              Ids.address3    -> "address3",
+              Ids.address4    -> "address4",
+              Ids.address5    -> "address5",
+              Ids.postcode    -> "AB11 1CD",
+              Ids.countryCode -> "GB"
+            )
+          )
           .errors shouldBe List.empty
       }
 
       "does not allow an empty country code" in {
 
         applicantDetailsForm
-          .bind(Map(
-            Ids.forename -> "forename",
-            Ids.surname  -> "surname",
-            Ids.dobDay   -> "1",
-            Ids.dobMonth -> "12",
-            Ids.dobYear  -> "1901",
-            Ids.address1 -> "address1",
-            Ids.address2 -> "address2",
-            Ids.address3 -> "address3",
-            Ids.address4 -> "address4",
-            Ids.address5 -> "address5",
-            Ids.postcode -> "AB11 1CD"
-          ))
+          .bind(
+            Map(
+              Ids.forename -> "forename",
+              Ids.surname  -> "surname",
+              Ids.dobDay   -> "1",
+              Ids.dobMonth -> "12",
+              Ids.dobYear  -> "1901",
+              Ids.address1 -> "address1",
+              Ids.address2 -> "address2",
+              Ids.address3 -> "address3",
+              Ids.address4 -> "address4",
+              Ids.address5 -> "address5",
+              Ids.postcode -> "AB11 1CD"
+            )
+          )
           .errors shouldBe Seq(FormError(Ids.countryCode, ErrorMessages.isRequired))
       }
 
       "have a mapping which can tell if the date of birth is in the future" in {
 
         applicantDetailsForm
-          .bind(Map(
-            Ids.forename    -> "forename",
-            Ids.surname     -> "surname",
-            Ids.dobDay      -> "1",
-            Ids.dobMonth    -> "12",
-            Ids.dobYear     -> "2002",
-            Ids.address1    -> "address1",
-            Ids.address2    -> "address2",
-            Ids.address3    -> "address3",
-            Ids.address4    -> "address4",
-            Ids.address5    -> "address5",
-            Ids.postcode    -> "AB11 1CD",
-            Ids.countryCode -> "GB"
-          ))
+          .bind(
+            Map(
+              Ids.forename    -> "forename",
+              Ids.surname     -> "surname",
+              Ids.dobDay      -> "1",
+              Ids.dobMonth    -> "12",
+              Ids.dobYear     -> "2002",
+              Ids.address1    -> "address1",
+              Ids.address2    -> "address2",
+              Ids.address3    -> "address3",
+              Ids.address4    -> "address4",
+              Ids.address5    -> "address5",
+              Ids.postcode    -> "AB11 1CD",
+              Ids.countryCode -> "GB"
+            )
+          )
           .errors shouldBe Seq(FormError(Ids.dateOfBirth, List(ErrorMessages.afterMax), List("today")))
       }
     }

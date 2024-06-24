@@ -49,7 +49,8 @@ class IneligibilityTypeSpec extends AnyWordSpec with Matchers with ScalaCheckDri
         EntitledToWTCNoTCAndNoUC,
         EntitledToWTCNoTCAndInsufficientUC,
         NotEntitledToWTCAndUCInsufficient,
-        NotEntitledToWTCAndNoUC)
+        NotEntitledToWTCAndNoUC
+      )
 
       val uniquePairs: List[(IneligibilityReason, IneligibilityReason)] =
         list.combinations(2).toList.flatMap(_.permutations.toList).map {
@@ -60,8 +61,8 @@ class IneligibilityTypeSpec extends AnyWordSpec with Matchers with ScalaCheckDri
       val samePairs: List[(IneligibilityReason, IneligibilityReason)] =
         list.zip(list)
 
-      val equalityPairs = (uniquePairs ::: samePairs).filter {
-        case (a, b) => IneligibilityReason.ineligibilityTypeEq.eqv(a, b)
+      val equalityPairs = (uniquePairs ::: samePairs).filter { case (a, b) =>
+        IneligibilityReason.ineligibilityTypeEq.eqv(a, b)
       }
 
       equalityPairs shouldBe samePairs

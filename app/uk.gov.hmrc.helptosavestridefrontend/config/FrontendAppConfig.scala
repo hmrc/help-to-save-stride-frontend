@@ -23,10 +23,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.Duration
 
 @Singleton
-class FrontendAppConfig @Inject()(
+class FrontendAppConfig @Inject() (
   configuration: Configuration,
   servicesConfig: ServicesConfig,
-  val environment: Environment) {
+  val environment: Environment
+) {
   lazy val config: Configuration = configuration
 
   val appName: String = servicesConfig.getString("appName")

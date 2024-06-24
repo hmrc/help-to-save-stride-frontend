@@ -37,7 +37,8 @@ class HTSEventSpec extends TestSupport {
           "AE123456C",
           "foo bar",
           Some(LocalDate.of(1900, 1, 1)),
-          List("address1", "address2")),
+          List("address1", "address2")
+        ),
         operatorDetails,
         "path"
       )

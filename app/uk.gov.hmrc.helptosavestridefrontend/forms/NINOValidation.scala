@@ -44,7 +44,8 @@ object NINOValidation {
         data.get(key).filter(_.nonEmpty).fold(invalid[String](ErrorMessages.blankNINO)) { s =>
           validatedFromBoolean(s.toUpperCase.replaceAll(" ", ""))(
             _.matches(ninoRegex.regex),
-            ErrorMessages.invalidNinoPattern)
+            ErrorMessages.invalidNinoPattern
+          )
         }
 
       validation.toEither.leftMap(_.map(e => FormError(key, e)).toList)

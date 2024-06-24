@@ -29,8 +29,9 @@ trait HTSEvent {
 }
 
 object HTSEvent {
-  def apply(appName: String, auditType: String, detail: JsValue, transactionName: String, path: String)(
-    implicit hc: HeaderCarrier): ExtendedDataEvent =
+  def apply(appName: String, auditType: String, detail: JsValue, transactionName: String, path: String)(implicit
+    hc: HeaderCarrier
+  ): ExtendedDataEvent =
     ExtendedDataEvent(appName, auditType, detail = detail, tags = hc.toAuditTags(transactionName, path))
 
 }
@@ -38,7 +39,8 @@ object HTSEvent {
 case class PersonalInformationDisplayedToOperator(
   piDisplayed: PersonalInformationDisplayed,
   operatorDetails: OperatorDetails,
-  path: String)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig)
+  path: String
+)(implicit hc: HeaderCarrier, appConfig: FrontendAppConfig)
     extends HTSEvent {
   val value: ExtendedDataEvent = HTSEvent(
     appConfig.appName,
@@ -52,10 +54,10 @@ case class PersonalInformationDisplayedToOperator(
   )
 }
 
-case class ManualAccountCreationSelected(nino: NINO, path: String, operatorDetails: OperatorDetails)(
-  implicit hc: HeaderCarrier,
-  appConfig: FrontendAppConfig)
-    extends HTSEvent {
+case class ManualAccountCreationSelected(nino: NINO, path: String, operatorDetails: OperatorDetails)(implicit
+  hc: HeaderCarrier,
+  appConfig: FrontendAppConfig
+) extends HTSEvent {
   val value: ExtendedDataEvent = HTSEvent(
     appConfig.appName,
     "ManualAccountCreationSelected",

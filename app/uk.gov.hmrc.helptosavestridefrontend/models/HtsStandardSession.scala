@@ -50,8 +50,9 @@ object SessionEligibilityCheckResult {
         List(
           "code"                  -> Some(JsNumber(code)),
           "result"                -> result.map(Json.toJson(_)),
-          "manualCreationAllowed" -> manualCreationAllowed.map(Json.toJson(_))).collect {
-          case (key, Some(value)) => key -> value
+          "manualCreationAllowed" -> manualCreationAllowed.map(Json.toJson(_))
+        ).collect { case (key, Some(value)) =>
+          key -> value
         }
 
       JsObject(fields)
@@ -61,7 +62,8 @@ object SessionEligibilityCheckResult {
       (
         (json \ "code").validate[Int],
         (json \ "result").validateOpt[EligibilityCheckResponse],
-        (json \ "manualCreationAllowed").validate[Boolean]) match {
+        (json \ "manualCreationAllowed").validate[Boolean]
+      ) match {
         case (JsSuccess(1, _), JsSuccess(Some(value), _), _) => JsSuccess(Eligible(value))
         case (JsSuccess(2, _), JsSuccess(Some(value), _), JsSuccess(manualCreationAllowed, _)) =>
           JsSuccess(Ineligible(value, manualCreationAllowed))
@@ -75,8 +77,8 @@ case class HtsStandardSession(
   userInfo: SessionEligibilityCheckResult,
   nSIUserInfo: NSIPayload,
   detailsConfirmed: Boolean = false,
-  accountNumber: Option[String] = None)
-    extends HtsSession
+  accountNumber: Option[String] = None
+) extends HtsSession
 
 object HtsStandardSession {
   implicit val format: Format[HtsStandardSession] = Json.format[HtsStandardSession]
@@ -86,8 +88,8 @@ case class HtsSecureSession(
   nino: String,
   userInfo: SessionEligibilityCheckResult,
   nSIUserInfo: Option[NSIPayload],
-  accountNumber: Option[String] = None)
-    extends HtsSession
+  accountNumber: Option[String] = None
+) extends HtsSession
 
 object HtsSecureSession {
   implicit val format: Format[HtsSecureSession] = Json.format[HtsSecureSession]

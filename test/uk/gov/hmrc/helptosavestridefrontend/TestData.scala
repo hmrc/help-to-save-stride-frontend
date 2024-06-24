@@ -53,7 +53,8 @@ trait TestData { // scalastyle:off magic.number
     Some("County"),
     "AB12 3CD",
     Some("GB"),
-    Some("07841097845"))
+    Some("07841097845")
+  )
 
   val nsiUserInfo = NSIPayload("A", "Smith", LocalDate.parse("1960-01-01"), "AE123456C", contactDetails)
 

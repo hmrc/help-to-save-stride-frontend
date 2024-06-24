@@ -82,18 +82,18 @@ object DateFormFormatter {
         month <- toValidInt(monthStr, Some(12), monthKey).leftMap(Seq(_))
         year  <- toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
         date <- toValidInt(dayStr, Some(31), dayKey)
-                 .leftMap(Seq(_))
-                 .flatMap(
-                   _ =>
-                     Either
-                       .fromTry(Try(LocalDate.of(year, month, dayStr.toInt)))
-                       .leftMap(_ => Seq(FormError(dateKey, "error.invalid"))))
+                  .leftMap(Seq(_))
+                  .flatMap(_ =>
+                    Either
+                      .fromTry(Try(LocalDate.of(year, month, dayStr.toInt)))
+                      .leftMap(_ => Seq(FormError(dateKey, "error.invalid")))
+                  )
         _ <- if (maximumDateInclusive.exists(_.isBefore(LocalDate.of(year, month, dayStr.toInt))))
-              Left(Seq(FormError(dateKey, "error.tooFuture", tooRecentArgs)))
-            else if (minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt))))
-              Left(Seq(FormError(s"$dateKey-year", "error.tooFarInPast", tooFarInPastArgs)))
-            else
-              Right(date)
+               Left(Seq(FormError(dateKey, "error.tooFuture", tooRecentArgs)))
+             else if (minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt))))
+               Left(Seq(FormError(s"$dateKey-year", "error.tooFarInPast", tooFarInPastArgs)))
+             else
+               Right(date)
       } yield date
 
     override def unbind(key: String, value: LocalDate): Map[String, String] =
