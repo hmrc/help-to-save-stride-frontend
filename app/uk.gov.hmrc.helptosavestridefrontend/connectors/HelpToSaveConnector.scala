@@ -35,7 +35,6 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageT
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -52,7 +51,10 @@ trait HelpToSaveConnector {
 
   def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus]
 
-  def getAccount(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[AccountDetails]
+  def getAccount(nino: String, correlationId: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Result[AccountDetails]
 
 }
 
@@ -243,8 +245,7 @@ class HelpToSaveConnectorImpl @Inject() (
             case OK =>
               val result = response.parseJson[EnrolmentStatus]()
               result.fold(
-                e =>
-                  logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK): $e", nino),
+                e => logger.warn(s"could not parse JSON response from enrolment status, received 200 (OK): $e", nino),
                 _ => logger.debug(s"Call to get enrolment status successful, received 200 (OK)", nino)
               )
               result
@@ -264,23 +265,22 @@ class HelpToSaveConnectorImpl @Inject() (
         }
     )
 
-  override def getAccount(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[AccountDetails] = {
-    val corrlelationId = UUID.randomUUID().toString
-
+  override def getAccount(nino: String, correlationId: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Result[AccountDetails] =
     EitherT(
       http
-        .get(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> corrlelationId))
+        .get(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> correlationId))
         .map[Either[String, AccountDetails]] { response =>
           response.status match {
             case OK    => response.parseJson[AccountDetails]()
-            case other => Left(s"Could not get account details for correlation Id $corrlelationId. Got status $other")
+            case other => Left(s"Could not get account details for correlation Id $correlationId. Got status $other")
           }
         }
         .recover { case e =>
           Left(s"Encountered error while trying to getAccount, with message ${e.getMessage}")
         }
     )
-
-  }
 
 }

@@ -29,8 +29,9 @@ import play.api.{Application, Configuration, Environment, Play}
 import play.filters.csrf.CSRFAddToken
 import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
 import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
-import uk.gov.hmrc.helptosavestridefrontend.util.NINOLogMessageTransformer
+import uk.gov.hmrc.helptosavestridefrontend.util.{NINOLogMessageTransformer, WireMockMethods}
 import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
+import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -38,7 +39,9 @@ import java.util
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 
-trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport {
+trait TestSupport
+    extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport with WireMockSupport
+    with WireMockMethods {
   this: Suite =>
 
   lazy val additionalConfig = Configuration()
@@ -47,10 +50,12 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     new GuiceApplicationBuilder()
       .configure(
         Configuration(
-          ConfigFactory.parseString("""
-                                      | metrics.enabled = true
-                                      | metrics.jvm = false
-                                      | mongodb.session.expireAfter = 5 seconds
+          ConfigFactory.parseString(s"""
+                                       | metrics.enabled = true
+                                       | metrics.jvm = false
+                                       | mongodb.session.expireAfter = 5 seconds
+                                       | microservice.services.help-to-save.host = $wireMockHost
+                                       | microservice.services.help-to-save.port = $wireMockPort
           """.stripMargin)
         ) withFallback additionalConfig
       )
@@ -85,12 +90,12 @@ trait TestSupport extends UnitSpec with MockFactory with BeforeAndAfterAll with 
     override def counter(name: String): Counter = new Counter()
   }
 
-  override def beforeAll(): Unit = {
+  override protected def beforeAll(): Unit = {
     Play.start(fakeApplication)
     super.beforeAll()
   }
 
-  override def afterAll(): Unit = {
+  override protected def afterAll(): Unit = {
     Play.stop(fakeApplication)
     super.afterAll()
   }

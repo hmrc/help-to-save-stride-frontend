@@ -16,25 +16,29 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.repo
 
+import org.mockito.IdiomaticMockito
+
 import java.util.UUID
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
-import uk.gov.hmrc.helptosavestridefrontend.connectors.HttpSupport
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession._
 import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSecureSession, HtsStandardSession, SessionEligibilityCheckResult}
-import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
+import uk.gov.hmrc.helptosavestridefrontend.util.{MockPagerDuty, WireMockMethods}
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
+import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.mongo.test.MongoSupport
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 class SessionStoreSpec
-    extends TestSupport with MongoSupport with MockPagerDuty with TestData with HttpSupport with ScalaFutures {
+    extends TestSupport with MongoSupport with IdiomaticMockito with MockPagerDuty with TestData with ScalaFutures
+    with WireMockSupport with WireMockMethods {
 
   val timeStampSupport = new CurrentTimestampSupport()
   val sessionStore =
     new SessionStoreImpl(mongoComponent, mockMetrics, timeStampSupport = timeStampSupport, mockPagerDuty)
-  implicit override val patienceConfig =
+
+  implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = scaled(Span(200, Millis)), interval = scaled(Span(5, Millis)))
 
   "SessionStore" when {

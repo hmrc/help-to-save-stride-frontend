@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import java.time.Clock
-
 import cats.data.EitherT
 import cats.instances.future._
 import com.google.inject.Inject
@@ -41,6 +40,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class StrideController @Inject() (
@@ -133,7 +133,7 @@ class StrideController @Inject() (
 
   private def getAccountDetails(nino: String)(implicit hc: HeaderCarrier): Future[Option[AccountDetails]] =
     helpToSaveConnector
-      .getAccount(nino)
+      .getAccount(nino, UUID.randomUUID().toString)
       .fold(
         { e =>
           logger.warn(s"Could not get account details: $e")
@@ -583,8 +583,7 @@ class StrideController @Inject() (
                 logger.warn(s"Could not write session to mongo dueto: $e")
                 SeeOther(routes.StrideController.getErrorPage().url)
               },
-              _ =>
-                Ok(accountCreatedView(accountNumber))
+              _ => Ok(accountCreatedView(accountNumber))
             )
         }
 

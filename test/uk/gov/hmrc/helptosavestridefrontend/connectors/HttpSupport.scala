@@ -55,9 +55,7 @@ trait HttpSupport { this: MockFactory with Matchers =>
           // use matchers here to get useful error messages when the following predicates
           // are not satisfied - otherwise it is difficult to tell in the logs what went wrong
           u shouldBe url
-          ignoreQueryParams.keys.foreach(k =>
-            withClue(s"For query parameter $k: ")(q.exists(_._1 === k) shouldBe true)
-          )
+          ignoreQueryParams.keys.foreach(k => withClue(s"For query parameter $k: ")(q.exists(_._1 === k) shouldBe true))
           q.filterNot { case (key, _) => ignoreQueryParams.isDefinedAt(key) } shouldBe checkQueryParams.toSeq
           h.extraHeaders shouldBe headers.toSeq
           true
