@@ -115,8 +115,8 @@ class StrideControllerSpec
 
   def mockGetAccount(nino: String)(result: Either[String, AccountDetails]) =
     (helpToSaveConnector
-      .getAccount(_: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nino, *, *)
+      .getAccount(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(nino, *, *, *)
       .returning(EitherT.fromEither[Future](result))
 
   implicit lazy val applicantDetailsValidation: ApplicantDetailsValidation =
