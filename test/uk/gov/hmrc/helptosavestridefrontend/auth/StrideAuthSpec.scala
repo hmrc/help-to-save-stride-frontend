@@ -67,7 +67,7 @@ class StrideAuthSpec extends TestSupport {
   lazy val test = new TestStrideAuth(frontendAppConfig)
 
   lazy val action = test.authorisedFromStride { _ => _ =>
-    Ok
+    Future.successful(Ok)
   }(controllers.routes.Default.redirect())
 
   "StrideAuth" must {
@@ -135,7 +135,7 @@ class StrideAuthSpec extends TestSupport {
           {
             operatorDetails shouldBe OperatorDetails(List("a", "b"), Some("PID"), "name", "email")
             roleType shouldBe RoleType.Standard(List("a", "b"))
-            Ok
+            Future.successful(Ok)
           }
         }(controllers.routes.Default.redirect())
 
@@ -156,7 +156,7 @@ class StrideAuthSpec extends TestSupport {
             val action = test.authorisedFromStride { _ => roleType =>
               {
                 roleType shouldBe RoleType.Secure(enrolments.toList)
-                Ok
+                Future.successful(Ok)
               }
             }(controllers.routes.Default.redirect())
 
@@ -182,7 +182,7 @@ class StrideAuthSpec extends TestSupport {
           {
             operatorDetails shouldBe OperatorDetails(List("c", "d"), Some("PID"), "name", "email")
             roleType shouldBe RoleType.Secure(List("c", "d"))
-            Ok
+            Future.successful(Ok)
           }
         }(controllers.routes.Default.redirect())
 

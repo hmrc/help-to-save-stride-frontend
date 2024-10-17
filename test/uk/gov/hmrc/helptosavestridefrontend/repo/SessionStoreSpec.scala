@@ -17,19 +17,19 @@
 package uk.gov.hmrc.helptosavestridefrontend.repo
 
 import org.mockito.IdiomaticMockito
-
-import java.util.UUID
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession._
 import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSecureSession, HtsStandardSession, SessionEligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.util.{MockPagerDuty, WireMockMethods}
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.SessionId
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.http.test.WireMockSupport
-import uk.gov.hmrc.mongo.test.MongoSupport
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
+
+import java.util.UUID
 class SessionStoreSpec
     extends TestSupport with MongoSupport with IdiomaticMockito with MockPagerDuty with TestData with ScalaFutures
     with WireMockSupport with WireMockMethods {
