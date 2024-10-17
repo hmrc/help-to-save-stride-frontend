@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
-import java.time.{Clock, Instant, ZoneId}
-
 import cats.data.EitherT
 import cats.instances.future._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -42,12 +40,12 @@ import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.helptosavestridefrontend.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.Future
 
 class StrideControllerSpec
     extends TestSupport with AuthSupport with CSRFSupport with TestData
     with ScalaCheckDrivenPropertyChecks { // scalastyle:off magic.number
-
   implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
   private val fakeRequest = FakeRequest("GET", "/")
@@ -67,14 +65,14 @@ class StrideControllerSpec
 
   def mockEligibility(nino: NINO)(result: Either[String, EligibilityCheckResult]) =
     (helpToSaveConnector
-      .getEligibility(_: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nino, *, *)
+      .getEligibility(_: String)(_: HeaderCarrier))
+      .expects(nino, *)
       .returning(EitherT.fromEither[Future](result))
 
   def mockPayeDetails(nino: NINO)(result: Either[String, NSIPayload]) =
     (helpToSaveConnector
-      .getNSIUserInfo(_: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nino, *, *)
+      .getNSIUserInfo(_: String)(_: HeaderCarrier))
+      .expects(nino, *)
       .returning(EitherT.fromEither[Future](result))
 
   def mockSessionStoreGet(result: Either[String, Option[HtsSession]]) =
@@ -97,26 +95,26 @@ class StrideControllerSpec
 
   def mockCreateAccount(createAccountRequest: CreateAccountRequest)(result: Either[String, CreateAccountResult]) =
     (helpToSaveConnector
-      .createAccount(_: CreateAccountRequest)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(createAccountRequest, *, *)
+      .createAccount(_: CreateAccountRequest)(_: HeaderCarrier))
+      .expects(createAccountRequest, *)
       .returning(EitherT.fromEither[Future](result))
 
   def mockGetEnrolmentStatus(nino: String)(result: Either[String, EnrolmentStatus]) =
     (helpToSaveConnector
-      .getEnrolmentStatus(_: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nino, *, *)
+      .getEnrolmentStatus(_: String)(_: HeaderCarrier))
+      .expects(nino, *)
       .returning(EitherT.fromEither[Future](result))
 
   def mockAudit(event: HTSEvent, nino: NINO) =
     (mockAuditor
-      .sendEvent(_: HTSEvent, _: NINO)(_: ExecutionContext))
-      .expects(event, nino, *)
+      .sendEvent(_: HTSEvent, _: NINO))
+      .expects(event, nino)
       .returning(())
 
   def mockGetAccount(nino: String)(result: Either[String, AccountDetails]) =
     (helpToSaveConnector
-      .getAccount(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nino, *, *, *)
+      .getAccount(_: String, _: String)(_: HeaderCarrier))
+      .expects(nino, *, *)
       .returning(EitherT.fromEither[Future](result))
 
   implicit lazy val applicantDetailsValidation: ApplicantDetailsValidation =

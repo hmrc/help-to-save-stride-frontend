@@ -40,22 +40,19 @@ import scala.util.{Failure, Success, Try}
 
 @ImplementedBy(classOf[HelpToSaveConnectorImpl])
 trait HelpToSaveConnector {
+  def getEligibility(nino: String)(implicit hc: HeaderCarrier): Result[EligibilityCheckResult]
 
-  def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult]
-
-  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload]
+  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier): Result[NSIPayload]
 
   def createAccount(
     createAccountRequest: CreateAccountRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
+  )(implicit hc: HeaderCarrier): Result[CreateAccountResult]
 
-  def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus]
+  def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier): Result[EnrolmentStatus]
 
   def getAccount(nino: String, correlationId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    hc: HeaderCarrier
   ): Result[AccountDetails]
-
 }
 
 @Singleton
@@ -66,9 +63,8 @@ class HelpToSaveConnectorImpl @Inject() (
   configuration: Configuration,
   servicesConfig: ServicesConfig,
   environment: Environment
-)(implicit transformer: NINOLogMessageTransformer)
+)(implicit transformer: NINOLogMessageTransformer, ec: ExecutionContext)
     extends FrontendAppConfig(configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
-
   private val htsUrl = servicesConfig.baseUrl("help-to-save")
 
   private val eligibilityUrl: String = s"$htsUrl/help-to-save/eligibility-check"
@@ -85,10 +81,9 @@ class HelpToSaveConnectorImpl @Inject() (
 
   override def getEligibility(
     nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult] =
+  )(implicit hc: HeaderCarrier): Result[EligibilityCheckResult] =
     EitherT[Future, String, EligibilityCheckResult] {
       val timerContext = metrics.eligibilityCheckTimer.time()
-
       http
         .get(eligibilityUrl, Map("nino" -> nino))
         .map { response =>
@@ -143,7 +138,7 @@ class HelpToSaveConnectorImpl @Inject() (
 
   private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
 
-  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload] =
+  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier): Result[NSIPayload] =
     EitherT {
       val timerContext = metrics.payePersonalDetailsTimer.time()
 
@@ -191,8 +186,7 @@ class HelpToSaveConnectorImpl @Inject() (
 
   override def createAccount(
     createAccountRequest: CreateAccountRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
-
+  )(implicit hc: HeaderCarrier): Result[CreateAccountResult] = {
     val nSIUserInfo = createAccountRequest.payload
 
     EitherT(
@@ -236,7 +230,7 @@ class HelpToSaveConnectorImpl @Inject() (
 
   override def getEnrolmentStatus(
     nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] =
+  )(implicit hc: HeaderCarrier): Result[EnrolmentStatus] =
     EitherT(
       http
         .get(enrolmentStatusUrl, Map("nino" -> nino))
@@ -266,8 +260,7 @@ class HelpToSaveConnectorImpl @Inject() (
     )
 
   override def getAccount(nino: String, correlationId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    hc: HeaderCarrier
   ): Result[AccountDetails] =
     EitherT(
       http
@@ -282,5 +275,4 @@ class HelpToSaveConnectorImpl @Inject() (
           Left(s"Encountered error while trying to getAccount, with message ${e.getMessage}")
         }
     )
-
 }
