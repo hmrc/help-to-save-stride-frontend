@@ -14,10 +14,9 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.helptosavestridefrontend.controllers.routes
 @import uk.gov.hmrc.helptosavestridefrontend.views.html.partials._
-@import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 
 @this(
         layout: uk.gov.hmrc.helptosavestridefrontend.views.html.layout,
@@ -26,7 +25,7 @@
         p: paragraph
 )
 
-@()(implicit messages: Messages, request: Request[_])
+@()(implicit messages: Messages, request: RequestHeader)
 
 @title = @{messages("hts.error.page.title.h1")}
 

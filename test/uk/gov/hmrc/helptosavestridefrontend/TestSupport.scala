@@ -103,7 +103,7 @@ trait TestSupport
   lazy val messagesApi: MessagesApi = injector.instanceOf(classOf[MessagesApi])
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = injector.instanceOf[FrontendAppConfig]
-  lazy val errorHandler = new ErrorHandler(testMcc.messagesApi, injector.instanceOf[error_template], frontendAppConfig)
+  lazy val errorHandler = new ErrorHandler(testMcc.messagesApi, injector.instanceOf[error_template])
 
   lazy val csrfAddToken: CSRFAddToken = injector.instanceOf[play.filters.csrf.CSRFAddToken]
 
