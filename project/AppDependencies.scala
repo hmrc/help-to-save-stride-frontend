@@ -15,7 +15,7 @@ object AppDependencies {
 
   def test(scope: String = "test"): Seq[ModuleID] = Seq(
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion     % scope,
-    "org.scalatestplus" %% "scalatestplus-scalacheck"      % "3.1.0.0-RC2"        % scope,
+    "org.scalatestplus" %% "scalacheck-1-17"               % "3.2.18.0"           % scope,
     "uk.gov.hmrc"       %% s"bootstrap-test-$playVersion"  % hmrcBootstrapVersion % scope,
     "org.mockito"       %% "mockito-scala"                 % "1.17.31"            % scope
   )
