@@ -23,22 +23,19 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.auth.StrideAuthSpec.NotLoggedInException
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.controllers.StrideFrontendController
 import uk.gov.hmrc.helptosavestridefrontend.models.{OperatorDetails, RoleType}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, TestSupport}
 
 import java.net.URLEncoder
 import java.util.Base64
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class StrideAuthSpec extends TestSupport {
-
+class StrideAuthSpec extends TestSupport with AuthSupport {
   lazy val standardRoles = List("a", "b")
   lazy val secureRoles = List("c", "d")
 
@@ -49,19 +46,17 @@ class StrideAuthSpec extends TestSupport {
     "stride.base64-encoded-secure-roles" -> secureRoles.map(base64Encode)
   )
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-
-  def mockAuthorised[A](expectedPredicate: Predicate, expectedRetrieval: Retrieval[A])(result: Either[Throwable, A]) =
-    (mockAuthConnector
-      .authorise(_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
-      .expects(expectedPredicate, expectedRetrieval, *, *)
-      .returning(result.fold(Future.failed, Future.successful))
+//  private def mockAuthorised[A](expectedPredicate: Predicate, expectedRetrieval: Retrieval[A])(
+//    result: Either[Throwable, A]
+//  ) =
+//    mockAuthConnector
+//      .authorise(expectedPredicate, expectedRetrieval)(*, *)
+//      .returns(result.fold(Future.failed, Future.successful))
 
   class TestStrideAuth(val frontendAppConfig: FrontendAppConfig)
       extends StrideFrontendController(testMcc, errorHandler) with StrideAuth {
 
     val authConnector: AuthConnector = mockAuthConnector
-
   }
 
   lazy val test = new TestStrideAuth(frontendAppConfig)
@@ -71,9 +66,7 @@ class StrideAuthSpec extends TestSupport {
   }(controllers.routes.Default.redirect())
 
   "StrideAuth" must {
-
     "provide a authorised method" which {
-
       "redirects to the stride login page if the requester is not logged in" in {
         implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
         mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(Left(NotLoggedInException))
@@ -86,7 +79,6 @@ class StrideAuthSpec extends TestSupport {
       }
 
       "returns an Unauthorised status" when {
-
         "the requester does not have any of the necessary roles" in {
           List(
             Set("aa"),
@@ -188,14 +180,10 @@ class StrideAuthSpec extends TestSupport {
 
         status(action(FakeRequest())) shouldBe OK
       }
-
     }
   }
-
 }
 
 object StrideAuthSpec {
-
   case object NotLoggedInException extends NoActiveSession("uh oh")
-
 }
