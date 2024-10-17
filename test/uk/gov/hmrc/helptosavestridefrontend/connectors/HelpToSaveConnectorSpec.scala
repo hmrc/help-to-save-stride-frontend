@@ -31,12 +31,14 @@ import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.models.{AccountDetails, EnrolmentStatus}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class HelpToSaveConnectorSpec
     extends TestSupport with IdiomaticMockito with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData
     with EitherValues {
-  val mockHttp: HttpClient = fakeApplication.injector.instanceOf[HttpClient]
+  val mockHttp: HttpClientV2 = fakeApplication.injector.instanceOf[HttpClientV2]
   val connector =
     new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, servicesConfig, environment)
 
@@ -47,7 +49,6 @@ class HelpToSaveConnectorSpec
 
   private def getAccountUrl(nino: String): String = s"/help-to-save/$nino/account"
 
-  private val emptyQueryParameters: Map[String, String] = Map.empty[String, String]
   private val emptyBody = ""
 
   val connectorCallFailureMessage: (HTTPMethod, String) => String = (httpMethod, urlPath) =>
@@ -185,7 +186,7 @@ class HelpToSaveConnectorSpec
       val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride", detailsManuallyEntered = false)
 
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
           .thenReturn(CREATED, Json.parse("""{"accountNumber":"123456789"}"""))
 
         val result = await(connector.createAccount(createAccountRequest).value)
@@ -193,7 +194,7 @@ class HelpToSaveConnectorSpec
       }
 
       "return an error if the createAccount returns 201 but with invalid or no accountNumber json body" in {
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
           .thenReturn(CREATED, Json.parse("""{"blah":"blah"}"""))
 
         mockPagerDutyAlert("createAccount returned 201 but couldn't parse the accountNumber from response body")
@@ -202,16 +203,16 @@ class HelpToSaveConnectorSpec
       }
 
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
-          .thenReturn(CONFLICT, emptyBody)
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
+          .thenReturn(CONFLICT, Json.parse("{}"))
 
         val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Right(AccountAlreadyExists)
       }
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
-          .thenReturn(BAD_REQUEST, "null")
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
+          .thenReturn(BAD_REQUEST, Json.parse("{}"))
 
         mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         val result = await(connector.createAccount(createAccountRequest).value)
@@ -224,7 +225,7 @@ class HelpToSaveConnectorSpec
 
       "return a Left with future fails" in {
         wireMockServer.stop()
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
 
         mockPagerDutyAlert("Failed to make call to the back end create account url")
         val result = await(connector.createAccount(createAccountRequest).value)

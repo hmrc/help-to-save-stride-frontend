@@ -30,6 +30,7 @@ import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.test.MongoSupport
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
 class SessionStoreSpec
     extends TestSupport with MongoSupport with IdiomaticMockito with MockPagerDuty with TestData with ScalaFutures
     with WireMockSupport with WireMockMethods {

@@ -1,4 +1,4 @@
-import sbt.{Setting, Test}
+import sbt.Setting
 import scoverage.ScoverageKeys
 
 object CodeCoverageSettings {

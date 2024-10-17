@@ -33,6 +33,7 @@ import uk.gov.hmrc.helptosavestridefrontend.{AuthSupport, TestSupport}
 
 import java.net.URLEncoder
 import java.util.Base64
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class StrideAuthSpec extends TestSupport with AuthSupport {
@@ -45,13 +46,6 @@ class StrideAuthSpec extends TestSupport with AuthSupport {
     "stride.base64-encoded-roles"        -> standardRoles.map(base64Encode),
     "stride.base64-encoded-secure-roles" -> secureRoles.map(base64Encode)
   )
-
-//  private def mockAuthorised[A](expectedPredicate: Predicate, expectedRetrieval: Retrieval[A])(
-//    result: Either[Throwable, A]
-//  ) =
-//    mockAuthConnector
-//      .authorise(expectedPredicate, expectedRetrieval)(*, *)
-//      .returns(result.fold(Future.failed, Future.successful))
 
   class TestStrideAuth(val frontendAppConfig: FrontendAppConfig)
       extends StrideFrontendController(testMcc, errorHandler) with StrideAuth {

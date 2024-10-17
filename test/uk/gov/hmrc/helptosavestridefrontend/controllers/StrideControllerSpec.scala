@@ -40,6 +40,7 @@ import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.helptosavestridefrontend.views.html._
 
 import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class StrideControllerSpec

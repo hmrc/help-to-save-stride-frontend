@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import java.time.Instant
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class HTSAuditorSpec extends TestSupport {
