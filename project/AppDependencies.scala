@@ -1,4 +1,3 @@
-import play.sbt.PlayImport.ws
 import sbt.*
 
 object AppDependencies {
@@ -7,7 +6,6 @@ object AppDependencies {
   val hmrcMongoVersion = "1.7.0"
 
   val compile: Seq[ModuleID] = Seq(
-    ws,
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion"         % hmrcMongoVersion,
     "uk.gov.hmrc"       %% s"bootstrap-frontend-$playVersion" % hmrcBootstrapVersion,
     "uk.gov.hmrc"       %% s"domain-$playVersion"             % "9.0.0",
@@ -16,11 +14,10 @@ object AppDependencies {
   )
 
   def test(scope: String = "test"): Seq[ModuleID] = Seq(
-    "uk.gov.hmrc.mongo"     %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion     % scope,
-    "org.scalamock"         %% "scalamock"                     % "5.2.0"              % scope,
-    "org.scalatestplus"     %% "scalatestplus-scalacheck"      % "3.1.0.0-RC2"        % scope,
-    "uk.gov.hmrc"           %% s"bootstrap-test-$playVersion"  % hmrcBootstrapVersion % scope,
-    "org.mockito"           %% "mockito-scala"                 % "1.17.31"            % scope,
-    "com.github.tomakehurst" % "wiremock"                      % "3.0.0-beta-7"       % scope
+    "uk.gov.hmrc.mongo" %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion     % scope,
+    "org.scalamock"     %% "scalamock"                     % "5.2.0"              % scope,
+    "org.scalatestplus" %% "scalatestplus-scalacheck"      % "3.1.0.0-RC2"        % scope,
+    "uk.gov.hmrc"       %% s"bootstrap-test-$playVersion"  % hmrcBootstrapVersion % scope,
+    "org.mockito"       %% "mockito-scala"                 % "1.17.31"            % scope
   )
 }
