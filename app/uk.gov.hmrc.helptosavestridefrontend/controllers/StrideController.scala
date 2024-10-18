@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
-import java.time.Clock
 import cats.data.EitherT
 import cats.instances.future._
 import com.google.inject.Inject
@@ -40,6 +39,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, toFuture}
 import uk.gov.hmrc.helptosavestridefrontend.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.Clock
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -63,7 +63,7 @@ class StrideController @Inject() (
   applicantDetailsValidation: ApplicantDetailsValidation,
   clock: Clock,
   ec: ExecutionContext
-) extends StrideFrontendController(frontendAppConfig, mcc, errorHandler) with StrideAuth with I18nSupport with Logging
+) extends StrideFrontendController(mcc, errorHandler) with StrideAuth with I18nSupport with Logging
     with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] =

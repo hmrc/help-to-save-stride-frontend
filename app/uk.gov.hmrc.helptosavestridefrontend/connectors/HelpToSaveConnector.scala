@@ -18,21 +18,22 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject, Singleton}
-import play.api.http.Status
-import play.api.http.Status.OK
+import play.api.http.Status.{CONFLICT, CREATED, OK}
+import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
-import uk.gov.hmrc.helptosavestridefrontend.http.HttpClient.HttpClientOps
 import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
 import uk.gov.hmrc.helptosavestridefrontend.metrics.Metrics.nanosToPrettyString
 import uk.gov.hmrc.helptosavestridefrontend.models.CreateAccountResult.{AccountAlreadyExists, AccountCreated}
 import uk.gov.hmrc.helptosavestridefrontend.models._
 import uk.gov.hmrc.helptosavestridefrontend.models.eligibility.{EligibilityCheckResponse, EligibilityCheckResult}
 import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
-import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps._
+import uk.gov.hmrc.helptosavestridefrontend.util.HttpResponseOps.httpResponseOps
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging._
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer, PagerDutyAlerting, Result}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,35 +41,31 @@ import scala.util.{Failure, Success, Try}
 
 @ImplementedBy(classOf[HelpToSaveConnectorImpl])
 trait HelpToSaveConnector {
+  def getEligibility(nino: String)(implicit hc: HeaderCarrier): Result[EligibilityCheckResult]
 
-  def getEligibility(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult]
-
-  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload]
+  def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier): Result[NSIPayload]
 
   def createAccount(
     createAccountRequest: CreateAccountRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult]
+  )(implicit hc: HeaderCarrier): Result[CreateAccountResult]
 
-  def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus]
+  def getEnrolmentStatus(nino: String)(implicit hc: HeaderCarrier): Result[EnrolmentStatus]
 
   def getAccount(nino: String, correlationId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    hc: HeaderCarrier
   ): Result[AccountDetails]
-
 }
 
 @Singleton
 class HelpToSaveConnectorImpl @Inject() (
-  http: HttpClient,
+  http: HttpClientV2,
   metrics: HTSMetrics,
   pagerDutyAlerting: PagerDutyAlerting,
   configuration: Configuration,
   servicesConfig: ServicesConfig,
   environment: Environment
-)(implicit transformer: NINOLogMessageTransformer)
+)(implicit transformer: NINOLogMessageTransformer, ec: ExecutionContext)
     extends FrontendAppConfig(configuration, servicesConfig, environment) with HelpToSaveConnector with Logging {
-
   private val htsUrl = servicesConfig.baseUrl("help-to-save")
 
   private val eligibilityUrl: String = s"$htsUrl/help-to-save/eligibility-check"
@@ -85,12 +82,12 @@ class HelpToSaveConnectorImpl @Inject() (
 
   override def getEligibility(
     nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EligibilityCheckResult] =
+  )(implicit hc: HeaderCarrier): Result[EligibilityCheckResult] =
     EitherT[Future, String, EligibilityCheckResult] {
       val timerContext = metrics.eligibilityCheckTimer.time()
-
       http
-        .get(eligibilityUrl, Map("nino" -> nino))
+        .get(url"$eligibilityUrl?${Map("nino" -> nino)}")
+        .execute[HttpResponse]
         .map { response =>
           val time = timerContext.stop()
 
@@ -143,12 +140,13 @@ class HelpToSaveConnectorImpl @Inject() (
 
   private def timeString(nanos: Long): String = s"(round-trip time: ${nanosToPrettyString(nanos)})"
 
-  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[NSIPayload] =
+  override def getNSIUserInfo(nino: NINO)(implicit hc: HeaderCarrier): Result[NSIPayload] =
     EitherT {
       val timerContext = metrics.payePersonalDetailsTimer.time()
 
       http
-        .get(payePersonalDetailsUrl, Map("nino" -> nino))
+        .get(url"$payePersonalDetailsUrl?${Map("nino" -> nino)}")
+        .execute[HttpResponse]
         .map { response =>
           val time = timerContext.stop()
           response.status match {
@@ -191,37 +189,34 @@ class HelpToSaveConnectorImpl @Inject() (
 
   override def createAccount(
     createAccountRequest: CreateAccountRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[CreateAccountResult] = {
-
+  )(implicit hc: HeaderCarrier): Result[CreateAccountResult] = {
     val nSIUserInfo = createAccountRequest.payload
 
     EitherT(
       http
-        .post(createAccountUrl, createAccountRequest)
-        .map[Either[String, CreateAccountResult]] { response =>
-          response.status match {
-            case Status.CREATED =>
-              Try((response.json \ "accountNumber").as[String]) match {
-                case Success(accountNumber) => Right(AccountCreated(accountNumber))
-                case Failure(e) =>
-                  val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body"
-                  logger.warn(s"$message, error = $e", nSIUserInfo.nino)
-                  pagerDutyAlerting.alert(message)
-                  Left(message)
-              }
+        .post(url"$createAccountUrl")
+        .withBody(Json.toJson(createAccountRequest))
+        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+        .map {
+          case Right(HttpResponse(CREATED, json, _)) =>
+            Try((Json.parse(json) \ "accountNumber").as[String]) match {
+              case Success(accountNumber) => Right(AccountCreated(accountNumber))
+              case Failure(e) =>
+                val message = s"createAccount returned 201 but couldn't parse the accountNumber from response body"
+                logger.warn(s"$message, error = $e", nSIUserInfo.nino)
+                pagerDutyAlerting.alert(message)
+                Left(message)
+            }
+          case Left(UpstreamErrorResponse(_, CONFLICT, _, _)) =>
+            logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
+            Right(AccountAlreadyExists)
+          case Left(UpstreamErrorResponse(_, status, _, _)) =>
+            logger.warn(s"createAccount returned a status: $status", nSIUserInfo.nino)
 
-            case Status.CONFLICT =>
-              logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
-              Right(AccountAlreadyExists)
-
-            case _ =>
-              logger.warn(s"createAccount returned a status: ${response.status}", nSIUserInfo.nino)
-
-              pagerDutyAlerting.alert(
-                "Received unexpected http status from the back end when calling the create account url"
-              )
-              Left(s"createAccount returned a status other than 201, and 409, status was: ${response.status}")
-          }
+            pagerDutyAlerting.alert(
+              "Received unexpected http status from the back end when calling the create account url"
+            )
+            Left(s"createAccount returned a status other than 201, and 409, status was: $status")
         }
         .recover { case e =>
           logger.warn(
@@ -236,11 +231,12 @@ class HelpToSaveConnectorImpl @Inject() (
 
   override def getEnrolmentStatus(
     nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Result[EnrolmentStatus] =
+  )(implicit hc: HeaderCarrier): Result[EnrolmentStatus] =
     EitherT(
       http
-        .get(enrolmentStatusUrl, Map("nino" -> nino))
-        .map[Either[String, EnrolmentStatus]] { response =>
+        .get(url"$enrolmentStatusUrl?${Map("nino" -> nino)}")
+        .execute[HttpResponse]
+        .map { response =>
           response.status match {
             case OK =>
               val result = response.parseJson[EnrolmentStatus]()
@@ -266,13 +262,13 @@ class HelpToSaveConnectorImpl @Inject() (
     )
 
   override def getAccount(nino: String, correlationId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    hc: HeaderCarrier
   ): Result[AccountDetails] =
     EitherT(
       http
-        .get(getAccountUrl(nino), Map("systemId" -> "MDTP-STRIDE", "correlationId" -> correlationId))
-        .map[Either[String, AccountDetails]] { response =>
+        .get(url"${getAccountUrl(nino)}?${Map("systemId" -> "MDTP-STRIDE", "correlationId" -> correlationId)}")
+        .execute[HttpResponse]
+        .map { response =>
           response.status match {
             case OK    => response.parseJson[AccountDetails]()
             case other => Left(s"Could not get account details for correlation Id $correlationId. Got status $other")
@@ -282,5 +278,4 @@ class HelpToSaveConnectorImpl @Inject() (
           Left(s"Encountered error while trying to getAccount, with message ${e.getMessage}")
         }
     )
-
 }

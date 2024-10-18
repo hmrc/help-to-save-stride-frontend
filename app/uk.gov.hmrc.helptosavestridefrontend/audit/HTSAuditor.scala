@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.audit
 
-import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.helptosavestridefrontend.util.Logging.LoggerOps
 import uk.gov.hmrc.helptosavestridefrontend.util.{Logging, NINO, NINOLogMessageTransformer}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 @Singleton
-class HTSAuditor @Inject() (val auditConnector: AuditConnector)(implicit transformer: NINOLogMessageTransformer)
-    extends Logging {
-
-  def sendEvent(event: HTSEvent, nino: NINO)(implicit ec: ExecutionContext): Unit = {
+class HTSAuditor @Inject() (val auditConnector: AuditConnector)(implicit
+  transformer: NINOLogMessageTransformer,
+  ec: ExecutionContext
+) extends Logging {
+  def sendEvent(event: HTSEvent, nino: NINO): Unit = {
     val checkEventResult = auditConnector.sendExtendedEvent(event.value)
     checkEventResult.failed.foreach {
       case NonFatal(e) =>

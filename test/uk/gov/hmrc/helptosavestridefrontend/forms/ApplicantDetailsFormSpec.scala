@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import org.scalamock.scalatest.MockFactory
+import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.IdiomaticMockito
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.data.{Form, FormError}
@@ -27,8 +28,7 @@ import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 import java.time.{Clock, Instant, ZoneId}
 
-class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactory {
-
+class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with IdiomaticMockito {
   implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
   trait TestBinder {
@@ -36,10 +36,9 @@ class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockFactor
   }
 
   def mockBind[A](expectedKey: String)(result: Either[Seq[FormError], A]) =
-    (binder
-      .bind[A](_: String, _: Map[String, String]))
-      .expects(expectedKey, *)
-      .returning(result)
+    binder
+      .bind[A](expectedKey, *)
+      .returns(result)
   val binder: TestBinder = mock[TestBinder]
   implicit lazy val frontendAppConfig: FrontendAppConfig = injector().instanceOf[FrontendAppConfig]
   implicit val testValidation: ApplicantDetailsValidation =

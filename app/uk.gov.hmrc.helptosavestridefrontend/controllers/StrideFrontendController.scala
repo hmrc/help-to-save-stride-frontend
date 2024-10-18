@@ -17,24 +17,19 @@
 package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import com.google.inject.Singleton
-import javax.inject.Inject
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.helptosavestridefrontend.config.ErrorHandler
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StrideFrontendController @Inject() (
-  appConfig: FrontendAppConfig,
   mcc: MessagesControllerComponents,
   errorHandler: ErrorHandler
-) extends FrontendController(mcc) {
-
-  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
-    HeaderCarrierConverter.fromRequestAndSession(rh, rh.session)
-
-  def internalServerError()(implicit request: Request[_]): Result =
-    InternalServerError(errorHandler.internalServerErrorTemplate(request))
-
+)(implicit ec: ExecutionContext)
+    extends FrontendController(mcc) {
+  def internalServerError()(implicit request: Request[_]): Future[Result] =
+    errorHandler.internalServerErrorTemplate(request).map(InternalServerError(_))
 }

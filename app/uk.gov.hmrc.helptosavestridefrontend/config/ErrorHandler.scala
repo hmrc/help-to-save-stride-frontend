@@ -16,21 +16,23 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.config
 
-import javax.inject.{Inject, Singleton}
 import play.api.i18n.MessagesApi
-import play.api.mvc.Request
+import play.api.mvc.RequestHeader
 import play.twirl.api.Html
 import uk.gov.hmrc.helptosavestridefrontend.views.html.error_template
 import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 @Singleton
 class ErrorHandler @Inject() (
   val messagesApi: MessagesApi,
-  errorTemplate: error_template,
-  implicit val appConfig: FrontendAppConfig
-) extends FrontendErrorHandler {
+  errorTemplate: error_template
+)(implicit val ec: ExecutionContext)
+    extends FrontendErrorHandler {
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit
-    request: Request[_]
-  ): Html =
-    errorTemplate()
+    request: RequestHeader
+  ): Future[Html] =
+    Future.successful(errorTemplate())
 }
