@@ -50,7 +50,7 @@ class HttpResponseOps(val response: HttpResponse) extends AnyVal {
             .fold[Either[String, A]](
               errors =>
                 // there was JSON in the response but we couldn't read it
-                Left(s"Could not parse http reponse JSON: ${JsError(errors)
+                Left(s"Could not parse http response JSON: ${JsError(errors)
                     .prettyPrint()}. Response body was ${maskNino(response.body)}"),
               Right(_)
             )

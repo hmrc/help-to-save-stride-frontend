@@ -18,16 +18,15 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
-//import uk.gov.hmrc.play.bootstrap.controller.ActionWithMdc
+import uk.gov.hmrc.helptosavestridefrontend.config.ErrorHandler
+
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class ForbiddenController @Inject() (mcc: MessagesControllerComponents, errorHandler: ErrorHandler)(implicit
-  appConfig: FrontendAppConfig
-) extends StrideFrontendController(appConfig, mcc, errorHandler) {
-
+  ec: ExecutionContext
+) extends StrideFrontendController(mcc, errorHandler) {
   def forbidden: Action[AnyContent] = Action {
     Forbidden("Please ask the HtS Dev team for permissions to access this site")
   }
-
 }

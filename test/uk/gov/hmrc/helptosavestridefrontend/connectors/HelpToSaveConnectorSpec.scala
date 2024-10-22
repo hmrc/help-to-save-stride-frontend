@@ -31,13 +31,14 @@ import uk.gov.hmrc.helptosavestridefrontend.models.register.CreateAccountRequest
 import uk.gov.hmrc.helptosavestridefrontend.models.{AccountDetails, EnrolmentStatus}
 import uk.gov.hmrc.helptosavestridefrontend.util.MockPagerDuty
 import uk.gov.hmrc.helptosavestridefrontend.{TestData, TestSupport}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class HelpToSaveConnectorSpec
     extends TestSupport with IdiomaticMockito with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData
     with EitherValues {
-
-  val mockHttp: HttpClient = fakeApplication.injector.instanceOf[HttpClient]
+  val mockHttp: HttpClientV2 = fakeApplication.injector.instanceOf[HttpClientV2]
   val connector =
     new HelpToSaveConnectorImpl(mockHttp, mockMetrics, mockPagerDuty, configuration, servicesConfig, environment)
 
@@ -48,14 +49,12 @@ class HelpToSaveConnectorSpec
 
   private def getAccountUrl(nino: String): String = s"/help-to-save/$nino/account"
 
-  private val emptyQueryParameters: Map[String, String] = Map.empty[String, String]
   private val emptyBody = ""
 
   val connectorCallFailureMessage: (HTTPMethod, String) => String = (httpMethod, urlPath) =>
     s"$httpMethod of 'http://$wireMockHost:$wireMockPort$urlPath' failed. Caused by: 'Connection refused"
 
   "HelpToSaveConnector" when {
-
     "checking eligibility" must {
       def eligibilityCheckResponse(resultCode: Int): JsValue =
         JsObject(
@@ -99,31 +98,25 @@ class HelpToSaveConnectorSpec
       }
 
       "handles the case of success response but no eligibility result json" in {
-        inSequence {
-          when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(200, Json.parse("{}"))
+        when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(200, Json.parse("{}"))
 
-          mockPagerDutyAlert("Could not parse JSON in eligibility check response")
-        }
+        mockPagerDutyAlert("Could not parse JSON in eligibility check response")
 
         await(connector.getEligibility(nino).value).isLeft shouldBe true
       }
 
       "handle responses when they contain invalid json" in {
-        inSequence {
-          when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(200, Json.parse("""{"invalid": "foo"}"""))
+        when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(200, Json.parse("""{"invalid": "foo"}"""))
 
-          mockPagerDutyAlert("Could not parse JSON in eligibility check response")
-        }
+        mockPagerDutyAlert("Could not parse JSON in eligibility check response")
         await(connector.getEligibility(nino).value).isLeft shouldBe true
       }
 
       "return with an error" when {
         "the call fails" in {
-          inSequence {
-            when(GET, eligibilityUrl, Map("nino" -> nino))
-            // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
-            mockPagerDutyAlert("Failed to make call to check eligibility")
-          }
+          when(GET, eligibilityUrl, Map("nino" -> nino))
+          // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
+          mockPagerDutyAlert("Failed to make call to check eligibility")
 
           await(connector.getEligibility(nino).value).isLeft shouldBe true
         }
@@ -131,24 +124,19 @@ class HelpToSaveConnectorSpec
         "the call comes back with an unexpected http status" in {
           forAll { status: Int =>
             whenever(status > 0 && status =!= 200) {
-              inSequence {
-                when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(status, emptyBody)
+              when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(status, emptyBody)
 
-                // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
-                mockPagerDutyAlert("Failed to make call to check eligibility")
-              }
+              // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
+              mockPagerDutyAlert("Failed to make call to check eligibility")
 
               await(connector.getEligibility(nino).value).isLeft shouldBe true
             }
-
           }
         }
-
       }
     }
 
     "getting paye-personal-details and converting to nsi-user-info" must {
-
       "return a successful paye-details response for a valid NINO and convert to nsi-user-info" in {
         when(GET, payePersonalDetailsUrl, Map("nino" -> nino)).thenReturn(200, Json.parse(payeDetailsJson))
 
@@ -171,12 +159,10 @@ class HelpToSaveConnectorSpec
 
       "return with an error" when {
         "the call fails" in {
-          inSequence {
-            when(GET, payePersonalDetailsUrl, Map("nino" -> nino))
+          when(GET, payePersonalDetailsUrl, Map("nino" -> nino))
 
-            // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
-            mockPagerDutyAlert("Failed to make call to paye-personal-details")
-          }
+          // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
+          mockPagerDutyAlert("Failed to make call to paye-personal-details")
 
           await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
         }
@@ -184,30 +170,23 @@ class HelpToSaveConnectorSpec
         "the call comes back with an unexpected http status" in {
           forAll { status: Int =>
             whenever(status > 0 && status =!= 200 && status =!= 404) {
-              inSequence {
-                when(GET, payePersonalDetailsUrl, Map("nino" -> nino)).thenReturn(status, emptyBody)
+              when(GET, payePersonalDetailsUrl, Map("nino" -> nino)).thenReturn(status, emptyBody)
 
-                // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
-                mockPagerDutyAlert("Failed to make call to paye-personal-details")
-              }
+              // WARNING: do not change the message in the following check - this needs to stay in line with the configuration in alert-config
+              mockPagerDutyAlert("Failed to make call to paye-personal-details")
 
               await(connector.getNSIUserInfo(nino).value).isLeft shouldBe true
             }
-
           }
-
         }
-
       }
-
     }
 
     "createAccount" must {
-
       val createAccountRequest = CreateAccountRequest(nsiUserInfo, 7, "Stride", detailsManuallyEntered = false)
 
       "return a CreateAccountResult of AccountCreated when the proxy returns 201" in {
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
           .thenReturn(CREATED, Json.parse("""{"accountNumber":"123456789"}"""))
 
         val result = await(connector.createAccount(createAccountRequest).value)
@@ -215,31 +194,27 @@ class HelpToSaveConnectorSpec
       }
 
       "return an error if the createAccount returns 201 but with invalid or no accountNumber json body" in {
-        inSequence {
-          when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
-            .thenReturn(CREATED, Json.parse("""{"blah":"blah"}"""))
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
+          .thenReturn(CREATED, Json.parse("""{"blah":"blah"}"""))
 
-          mockPagerDutyAlert("createAccount returned 201 but couldn't parse the accountNumber from response body")
-        }
+        mockPagerDutyAlert("createAccount returned 201 but couldn't parse the accountNumber from response body")
         val result = await(connector.createAccount(createAccountRequest).value)
         result.isLeft shouldBe true
       }
 
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
-        when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
-          .thenReturn(CONFLICT, emptyBody)
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
+          .thenReturn(CONFLICT, Json.parse("{}"))
 
         val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Right(AccountAlreadyExists)
       }
 
       "return a Left when the proxy returns a status other than 201 or 409" in {
-        inSequence {
-          when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
-            .thenReturn(BAD_REQUEST, "null")
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
+          .thenReturn(BAD_REQUEST, Json.parse("{}"))
 
-          mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
-        }
+        mockPagerDutyAlert("Received unexpected http status from the back end when calling the create account url")
         val result = await(connector.createAccount(createAccountRequest).value)
         result shouldBe Left("createAccount returned a status other than 201, and 409, status was: 400")
       }
@@ -250,11 +225,9 @@ class HelpToSaveConnectorSpec
 
       "return a Left with future fails" in {
         wireMockServer.stop()
-        inSequence {
-          when(POST, createAccountUrl, emptyQueryParameters, body = Some(Json.toJson(createAccountRequest).toString()))
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
 
-          mockPagerDutyAlert("Failed to make call to the back end create account url")
-        }
+        mockPagerDutyAlert("Failed to make call to the back end create account url")
         val result = await(connector.createAccount(createAccountRequest).value)
         result.left.value should include(
           s"Encountered error while trying to make createAccount call, with message: " +
@@ -296,7 +269,6 @@ class HelpToSaveConnectorSpec
           val result = connector.getEnrolmentStatus(nino)
           await(result.value) shouldBe Right(s)
         }
-
       }
 
       "return an error" when {
@@ -318,27 +290,22 @@ class HelpToSaveConnectorSpec
           forAll { status: Int =>
             whenever(status > 0 && status =!= 200) {
               statusToJSON.foreach { case (_, j) =>
-                inSequence {
-                  when(GET, enrolmentStatusUrl, Map("nino" -> nino)).thenReturn(status, Json.parse(j))
+                when(GET, enrolmentStatusUrl, Map("nino" -> nino)).thenReturn(status, Json.parse(j))
 
-                  mockPagerDutyAlert(
-                    "Received unexpected http status from the back end when calling the get enrolment status url"
-                  )
-                }
+                mockPagerDutyAlert(
+                  "Received unexpected http status from the back end when calling the get enrolment status url"
+                )
 
                 val result = connector.getEnrolmentStatus(nino)
                 await(result.value).isLeft shouldBe true
-
               }
             }
           }
-
         }
       }
     }
 
     "getAccount" must {
-
       val accountNumber = "12345678"
       val correlationId = "test-correlation-id"
       val validJSON = Json.parse(s"""{ "accountNumber" : "$accountNumber"}""")
@@ -351,7 +318,6 @@ class HelpToSaveConnectorSpec
       }
 
       "return an error" when {
-
         "the response comes back with any status other than 200" in {
           forAll { status: Int =>
             whenever(status > 0 && status =!= 200) {
@@ -366,18 +332,14 @@ class HelpToSaveConnectorSpec
           when(GET, getAccountUrl(nino), paramemters).thenReturn(OK, Json.parse("""{}"""))
           await(connector.getAccount(nino, correlationId).value).isLeft shouldBe true
         }
-
       }
-
     }
 
     "failure to get account when server unavailable" must {
       "return a Left when future fails" in {
         wireMockServer.stop()
-        inSequence {
-          when(GET, enrolmentStatusUrl, Map("nino" -> nino))
-          mockPagerDutyAlert("Failed to make call to the back end get enrolment status url")
-        }
+        when(GET, enrolmentStatusUrl, Map("nino" -> nino))
+        mockPagerDutyAlert("Failed to make call to the back end get enrolment status url")
 
         val result = connector.getEnrolmentStatus(nino)
         await(result.value).isLeft shouldBe true
@@ -385,7 +347,5 @@ class HelpToSaveConnectorSpec
         wireMockServer.start()
       }
     }
-
   }
-
 }

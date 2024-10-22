@@ -16,26 +16,23 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.audit
 
-import java.time.Instant
-
+import org.mockito.ArgumentMatchersSugar.*
 import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.time.Instant
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class HTSAuditorSpec extends TestSupport {
-
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
 
   val auditor = new HTSAuditor(mockAuditConnector)
 
   "The HTSAuditor" when {
-
     "sending an event" must {
-
       "use the audit connector to send an event" in {
         val dataEvent: ExtendedDataEvent =
           ExtendedDataEvent("source", "type", "id", Map("tag" -> "value"), Json.obj("field" -> "value"), Instant.now)
@@ -44,15 +41,12 @@ class HTSAuditorSpec extends TestSupport {
           override val value = dataEvent
         }
 
-        (mockAuditConnector
-          .sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext))
-          .expects(dataEvent, *, *)
-          .returning(Future.failed(new Exception))
+        mockAuditConnector
+          .sendExtendedEvent(dataEvent)(*, *)
+          .returns(Future.failed(new Exception))
 
         auditor.sendEvent(htsEvent, "nino")
       }
-
     }
   }
-
 }

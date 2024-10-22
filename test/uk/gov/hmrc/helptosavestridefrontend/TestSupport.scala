@@ -18,14 +18,14 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import com.codahale.metrics._
 import com.typesafe.config.ConfigFactory
-import org.scalamock.scalatest.MockFactory
+import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Suite}
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.MessagesApi
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.MessagesControllerComponents
-import play.api.{Application, Configuration, Environment, Play}
+import play.api.{Application, Configuration, Environment}
 import play.filters.csrf.CSRFAddToken
 import uk.gov.hmrc.helptosavestridefrontend.config.{ErrorHandler, FrontendAppConfig}
 import uk.gov.hmrc.helptosavestridefrontend.metrics.HTSMetrics
@@ -37,10 +37,10 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.util
 import java.util.UUID
-import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait TestSupport
-    extends UnitSpec with MockFactory with BeforeAndAfterAll with ScalaFutures with I18nSupport with WireMockSupport
+    extends UnitSpec with IdiomaticMockito with BeforeAndAfterAll with ScalaFutures with WireMockSupport
     with WireMockMethods {
   this: Suite =>
 
@@ -51,10 +51,6 @@ trait TestSupport
       .configure(
         Configuration(
           ConfigFactory.parseString(s"""
-                                       | metrics.enabled = true
-                                       | metrics.jvm = false
-                                       | mongodb.session.expireAfter = 5 seconds
-                                       | microservice.services.help-to-save.host = $wireMockHost
                                        | microservice.services.help-to-save.port = $wireMockPort
           """.stripMargin)
         ) withFallback additionalConfig
@@ -69,9 +65,7 @@ trait TestSupport
 
   lazy implicit val servicesConfig: ServicesConfig = injector.instanceOf[ServicesConfig]
 
-  implicit lazy val ec: ExecutionContext = injector.instanceOf[ExecutionContext]
-
-  implicit lazy val ninoLogMessageTransfromer: NINOLogMessageTransformer =
+  implicit lazy val ninoLogMessageTransformer: NINOLogMessageTransformer =
     injector.instanceOf[NINOLogMessageTransformer]
 
   implicit val headerCarrier: HeaderCarrier =
@@ -84,26 +78,16 @@ trait TestSupport
       new util.TreeMap[String, Gauge[_]]()
   }
 
-  val mockMetrics = new HTSMetrics(stub[MetricRegistry]) {
+  val mockMetrics: HTSMetrics = new HTSMetrics(mock[MetricRegistry]) {
     override def timer(name: String): Timer = new Timer()
 
     override def counter(name: String): Counter = new Counter()
   }
 
-  override protected def beforeAll(): Unit = {
-    Play.start(fakeApplication)
-    super.beforeAll()
-  }
-
-  override protected def afterAll(): Unit = {
-    Play.stop(fakeApplication)
-    super.afterAll()
-  }
-
   lazy val messagesApi: MessagesApi = injector.instanceOf(classOf[MessagesApi])
 
   implicit lazy val frontendAppConfig: FrontendAppConfig = injector.instanceOf[FrontendAppConfig]
-  lazy val errorHandler = new ErrorHandler(testMcc.messagesApi, injector.instanceOf[error_template], frontendAppConfig)
+  lazy val errorHandler = new ErrorHandler(testMcc.messagesApi, injector.instanceOf[error_template])
 
   lazy val csrfAddToken: CSRFAddToken = injector.instanceOf[play.filters.csrf.CSRFAddToken]
 

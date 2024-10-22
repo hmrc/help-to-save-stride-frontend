@@ -37,7 +37,7 @@ class HttpResponseOpsSpec extends TestSupport {
 
     override def status: Int = ???
 
-    override def allHeaders: Map[String, Seq[String]] = ???
+    override def headers: Map[String, Seq[String]] = ???
   }
 
   "HttpResponseOps" must {
