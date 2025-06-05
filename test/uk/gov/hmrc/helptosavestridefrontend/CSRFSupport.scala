@@ -18,9 +18,10 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
+import play.api.mvc.{AnyContentAsEmpty, Request}
 
 trait CSRFSupport {
 
-  val request = FakeRequest("GET", "/").withCSRFToken
+  val request: Request[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withCSRFToken
 
 }

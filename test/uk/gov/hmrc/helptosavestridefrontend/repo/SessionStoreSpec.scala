@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.repo
 
-import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.helptosavestridefrontend.models.HtsSession._
 import uk.gov.hmrc.helptosavestridefrontend.models.{HtsSecureSession, HtsStandardSession, SessionEligibilityCheckResult}
@@ -32,7 +32,7 @@ import uk.gov.hmrc.mongo.test.MongoSupport
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 class SessionStoreSpec
-    extends TestSupport with MongoSupport with IdiomaticMockito with MockPagerDuty with TestData with ScalaFutures
+    extends TestSupport with MongoSupport with MockitoSugar with MockPagerDuty with TestData with ScalaFutures
     with WireMockSupport with WireMockMethods {
 
   val timeStampSupport = new CurrentTimestampSupport()

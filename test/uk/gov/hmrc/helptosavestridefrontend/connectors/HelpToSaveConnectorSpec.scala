@@ -18,8 +18,8 @@ package uk.gov.hmrc.helptosavestridefrontend.connectors
 
 import cats.instances.int._
 import cats.syntax.eq._
-import org.mockito.IdiomaticMockito
 import org.scalatest.EitherValues
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
@@ -36,7 +36,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class HelpToSaveConnectorSpec
-    extends TestSupport with IdiomaticMockito with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData
+    extends TestSupport with MockitoSugar with MockPagerDuty with ScalaCheckDrivenPropertyChecks with TestData
     with EitherValues {
   val mockHttp: HttpClientV2 = fakeApplication.injector.instanceOf[HttpClientV2]
   val connector =
@@ -122,7 +122,7 @@ class HelpToSaveConnectorSpec
         }
 
         "the call comes back with an unexpected http status" in {
-          forAll { status: Int =>
+          forAll { (status: Int) =>
             whenever(status > 0 && status =!= 200) {
               when(GET, eligibilityUrl, Map("nino" -> nino)).thenReturn(status, emptyBody)
 
@@ -168,7 +168,7 @@ class HelpToSaveConnectorSpec
         }
 
         "the call comes back with an unexpected http status" in {
-          forAll { status: Int =>
+          forAll { (status: Int) =>
             whenever(status > 0 && status =!= 200 && status =!= 404) {
               when(GET, payePersonalDetailsUrl, Map("nino" -> nino)).thenReturn(status, emptyBody)
 
@@ -287,7 +287,7 @@ class HelpToSaveConnectorSpec
         }
 
         "the response comes back with any status other than 200" in {
-          forAll { status: Int =>
+          forAll { (status: Int) =>
             whenever(status > 0 && status =!= 200) {
               statusToJSON.foreach { case (_, j) =>
                 when(GET, enrolmentStatusUrl, Map("nino" -> nino)).thenReturn(status, Json.parse(j))
@@ -319,7 +319,7 @@ class HelpToSaveConnectorSpec
 
       "return an error" when {
         "the response comes back with any status other than 200" in {
-          forAll { status: Int =>
+          forAll { (status: Int) =>
             whenever(status > 0 && status =!= 200) {
               when(GET, getAccountUrl(nino), paramemters).thenReturn(status, validJSON)
 

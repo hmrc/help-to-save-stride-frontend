@@ -24,14 +24,13 @@ import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import play.api.data.format.Formatter
-import uk.gov.hmrc.helptosavestridefrontend.forms.DateFormFormatter
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class ApplicantDetailsValidationSpec
     extends TestSupport with ScalaCheckDrivenPropertyChecks with ValidationTestSupport {
 
-  val epochClock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
+  val epochClock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
   override lazy val additionalConfig: Configuration =
     Configuration(
@@ -46,8 +45,7 @@ class ApplicantDetailsValidationSpec
       fakeApplication.configuration,
       fakeApplication.injector.instanceOf[ServicesConfig],
       fakeApplication.injector.instanceOf[Environment]
-    ),
-    epochClock
+    )
   )
 
   "ApplicationDetailsValidation" when {

@@ -45,7 +45,7 @@ trait TestData { // scalastyle:off magic.number
             "phoneNumber": "07841097845"
      }""".stripMargin
 
-  val contactDetails = ContactDetails(
+  val contactDetails: ContactDetails = ContactDetails(
     "1 Station Road",
     "Town Centre",
     Some("Sometown"),
@@ -56,21 +56,25 @@ trait TestData { // scalastyle:off magic.number
     Some("07841097845")
   )
 
-  val nsiUserInfo = NSIPayload("A", "Smith", LocalDate.parse("1960-01-01"), "AE123456C", contactDetails)
+  val nsiUserInfo: NSIPayload = NSIPayload("A", "Smith", LocalDate.parse("1960-01-01"), "AE123456C", contactDetails)
 
-  val eligibleResponse = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
+  val eligibleResponse: Eligible = Eligible(EligibilityCheckResponse("eligible", 1, "Tax credits", 1))
 
-  val ineligibleResponse = Ineligible(EligibilityCheckResponse("ineligible", 2, "Tax credits", 3))
+  val ineligibleResponse: Ineligible = Ineligible(EligibilityCheckResponse("ineligible", 2, "Tax credits", 3))
 
-  val accountExistsResponse = AlreadyHasAccount(EligibilityCheckResponse("eligible", 3, "Tax credits", 7))
+  val accountExistsResponse: AlreadyHasAccount = AlreadyHasAccount(
+    EligibilityCheckResponse("eligible", 3, "Tax credits", 7)
+  )
 
-  val cacheKey = UUID.randomUUID().toString
+  val cacheKey: String = UUID.randomUUID().toString
 
-  val eligibleResult = SessionEligibilityCheckResult.Eligible(eligibleResponse.value)
+  val eligibleResult: SessionEligibilityCheckResult.Eligible =
+    SessionEligibilityCheckResult.Eligible(eligibleResponse.value)
 
-  val ineligibleEligibilityResult = SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, false)
+  val ineligibleEligibilityResult: SessionEligibilityCheckResult.Ineligible =
+    SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, false)
 
-  val ineligibleManualOverrideEligibilityResult =
+  val ineligibleManualOverrideEligibilityResult: SessionEligibilityCheckResult.Ineligible =
     SessionEligibilityCheckResult.Ineligible(ineligibleResponse.value, true)
 
   val accountExistsEligibilityResult = SessionEligibilityCheckResult.AlreadyHasAccount

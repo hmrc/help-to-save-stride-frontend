@@ -28,7 +28,6 @@ import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.util.Validation._
 
-import java.time.Clock
 import scala.language.implicitConversions
 
 @ImplementedBy(classOf[ApplicantDetailsValidationImpl])
@@ -40,8 +39,7 @@ trait ApplicantDetailsValidation {
 }
 
 @Singleton
-class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig, clock: Clock)
-    extends ApplicantDetailsValidation {
+class ApplicantDetailsValidationImpl @Inject() (configuration: FrontendAppConfig) extends ApplicantDetailsValidation {
   import configuration.FormValidation._
 
   val nameFormatter: Formatter[String] = stringFormatter { forename =>

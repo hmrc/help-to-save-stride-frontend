@@ -90,6 +90,6 @@ object ApplicantDetailsForm {
       Ids.address5    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
       Ids.postcode    -> of(applicantDetailsValidation.postcodeFormatter),
       Ids.countryCode -> text
-    )(ApplicantDetails.apply)(ApplicantDetails.unapply)
+    )(ApplicantDetails.apply)(o => Some(Tuple.fromProductTyped(o)))
   )
 }

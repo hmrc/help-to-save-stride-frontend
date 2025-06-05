@@ -22,7 +22,7 @@ import uk.gov.hmrc.helptosavestridefrontend.forms.NINOValidation.ninoFormatter
 
 object GiveNINOForm {
   def giveNinoForm: Form[GiveNINO] = Form(
-    mapping("nino" -> of(ninoFormatter))(GiveNINO.apply)(GiveNINO.unapply)
+    mapping("nino" -> of(ninoFormatter))(GiveNINO.apply)(o => Some(o.nino))
   )
 }
 
