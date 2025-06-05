@@ -18,9 +18,9 @@ package uk.gov.hmrc.helptosavestridefrontend
 
 import com.codahale.metrics._
 import com.typesafe.config.ConfigFactory
-import org.mockito.IdiomaticMockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Suite}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.MessagesApi
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -40,11 +40,11 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait TestSupport
-    extends UnitSpec with IdiomaticMockito with BeforeAndAfterAll with ScalaFutures with WireMockSupport
+    extends UnitSpec with MockitoSugar with BeforeAndAfterAll with ScalaFutures with WireMockSupport
     with WireMockMethods {
   this: Suite =>
 
-  lazy val additionalConfig = Configuration()
+  lazy val additionalConfig: Configuration = Configuration()
 
   implicit lazy val fakeApplication: Application =
     new GuiceApplicationBuilder()

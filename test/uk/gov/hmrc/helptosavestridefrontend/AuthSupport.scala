@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.helptosavestridefrontend
 
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.stubbing.ScalaOngoingStubbing
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{when => whenMock}
+import org.mockito.stubbing.OngoingStubbing
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, v2, ~}
 
 import java.util.Base64
 import scala.concurrent.Future
@@ -60,29 +61,30 @@ trait AuthSupport { this: TestSupport =>
 
   def mockAuthorised[A](expectedPredicate: Predicate, expectedRetrieval: Retrieval[A])(
     result: Either[Throwable, A]
-  ): ScalaOngoingStubbing[Future[A]] =
-    mockAuthConnector
-      .authorise(expectedPredicate, expectedRetrieval)(*, *)
-      .returns(result.fold(Future.failed, Future.successful))
+  ): OngoingStubbing[Future[A]] =
+    whenMock(
+      mockAuthConnector
+        .authorise(eqTo(expectedPredicate), eqTo(expectedRetrieval))(any(), any())
+    ).thenReturn(result.fold(Future.failed, Future.successful))
 
-  def mockSuccessfulAuthorisation(): ScalaOngoingStubbing[Future[Enrolments]] =
+  def mockSuccessfulAuthorisation(): OngoingStubbing[Future[Enrolments]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
       Right(Enrolments(roles.map(Enrolment(_)).toSet))
     )
 
-  def mockSuccessfulSecureAuthorisation(): ScalaOngoingStubbing[Future[Enrolments]] =
+  def mockSuccessfulSecureAuthorisation(): OngoingStubbing[Future[Enrolments]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments)(
       Right(Enrolments(secureRoles.map(Enrolment(_)).toSet))
     )
 
   def mockSuccessfulAuthorisationWithDetails()
-    : ScalaOngoingStubbing[Future[Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]]] =
+    : OngoingStubbing[Future[Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
       Right(retrievals)
     )
 
   def mockSuccessfulSecureAuthorisationWithDetails()
-    : ScalaOngoingStubbing[Future[Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]]] =
+    : OngoingStubbing[Future[Enrolments ~ Option[Credentials] ~ Option[Name] ~ Option[String]]] =
     mockAuthorised(AuthProviders(PrivilegedApplication), allEnrolments and credentials and name and email)(
       Right(secureRetrievals)
     )

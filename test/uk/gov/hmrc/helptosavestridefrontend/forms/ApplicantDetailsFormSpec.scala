@@ -16,33 +16,38 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.forms
 
-import org.mockito.ArgumentMatchersSugar.*
-import org.mockito.IdiomaticMockito
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.data.{Form, FormError}
-import play.api.test.Helpers.baseApplicationBuilder.injector
 import uk.gov.hmrc.helptosavestridefrontend.config.FrontendAppConfig
 import uk.gov.hmrc.helptosavestridefrontend.forms.ApplicantDetailsValidation.ErrorMessages
 import uk.gov.hmrc.helptosavestridefrontend.views.ApplicantDetailsForm.Ids
 
 import java.time.{Clock, Instant, ZoneId}
+import org.mockito.stubbing.OngoingStubbing
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.Injector
 
-class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with IdiomaticMockito {
+class ApplicantDetailsFormSpec extends AnyWordSpec with Matchers with MockitoSugar {
   implicit val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"))
 
   trait TestBinder {
     def bind[A](key: String, data: Map[String, String]): Either[Seq[FormError], A]
   }
 
-  def mockBind[A](expectedKey: String)(result: Either[Seq[FormError], A]) =
-    binder
-      .bind[A](expectedKey, *)
-      .returns(result)
+  def mockBind[A](
+    expectedKey: String
+  )(result: Either[Seq[FormError], A]): OngoingStubbing[Either[Seq[FormError], A]] =
+    when(binder.bind[A](expectedKey, any())).thenReturn(result)
+
   val binder: TestBinder = mock[TestBinder]
-  implicit lazy val frontendAppConfig: FrontendAppConfig = injector().instanceOf[FrontendAppConfig]
+  val injector: Injector = play.api.test.Helpers.baseApplicationBuilder.injector()
+
+  implicit lazy val frontendAppConfig: FrontendAppConfig = injector.instanceOf[FrontendAppConfig]
   implicit val testValidation: ApplicantDetailsValidation =
-    new ApplicantDetailsValidationImpl(frontendAppConfig: FrontendAppConfig, clock: Clock)
+    new ApplicantDetailsValidationImpl(frontendAppConfig: FrontendAppConfig)
 
   val applicantDetailsForm: Form[ApplicantDetails] = ApplicantDetailsForm.applicantDetailsForm
 

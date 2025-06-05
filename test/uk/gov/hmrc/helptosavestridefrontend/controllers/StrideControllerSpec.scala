@@ -18,7 +18,9 @@ package uk.gov.hmrc.helptosavestridefrontend.controllers
 
 import cats.data.EitherT
 import cats.instances.future._
-import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.stubbing.OngoingStubbing
+import org.mockito.Mockito.{doNothing, when => whenMock}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.mvc._
 import play.api.test.CSRFTokenHelper.CSRFRequest
@@ -50,63 +52,67 @@ class StrideControllerSpec
 
   private val fakeRequest = FakeRequest("GET", "/")
 
-  val helpToSaveConnector = mock[HelpToSaveConnector]
+  val helpToSaveConnector: HelpToSaveConnector = mock[HelpToSaveConnector]
 
-  val sessionStore = mock[SessionStore]
+  val sessionStore: SessionStore = mock[SessionStore]
 
-  val mockAuditor = mock[HTSAuditor]
+  val mockAuditor: HTSAuditor = mock[HTSAuditor]
 
   val ninoEndoded = "QUUxMjM0NTZD"
 
-  val emptyECResponse = EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
-  val eligibleECResponse = EligibilityCheckResponse("eligible", 1, "tax credits", 7)
+  val emptyECResponse: EligibilityCheckResponse =
+    EligibilityCheckResponse("No tax credit record found for user's NINO", 2, "", -1)
+  val eligibleECResponse: EligibilityCheckResponse = EligibilityCheckResponse("eligible", 1, "tax credits", 7)
 
-  val accountExistsResponseECR = EligibilityCheckResponse("account exists", 3, "account exists", 7)
+  val accountExistsResponseECR: EligibilityCheckResponse =
+    EligibilityCheckResponse("account exists", 3, "account exists", 7)
 
-  def mockEligibility(nino: NINO)(result: Either[String, EligibilityCheckResult]) =
-    helpToSaveConnector
-      .getEligibility(nino)(*)
-      .returns(EitherT.fromEither[Future](result))
+  def mockEligibility(nino: NINO)(
+    result: Either[String, EligibilityCheckResult]
+  ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[EligibilityCheckResult]] =
+    whenMock(helpToSaveConnector.getEligibility(eqTo(nino))(any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
-  def mockPayeDetails(nino: NINO)(result: Either[String, NSIPayload]) =
-    helpToSaveConnector
-      .getNSIUserInfo(nino)(*)
-      .returns(EitherT.fromEither[Future](result))
+  def mockPayeDetails(nino: NINO)(
+    result: Either[String, NSIPayload]
+  ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[NSIPayload]] =
+    whenMock(helpToSaveConnector.getNSIUserInfo(eqTo(nino))(any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
-  def mockSessionStoreGet(result: Either[String, Option[HtsSession]]) =
-    sessionStore
-      .get(*, *)
-      .returns(EitherT.fromEither[Future](result))
+  def mockSessionStoreGet(
+    result: Either[String, Option[HtsSession]]
+  ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[Option[HtsSession]]] =
+    whenMock(sessionStore.get(any(), any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
   def mockSessionStoreInsert(htsSession: HtsSession)(result: Either[String, Unit]): Unit =
-    sessionStore
-      .store(htsSession)(*, *)
-      .returns(EitherT.fromEither[Future](result))
+    whenMock(sessionStore.store(eqTo(htsSession))(any(), any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
   def mockSessionStoreDelete(result: Either[String, Unit]): Unit =
-    sessionStore
-      .delete(*)
-      .returns(EitherT.fromEither[Future](result))
+    whenMock(sessionStore.delete(any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
-  def mockCreateAccount(createAccountRequest: CreateAccountRequest)(result: Either[String, CreateAccountResult]) =
-    helpToSaveConnector
-      .createAccount(createAccountRequest)(*)
-      .returns(EitherT.fromEither[Future](result))
+  def mockCreateAccount(createAccountRequest: CreateAccountRequest)(
+    result: Either[String, CreateAccountResult]
+  ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[CreateAccountResult]] =
+    whenMock(helpToSaveConnector.createAccount(eqTo(createAccountRequest))(any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
-  def mockGetEnrolmentStatus(nino: String)(result: Either[String, EnrolmentStatus]) =
-    helpToSaveConnector
-      .getEnrolmentStatus(nino)(*)
-      .returns(EitherT.fromEither[Future](result))
+  def mockGetEnrolmentStatus(nino: String)(
+    result: Either[String, EnrolmentStatus]
+  ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[EnrolmentStatus]] =
+    whenMock(helpToSaveConnector.getEnrolmentStatus(eqTo(nino))(any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
-  def mockAudit(event: HTSEvent, nino: NINO) =
-    mockAuditor
-      .sendEvent(event, nino)
-      .doesNothing()
+  def mockAudit(event: HTSEvent, nino: NINO): Unit =
+    doNothing().when(mockAuditor).sendEvent(event, nino)
 
-  def mockGetAccount(nino: String)(result: Either[String, AccountDetails]) =
-    helpToSaveConnector
-      .getAccount(nino, *)(*)
-      .returns(EitherT.fromEither[Future](result))
+  def mockGetAccount(nino: String)(
+    result: Either[String, AccountDetails]
+  ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[AccountDetails]] =
+    whenMock(helpToSaveConnector.getAccount(eqTo(nino), any())(any()))
+      .thenReturn(EitherT.fromEither[Future](result))
 
   implicit lazy val applicantDetailsValidation: ApplicantDetailsValidation =
     fakeApplication.injector.instanceOf[ApplicantDetailsValidation]
@@ -129,7 +135,7 @@ class StrideControllerSpec
       injector.instanceOf[application_cancelled]
     )
 
-  val validEnterDetailsFormBody = Map(
+  val validEnterDetailsFormBody: Map[String, String] = Map(
     Ids.forename    -> nsiUserInfo.forename,
     Ids.surname     -> nsiUserInfo.surname,
     Ids.dobDay      -> nsiUserInfo.dateOfBirth.getDayOfMonth.toString,
@@ -360,7 +366,7 @@ class StrideControllerSpec
         }
 
       "show an error page if the session is found in mongo and the user is ineligible but the reason code cannot be parsed" in {
-        forAll { code: Int =>
+        forAll { (code: Int) =>
           whenever(!ineligibleReasonCodes.contains(code)) {
             mockSuccessfulAuthorisationWithDetails()
             mockSessionStoreGet(
@@ -383,7 +389,7 @@ class StrideControllerSpec
 
       "show an error page if the session is found in mongo and the user is ineligible but the reason code cannot be parsed " +
         "and the role type is secure" in {
-          forAll { code: Int =>
+          forAll { (code: Int) =>
             whenever(!ineligibleReasonCodes.contains(code)) {
               mockSuccessfulSecureAuthorisationWithDetails()
               mockSessionStoreGet(

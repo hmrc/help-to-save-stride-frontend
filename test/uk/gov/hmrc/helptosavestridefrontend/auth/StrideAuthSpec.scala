@@ -35,10 +35,11 @@ import java.net.URLEncoder
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import play.api.mvc.{Action, AnyContent}
 
 class StrideAuthSpec extends TestSupport with AuthSupport {
-  lazy val standardRoles = List("a", "b")
-  lazy val secureRoles = List("c", "d")
+  lazy val standardRoles: List[String] = List("a", "b")
+  lazy val secureRoles: List[String] = List("c", "d")
 
   def base64Encode(s: String): String = new String(Base64.getEncoder.encode(s.getBytes()))
 
@@ -55,7 +56,7 @@ class StrideAuthSpec extends TestSupport with AuthSupport {
 
   lazy val test = new TestStrideAuth(frontendAppConfig)
 
-  lazy val action = test.authorisedFromStride { _ => _ =>
+  lazy val action: Action[AnyContent] = test.authorisedFromStride { _ => _ =>
     Future.successful(Ok)
   }(controllers.routes.Default.redirect())
 

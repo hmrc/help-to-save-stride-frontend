@@ -48,9 +48,9 @@ class StrideAuthRedirectsSpec extends AnyWordSpec with ScalaFutures with Matcher
 
     trait TestRedirects extends StrideAuthRedirects {
 
-      val env = Environment(new File("."), getClass.getClassLoader, mode)
+      val env: Environment = Environment(new File("."), getClass.getClassLoader, mode)
 
-      val config = Configuration.from(
+      val config: Configuration = Configuration.from(
         Map(
           "appName"  -> "app",
           "run.mode" -> mode.toString

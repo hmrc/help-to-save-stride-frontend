@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.helptosavestridefrontend.audit
 
-import org.mockito.ArgumentMatchersSugar.*
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import play.api.libs.json.Json
 import uk.gov.hmrc.helptosavestridefrontend.TestSupport
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import org.mockito.Mockito.{when => whenMock}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,9 +42,8 @@ class HTSAuditorSpec extends TestSupport {
           override val value = dataEvent
         }
 
-        mockAuditConnector
-          .sendExtendedEvent(dataEvent)(*, *)
-          .returns(Future.failed(new Exception))
+        whenMock(mockAuditConnector.sendExtendedEvent(eqTo(dataEvent))(any(), any()))
+          .thenReturn(Future.failed(new Exception))
 
         auditor.sendEvent(htsEvent, "nino")
       }
