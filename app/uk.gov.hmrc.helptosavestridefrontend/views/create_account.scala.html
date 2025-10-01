@@ -40,7 +40,7 @@
 
 @(detailsToConfirm: Option[NSIPayload],
   backUrl: Option[String],
-  eligible: Option[Eligible])(implicit request: Request[_], messages: Messages)
+  eligible: Option[Eligible])(implicit request: Request[?], messages: Messages)
 
 @title = @{messages("hts.create.account.title.h1")}
 

@@ -74,8 +74,8 @@ trait TestSupport
   val nino = "AE123456C"
 
   class StubMetricRegistry extends MetricRegistry {
-    override def getGauges(filter: MetricFilter): util.SortedMap[String, Gauge[_]] =
-      new util.TreeMap[String, Gauge[_]]()
+    override def getGauges(filter: MetricFilter): util.SortedMap[String, Gauge[?]] =
+      new util.TreeMap[String, Gauge[?]]()
   }
 
   val mockMetrics: HTSMetrics = new HTSMetrics(mock[MetricRegistry]) {

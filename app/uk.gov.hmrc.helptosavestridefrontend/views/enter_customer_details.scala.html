@@ -36,7 +36,7 @@
         customerDetailsFormBody:  uk.gov.hmrc.helptosavestridefrontend.views.html.enter_customer_details_form_body
 )
 
-@(nino: String, form: Form[ApplicantDetails])(implicit request: Request[_], messages: Messages)
+@(nino: String, form: Form[ApplicantDetails])(implicit request: Request[?], messages: Messages)
 
 @dateKey = @{"dob"}
 @title = @{messages("hts.customer-eligible.enter-details.title.h1")}
@@ -55,7 +55,7 @@
                   "-day"
                 } else ""
               }"),
-              content = Text(messages(s"${e.key}.${e.message}", e.args: _*))
+              content = Text(messages(s"${e.key}.${e.message}", e.args*))
             )
           ),
           title = Text(messages("hts.customer-eligible.enter-details.error.title"))

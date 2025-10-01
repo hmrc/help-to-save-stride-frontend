@@ -40,7 +40,7 @@
     foreNameAndSurname: Option[(String,String)],
     nino: String,
     maybeForm: Option[Form[ApplicantDetails]]
-)(implicit request: Request[_], messages: Messages)
+)(implicit request: Request[?], messages: Messages)
 
 @title = @{messages("hts.eligibility.not.eligible.title.h1")}
 @hasErrors = @{maybeForm match {

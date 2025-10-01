@@ -70,39 +70,39 @@ class StrideControllerSpec
   def mockEligibility(nino: NINO)(
     result: Either[String, EligibilityCheckResult]
   ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[EligibilityCheckResult]] =
-    whenMock(helpToSaveConnector.getEligibility(eqTo(nino))(any()))
+    whenMock(helpToSaveConnector.getEligibility(eqTo(nino))(using any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockPayeDetails(nino: NINO)(
     result: Either[String, NSIPayload]
   ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[NSIPayload]] =
-    whenMock(helpToSaveConnector.getNSIUserInfo(eqTo(nino))(any()))
+    whenMock(helpToSaveConnector.getNSIUserInfo(eqTo(nino))(using any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockSessionStoreGet(
     result: Either[String, Option[HtsSession]]
   ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[Option[HtsSession]]] =
-    whenMock(sessionStore.get(any(), any()))
+    whenMock(sessionStore.get(using any(), any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockSessionStoreInsert(htsSession: HtsSession)(result: Either[String, Unit]): Unit =
-    whenMock(sessionStore.store(eqTo(htsSession))(any(), any()))
+    whenMock(sessionStore.store(eqTo(htsSession))(using any(), any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockSessionStoreDelete(result: Either[String, Unit]): Unit =
-    whenMock(sessionStore.delete(any()))
+    whenMock(sessionStore.delete(using any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockCreateAccount(createAccountRequest: CreateAccountRequest)(
     result: Either[String, CreateAccountResult]
   ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[CreateAccountResult]] =
-    whenMock(helpToSaveConnector.createAccount(eqTo(createAccountRequest))(any()))
+    whenMock(helpToSaveConnector.createAccount(eqTo(createAccountRequest))(using any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockGetEnrolmentStatus(nino: String)(
     result: Either[String, EnrolmentStatus]
   ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[EnrolmentStatus]] =
-    whenMock(helpToSaveConnector.getEnrolmentStatus(eqTo(nino))(any()))
+    whenMock(helpToSaveConnector.getEnrolmentStatus(eqTo(nino))(using any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   def mockAudit(event: HTSEvent, nino: NINO): Unit =
@@ -111,7 +111,7 @@ class StrideControllerSpec
   def mockGetAccount(nino: String)(
     result: Either[String, AccountDetails]
   ): OngoingStubbing[uk.gov.hmrc.helptosavestridefrontend.util.Result[AccountDetails]] =
-    whenMock(helpToSaveConnector.getAccount(eqTo(nino), any())(any()))
+    whenMock(helpToSaveConnector.getAccount(eqTo(nino), any())(using any()))
       .thenReturn(EitherT.fromEither[Future](result))
 
   implicit lazy val applicantDetailsValidation: ApplicantDetailsValidation =
@@ -497,7 +497,7 @@ class StrideControllerSpec
           )
 
           val result = csrfAddToken(controller.allowManualAccountCreation())(
-            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*)
+            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList *)
           )
 
           status(result) shouldBe SEE_OTHER
@@ -510,7 +510,7 @@ class StrideControllerSpec
           mockSessionStoreInsert(expectedSession)(Left("uh oh"))
 
           val result = csrfAddToken(controller.allowManualAccountCreation())(
-            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*)
+            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList *)
           )
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)
@@ -982,7 +982,7 @@ class StrideControllerSpec
           mockSessionStoreInsert(expectedSession)(Right(()))
 
           val result = csrfAddToken(controller.customerEligibleSubmit)(
-            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*)
+            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList *)
           )
 
           status(result) shouldBe SEE_OTHER
@@ -995,7 +995,7 @@ class StrideControllerSpec
           mockSessionStoreInsert(expectedSession)(Left("uh oh"))
 
           val result = csrfAddToken(controller.customerEligibleSubmit)(
-            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList: _*)
+            fakeRequest.withMethod("POST").withFormUrlEncodedBody(validEnterDetailsFormBody.toList *)
           )
           status(result) shouldBe SEE_OTHER
           redirectLocation(result) shouldBe Some(routes.StrideController.getErrorPage().url)

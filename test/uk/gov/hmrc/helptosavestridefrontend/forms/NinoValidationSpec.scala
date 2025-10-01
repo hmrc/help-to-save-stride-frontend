@@ -28,7 +28,7 @@ class NinoValidationSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks wi
 
     def genString(length: Int) = Gen.listOfN(length, Gen.alphaChar).map(_.mkString(""))
 
-    val testNino = testValidation[String](ninoFormatter) _
+    val testNino = testValidation[String](ninoFormatter)
 
     "validate against valid ninos" in {
       testNino(Some("AE123456C"))(Right("AE123456C"))

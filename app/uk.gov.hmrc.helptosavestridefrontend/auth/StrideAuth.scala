@@ -51,7 +51,7 @@ trait StrideAuth extends AuthorisedFunctions with StrideAuthRedirects {
 
   private val getRedirectUrl: (Request[AnyContent], Call) => String =
     if (config.get[Boolean]("stride.redirect-with-absolute-urls")) { case (r, c) =>
-      c.absoluteURL()(r)
+      c.absoluteURL()(using r)
     }
     else { case (_, c) =>
       c.url

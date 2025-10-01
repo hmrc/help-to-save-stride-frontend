@@ -211,6 +211,10 @@ class HelpToSaveConnectorImpl @Inject() (
                 pagerDutyAlerting.alert(message)
                 Left(message)
             }
+          case Right(_) =>
+            val message = s"createAccount returned unexpected status which is other than 201"
+            logger.warn(message, nSIUserInfo.nino)
+            Left(message)
           case Left(UpstreamErrorResponse(_, CONFLICT, _, _)) =>
             logger.warn(s"createAccount returned 409 (Conflict)", nSIUserInfo.nino)
             Right(AccountAlreadyExists)

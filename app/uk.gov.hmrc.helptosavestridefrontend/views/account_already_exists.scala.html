@@ -31,7 +31,7 @@
 @(
   accountNumber: Option[String]
 )(
-  implicit request: Request[_],
+  implicit request: Request[?],
   config: FrontendAppConfig,
   messages: Messages
 )
