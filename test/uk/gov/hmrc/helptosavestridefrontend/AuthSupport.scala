@@ -23,7 +23,7 @@ import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, v2, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
 
 import java.util.Base64
 import scala.concurrent.Future
@@ -64,7 +64,7 @@ trait AuthSupport { this: TestSupport =>
   ): OngoingStubbing[Future[A]] =
     whenMock(
       mockAuthConnector
-        .authorise(eqTo(expectedPredicate), eqTo(expectedRetrieval))(any(), any())
+        .authorise(eqTo(expectedPredicate), eqTo(expectedRetrieval))(using any(), any())
     ).thenReturn(result.fold(Future.failed, Future.successful))
 
   def mockSuccessfulAuthorisation(): OngoingStubbing[Future[Enrolments]] =

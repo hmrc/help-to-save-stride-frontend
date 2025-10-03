@@ -67,7 +67,7 @@ class StrideController @Inject() (
     with SessionBehaviour {
 
   def getEligibilityPage: Action[AnyContent] =
-    authorisedFromStride { implicit request => roleType =>
+    authorisedFromStride { implicit request => _ =>
       sessionStore.delete.fold(
         error => {
           logger.warn(error)
@@ -655,12 +655,12 @@ class StrideController @Inject() (
     }(routes.StrideController.getAccountCreatedPage())
 
   def getApplicationCancelledPage: Action[AnyContent] =
-    authorisedFromStride { implicit request => roleType =>
+    authorisedFromStride { implicit request => _ =>
       Ok(applicationCancelledView())
     }(routes.StrideController.getApplicationCancelledPage())
 
   def getErrorPage: Action[AnyContent] =
-    authorisedFromStride { implicit request => roleType =>
+    authorisedFromStride { implicit request => _ =>
       internalServerError()
     }(routes.StrideController.getErrorPage())
 

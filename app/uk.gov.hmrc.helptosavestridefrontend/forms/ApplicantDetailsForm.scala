@@ -69,10 +69,10 @@ object ApplicantDetailsForm {
     clock: Clock
   ): Form[ApplicantDetails] = Form(
     mapping(
-      Ids.forename -> of(applicantDetailsValidation.nameFormatter),
-      Ids.surname  -> of(applicantDetailsValidation.nameFormatter),
+      Ids.forename -> of(using applicantDetailsValidation.nameFormatter),
+      Ids.surname  -> of(using applicantDetailsValidation.nameFormatter),
       Ids.dateOfBirth -> of(
-        DateFormFormatter.dateFormFormatter(
+        using DateFormFormatter.dateFormFormatter(
           maximumDateInclusive = Some(LocalDate.now(clock)),
           minimumDateInclusive = Some(LocalDate.of(1900, 1, 1)),
           "dob-day",
@@ -83,12 +83,12 @@ object ApplicantDetailsForm {
           tooFarInPastArgs = Seq.empty
         )
       ),
-      Ids.address1    -> of(applicantDetailsValidation.addressLineFormatter),
-      Ids.address2    -> of(applicantDetailsValidation.addressLineFormatter),
-      Ids.address3    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
-      Ids.address4    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
-      Ids.address5    -> of(applicantDetailsValidation.addressOptionalLineFormatter),
-      Ids.postcode    -> of(applicantDetailsValidation.postcodeFormatter),
+      Ids.address1    -> of(using applicantDetailsValidation.addressLineFormatter),
+      Ids.address2    -> of(using applicantDetailsValidation.addressLineFormatter),
+      Ids.address3    -> of(using applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.address4    -> of(using applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.address5    -> of(using applicantDetailsValidation.addressOptionalLineFormatter),
+      Ids.postcode    -> of(using applicantDetailsValidation.postcodeFormatter),
       Ids.countryCode -> text
     )(ApplicantDetails.apply)(o => Some(Tuple.fromProductTyped(o)))
   )

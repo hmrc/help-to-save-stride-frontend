@@ -28,7 +28,7 @@ import uk.gov.hmrc.helptosavestridefrontend.util.{PagerDutyAlerting, Result, toF
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
-import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
+import uk.gov.hmrc.mdc.Mdc.preservingMdc
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{Duration, SECONDS}

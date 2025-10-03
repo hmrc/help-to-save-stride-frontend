@@ -29,7 +29,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 trait SessionBehaviour extends StrideAuth {
-  this: StrideFrontendController with Logging =>
+  this: StrideFrontendController & Logging =>
 
   val sessionStore: SessionStore
 
@@ -63,7 +63,7 @@ trait SessionBehaviour extends StrideAuth {
       (_, _, _, _) => SeeOther(routes.StrideController.customerNotEligible().url),
     whenAlreadyHasAccount: (Option[NSIPayload], Option[AccountReferenceNumber]) => Future[Result] = (_, _) =>
       SeeOther(routes.StrideController.accountAlreadyExists().url)
-  )(implicit request: Request[_], ec: ExecutionContext): Future[Result] =
+  )(implicit request: Request[?], ec: ExecutionContext): Future[Result] =
     checkSessionInternal(
       noSessionData,
       htsSession =>

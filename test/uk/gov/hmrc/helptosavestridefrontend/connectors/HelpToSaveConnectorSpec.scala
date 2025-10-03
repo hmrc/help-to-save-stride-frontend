@@ -202,6 +202,13 @@ class HelpToSaveConnectorSpec
         result.isLeft shouldBe true
       }
 
+      "return an error if the createAccount returns other than 201 but not error" in {
+        when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
+          .thenReturn(NO_CONTENT, Json.parse("{}"))
+         val result = await(connector.createAccount(createAccountRequest).value)
+        result.isLeft shouldBe true
+      }
+
       "return a CreateAccountResult of AccountAlreadyExists when the proxy returns 409" in {
         when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
           .thenReturn(CONFLICT, Json.parse("{}"))

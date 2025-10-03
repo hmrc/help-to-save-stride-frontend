@@ -42,7 +42,7 @@ class HTSAuditorSpec extends TestSupport {
           override val value = dataEvent
         }
 
-        whenMock(mockAuditConnector.sendExtendedEvent(eqTo(dataEvent))(any(), any()))
+        whenMock(mockAuditConnector.sendExtendedEvent(eqTo(dataEvent))(using any(), any()))
           .thenReturn(Future.failed(new Exception))
 
         auditor.sendEvent(htsEvent, "nino")

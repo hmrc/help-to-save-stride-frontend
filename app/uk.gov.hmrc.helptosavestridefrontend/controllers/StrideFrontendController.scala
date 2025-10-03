@@ -30,6 +30,6 @@ class StrideFrontendController @Inject() (
   errorHandler: ErrorHandler
 )(implicit ec: ExecutionContext)
     extends FrontendController(mcc) {
-  def internalServerError()(implicit request: Request[_]): Future[Result] =
-    errorHandler.internalServerErrorTemplate(request).map(InternalServerError(_))
+  def internalServerError()(implicit request: Request[?]): Future[Result] =
+    errorHandler.internalServerErrorTemplate(using request).map(InternalServerError(_))
 }

@@ -63,7 +63,7 @@ class ApplicantDetailsValidationSpec
 
     "validating forenames" must {
 
-      lazy val testForename = testValidation[String](validation.nameFormatter) _
+      lazy val testForename = testValidation[String](validation.nameFormatter)
 
       "mark names as valid" when {
 
@@ -94,7 +94,7 @@ class ApplicantDetailsValidationSpec
 
     "validating surnames" must {
 
-      lazy val testSurname = testValidation[String](validation.nameFormatter) _
+      lazy val testSurname = testValidation[String](validation.nameFormatter)
 
       "mark names as valid" when {
 
@@ -308,8 +308,8 @@ class ApplicantDetailsValidationSpec
 
     "validating address lines 1 and 2" must {
 
-      lazy val testAddressLine1 = testValidation[String](validation.addressLineFormatter) _
-      lazy val testAddressLine2 = testValidation[String](validation.addressLineFormatter) _
+      lazy val testAddressLine1 = testValidation[String](validation.addressLineFormatter)
+      lazy val testAddressLine2 = testValidation[String](validation.addressLineFormatter)
 
       "mark address lines as valid" when {
 
@@ -346,9 +346,9 @@ class ApplicantDetailsValidationSpec
 
     "validating address lines 3, 4 and 5" must {
 
-      lazy val testAddressLine3 = testValidation[Option[String]](validation.addressOptionalLineFormatter) _
-      lazy val testAddressLine4 = testValidation[Option[String]](validation.addressOptionalLineFormatter) _
-      lazy val testAddressLine5 = testValidation[Option[String]](validation.addressOptionalLineFormatter) _
+      lazy val testAddressLine3 = testValidation[Option[String]](validation.addressOptionalLineFormatter)
+      lazy val testAddressLine4 = testValidation[Option[String]](validation.addressOptionalLineFormatter)
+      lazy val testAddressLine5 = testValidation[Option[String]](validation.addressOptionalLineFormatter)
 
       "mark address lines as valid" when {
 
@@ -391,7 +391,7 @@ class ApplicantDetailsValidationSpec
 
     "validating postcodes" must {
 
-      lazy val testPostcode = testValidation[String](validation.postcodeFormatter) _
+      lazy val testPostcode = testValidation[String](validation.postcodeFormatter)
 
       "mark postcodes as valid" when {
 

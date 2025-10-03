@@ -52,33 +52,33 @@ class SessionStoreSpec
     "be able to insert a HtsStandardSession into and read from mongo" in {
 
       val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
-      val result = sessionStore.store(htsSession)(format, hc)
+      val result = sessionStore.store(htsSession)(using format, hc)
 
       await(result.value) should be(Right(()))
 
-      val getResult = sessionStore.get(format, hc)
+      val getResult = sessionStore.get(using format, hc)
       await(getResult.value) should be(Right(Some(htsSession)))
     }
 
     "be able to insert a HtsSecureSession into and read from mongo" in {
 
       val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
-      val result = sessionStore.store(htsSecureSession)(format, hc)
+      val result = sessionStore.store(htsSecureSession)(using format, hc)
 
       result.value.futureValue should be(Right(()))
 
-      val getResult = sessionStore.get(format, hc)
+      val getResult = sessionStore.get(using format, hc)
       getResult.value.futureValue should be(Right(Some(htsSecureSession)))
     }
 
     "be able to delete a HTSSession from mongo" in {
 
       val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
-      val result = sessionStore.store(htsSession)(format, hc)
+      val result = sessionStore.store(htsSession)(using format, hc)
 
       result.value.futureValue should be(Right(()))
 
-      val deleteResult = sessionStore.delete(hc)
+      val deleteResult = sessionStore.delete(using hc)
       deleteResult.value.futureValue should be(Right(()))
     }
   }

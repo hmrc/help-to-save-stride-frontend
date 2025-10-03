@@ -6,25 +6,23 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(onLoadMessage := "")
   .settings(CodeCoverageSettings.settings *)
-  .settings(scalaVersion := "3.3.5")
+  .settings(scalaVersion := "3.7.1")
   .settings(PlayKeys.playDefaultPort := 7006)
   .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test())
   .settings(scalafmtOnCompile := true)
   .settings(
     scalacOptions ++= Seq(
       "-Wconf:src=routes/.*:s",
-      "-Wconf:msg=unused&src=html/.*:s"
+      "-Wconf:msg=unused&src=html/.*:s",
+      "-Wconf:msg=Flag.*repeatedly:s",
+      "-Wconf:src=html/.*:s"
     )
   )
-  // Disable default sbt Test options (might change with new versions of bootstrap)
   .settings(Test / testOptions -= Tests
-    .Argument("-o", "-u", "target/test-reports", "-h", "target/test-reports/html-report"))
-  // Suppress successful events in Scalatest in standard output (-o)
-  // Options described here: https://www.scalatest.org/user_guide/using_scalatest_with_sbt
+    .Argument( "-u", "target/test-reports", "-h", "target/test-reports/html-report"))
   .settings(
     Test / testOptions += Tests.Argument(
       TestFrameworks.ScalaTest,
-      "-oNCHPQR",
       "-u",
       "target/test-reports",
       "-h",
