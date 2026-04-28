@@ -205,7 +205,7 @@ class HelpToSaveConnectorSpec
       "return an error if the createAccount returns other than 201 but not error" in {
         when(POST, createAccountUrl, body = Some(Json.toJson(createAccountRequest).toString()))
           .thenReturn(NO_CONTENT, Json.parse("{}"))
-         val result = await(connector.createAccount(createAccountRequest).value)
+        val result = await(connector.createAccount(createAccountRequest).value)
         result.isLeft shouldBe true
       }
 
